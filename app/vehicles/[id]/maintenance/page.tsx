@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Car, Plus, Wrench, Gauge } from "lucide-react"
 import Link from "next/link"
 
+// Force dynamic rendering para páginas que usan Supabase
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
