@@ -1,42 +1,49 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { Car } from "lucide-react"
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { GoogleSignInButton } from "@/components/auth/google-signin-button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Car } from "lucide-react";
 
 export default function SignUpPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden")
-      setIsLoading(false)
-      return
+      setError("Las contraseñas no coinciden");
+      setIsLoading(false);
+      return;
     }
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres")
-      setIsLoading(false)
-      return
+      setError("La contraseña debe tener al menos 6 caracteres");
+      setIsLoading(false);
+      return;
     }
 
     try {
@@ -44,20 +51,22 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+            `${window.location.origin}/dashboard`,
           data: {
             full_name: fullName,
           },
         },
-      })
-      if (error) throw error
-      router.push("/auth/signup-success")
+      });
+      if (error) throw error;
+      router.push("/auth/signup-success");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
@@ -70,12 +79,28 @@ export default function SignUpPage() {
 
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-foreground">Crear Cuenta</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Regístrate para comenzar a gestionar tus vehículos
+              <CardTitle className="text-2xl text-foreground">
+                Crear Cuenta
+              </CardTitle>
+              <CardDescription>
+                Crea tu cuenta para comenzar a gestionar el mantenimiento de tus
+                vehículos
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <GoogleSignInButton>Crear cuenta con Google</GoogleSignInButton>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    O continúa con email
+                  </span>
+                </div>
+              </div>
+
               <form onSubmit={handleSignUp}>
                 <div className="flex flex-col gap-4">
                   <div className="grid gap-2">
@@ -121,7 +146,10 @@ export default function SignUpPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword" className="text-foreground">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-foreground"
+                    >
                       Confirmar Contraseña
                     </Label>
                     <Input
@@ -149,7 +177,10 @@ export default function SignUpPage() {
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                   ¿Ya tienes una cuenta?{" "}
-                  <Link href="/auth/login" className="text-primary hover:text-primary/80 underline underline-offset-4">
+                  <Link
+                    href="/auth/login"
+                    className="text-primary hover:text-primary/80 underline underline-offset-4"
+                  >
                     Inicia sesión
                   </Link>
                 </div>
@@ -159,5 +190,5 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
