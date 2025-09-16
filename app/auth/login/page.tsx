@@ -101,7 +101,7 @@ export default function LoginPage() {
                   )}
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                     disabled={isLoading}
                   >
                     {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
@@ -118,7 +118,7 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <GoogleSignInButton className="w-full" />
+                  <GoogleSignInButton className="w-full cursor-pointer" />
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                   ¿No tienes una cuenta?{" "}

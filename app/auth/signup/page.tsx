@@ -88,8 +88,11 @@ export default function SignUpPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <GoogleSignInButton>Crear cuenta con Google</GoogleSignInButton>
-
+              <div className="flex justify-center">
+                <GoogleSignInButton className="cursor-pointer">
+                  Crear cuenta con Google
+                </GoogleSignInButton>
+              </div>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -169,7 +172,7 @@ export default function SignUpPage() {
                   )}
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
