@@ -1,53 +1,63 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { UpcomingMaintenance } from "@/components/dashboard/upcoming-maintenance"
-import { RecentActivity } from "@/components/dashboard/recent-activity"
-import { VehicleOverview } from "@/components/dashboard/vehicle-overview"
-import { Button } from "@/components/ui/button"
-import { Car, Plus, LogOut } from "lucide-react"
-import Link from "next/link"
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { UpcomingMaintenance } from "@/components/dashboard/upcoming-maintenance";
+import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { VehicleOverview } from "@/components/dashboard/vehicle-overview";
+import { Button } from "@/components/ui/button";
+import { Car, Plus, LogOut } from "lucide-react";
+import Link from "next/link";
+
+// Force dynamic rendering para páginas que usan Supabase
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) {
-    redirect("/auth/login")
+    redirect("/auth/login");
   }
 
   // Fetch user profile
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single();
 
   // Fetch vehicles
   const { data: vehicles } = await supabase
     .from("vehicles")
     .select("*")
     .eq("user_id", data.user.id)
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false });
 
   // Fetch maintenance records
   const { data: maintenanceRecords } = await supabase
     .from("maintenance_records")
-    .select(`
+    .select(
+      `
       *,
       vehicles (
         make,
         model,
         year
       )
-    `)
+    `
+    )
     .eq("user_id", data.user.id)
     .order("service_date", { ascending: false })
-    .limit(10)
+    .limit(10);
 
   // Fetch upcoming maintenance (next 30 days)
-  const thirtyDaysFromNow = new Date()
-  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
   const { data: upcomingMaintenance } = await supabase
     .from("maintenance_records")
-    .select(`
+    .select(
+      `
       *,
       vehicles (
         make,
@@ -55,18 +65,19 @@ export default async function DashboardPage() {
         year,
         license_plate
       )
-    `)
+    `
+    )
     .eq("user_id", data.user.id)
     .not("next_service_date", "is", null)
     .lte("next_service_date", thirtyDaysFromNow.toISOString().split("T")[0])
-    .order("next_service_date", { ascending: true })
+    .order("next_service_date", { ascending: true });
 
   const handleSignOut = async () => {
-    "use server"
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect("/")
-  }
+    "use server";
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect("/");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
@@ -78,7 +89,9 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">CarCare Pro</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Hola, {profile?.full_name || data.user.email}</span>
+            <span className="text-sm text-muted-foreground">
+              Hola, {profile?.full_name || data.user.email}
+            </span>
             <form action={handleSignOut}>
               <Button variant="ghost" size="sm" type="submit">
                 <LogOut className="h-4 w-4 mr-2" />
@@ -92,8 +105,12 @@ export default async function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Panel de Control</h2>
-          <p className="text-muted-foreground">Resumen de tus vehículos y mantenimientos</p>
+          <h2 className="text-3xl font-bold text-foreground mb-2">
+            Panel de Control
+          </h2>
+          <p className="text-muted-foreground">
+            Resumen de tus vehículos y mantenimientos
+          </p>
         </div>
 
         {/* Quick Actions */}
@@ -113,7 +130,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Dashboard Stats */}
-        <DashboardStats vehicles={vehicles || []} maintenanceRecords={maintenanceRecords || []} />
+        <DashboardStats
+          vehicles={vehicles || []}
+          maintenanceRecords={maintenanceRecords || []}
+        />
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6 mt-8">
@@ -125,10 +145,12 @@ export default async function DashboardPage() {
 
           {/* Right Column - Upcoming Maintenance */}
           <div className="space-y-6">
-            <UpcomingMaintenance upcomingMaintenance={upcomingMaintenance || []} />
+            <UpcomingMaintenance
+              upcomingMaintenance={upcomingMaintenance || []}
+            />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

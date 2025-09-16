@@ -1,10 +1,6 @@
 # 🚗 CarCare Pro
 
 <p align="center">
-  <img src="public/placeholder-logo.svg" alt="CarCare Pro Logo" width="120" height="120">
-</p>
-
-<p align="center">
   <strong>Sistema completo de gestión de mantenimiento automotriz</strong>
 </p>
 
@@ -41,8 +37,8 @@
 <details>
 <summary>Ver más capturas de pantalla</summary>
 
-| Gestión de Vehículos | Historial de Mantenimiento |
-|:---:|:---:|
+|                      Gestión de Vehículos                      |                     Historial de Mantenimiento                     |
+| :------------------------------------------------------------: | :----------------------------------------------------------------: |
 | <img src="public/placeholder.jpg" alt="Vehículos" width="400"> | <img src="public/placeholder.jpg" alt="Mantenimiento" width="400"> |
 
 </details>
@@ -54,6 +50,7 @@
 <td>
 
 ### 🚙 **Gestión de Vehículos**
+
 - Registro completo de vehículos
 - Información detallada (marca, modelo, año, VIN)
 - Control de kilometraje
@@ -63,6 +60,7 @@
 <td>
 
 ### 📅 **Programación de Servicios**
+
 - Recordatorios de mantenimiento
 - Programación de servicios futuros
 - Notificaciones automáticas
@@ -74,6 +72,7 @@
 <td>
 
 ### 💰 **Control de Gastos**
+
 - Seguimiento de costos detallado
 - Análisis de gastos por período
 - Reportes financieros
@@ -83,6 +82,7 @@
 <td>
 
 ### 📋 **Historial Completo**
+
 - Registro detallado de servicios
 - Notas y observaciones
 - Archivos adjuntos
@@ -94,6 +94,7 @@
 <td>
 
 ### 📊 **Dashboard Intuitivo**
+
 - Vista general centralizada
 - Estadísticas en tiempo real
 - Próximos mantenimientos
@@ -103,6 +104,7 @@
 <td>
 
 ### 🔐 **Seguridad Avanzada**
+
 - Autenticación con Supabase
 - Protección de rutas
 - Row Level Security (RLS)
@@ -113,6 +115,7 @@
 </table>
 
 ### 🎨 **Experiencia de Usuario**
+
 - 📱 **Responsive Design**: Funciona perfectamente en móviles, tablets y desktop
 - 🌙 **Modo Oscuro**: Tema adaptable según preferencias del usuario
 - ♿ **Accesibilidad**: Cumple con estándares WCAG
@@ -123,12 +126,12 @@
 
 <div align="center">
 
-| Frontend | Backend & Database | Tools & Utilities |
-|:---:|:---:|:---:|
-| ![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?logo=next.js&logoColor=white) | ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase&logoColor=white) | ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white) |
-| ![React](https://img.shields.io/badge/React-18-blue?logo=react&logoColor=white) | ![Supabase Auth](https://img.shields.io/badge/Auth-Supabase-green?logo=supabase&logoColor=white) | ![Zod](https://img.shields.io/badge/Zod-Validation-red) |
-| ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.9-blue?logo=tailwindcss&logoColor=white) | ![Row Level Security](https://img.shields.io/badge/RLS-Enabled-green) | ![React Hook Form](https://img.shields.io/badge/React_Hook_Form-7.60.0-pink) |
-| ![shadcn/ui](https://img.shields.io/badge/shadcn/ui-Components-black) | ![Realtime](https://img.shields.io/badge/Realtime-Subscriptions-green) | ![Lucide React](https://img.shields.io/badge/Lucide-Icons-blue) |
+|                                               Frontend                                               |                                        Backend & Database                                         |                                       Tools & Utilities                                       |
+| :--------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: |
+|     ![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?logo=next.js&logoColor=white)      | ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase&logoColor=white) | ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white) |
+|           ![React](https://img.shields.io/badge/React-18-blue?logo=react&logoColor=white)            | ![Supabase Auth](https://img.shields.io/badge/Auth-Supabase-green?logo=supabase&logoColor=white)  |                    ![Zod](https://img.shields.io/badge/Zod-Validation-red)                    |
+| ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.9-blue?logo=tailwindcss&logoColor=white) |               ![Row Level Security](https://img.shields.io/badge/RLS-Enabled-green)               |         ![React Hook Form](https://img.shields.io/badge/React_Hook_Form-7.60.0-pink)          |
+|                ![shadcn/ui](https://img.shields.io/badge/shadcn/ui-Components-black)                 |              ![Realtime](https://img.shields.io/badge/Realtime-Subscriptions-green)               |                ![Lucide React](https://img.shields.io/badge/Lucide-Icons-blue)                |
 
 </div>
 
@@ -159,11 +162,11 @@ graph TD
 
 Antes de comenzar, asegúrate de tener instalado:
 
-| Requisito | Versión | Enlace |
-|-----------|---------|--------|
-| ![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js&logoColor=white) | 18.0.0 o superior | [Descargar](https://nodejs.org/) |
-| ![pnpm](https://img.shields.io/badge/pnpm-Recomendado-orange?logo=pnpm&logoColor=white) | Última versión | [Instalar](https://pnpm.io/installation) |
-| ![Supabase](https://img.shields.io/badge/Cuenta-Supabase-green?logo=supabase&logoColor=white) | Cuenta gratuita | [Registrarse](https://supabase.com/) |
+| Requisito                                                                                     | Versión           | Enlace                                   |
+| --------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------- |
+| ![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js&logoColor=white)       | 18.0.0 o superior | [Descargar](https://nodejs.org/)         |
+| ![pnpm](https://img.shields.io/badge/pnpm-Recomendado-orange?logo=pnpm&logoColor=white)       | Última versión    | [Instalar](https://pnpm.io/installation) |
+| ![Supabase](https://img.shields.io/badge/Cuenta-Supabase-green?logo=supabase&logoColor=white) | Cuenta gratuita   | [Registrarse](https://supabase.com/)     |
 
 > 💡 **Tip**: También puedes usar `npm` o `yarn`, pero recomendamos `pnpm` para un mejor rendimiento.
 
@@ -202,16 +205,19 @@ cd CarCare
 #### 2. Instalar Dependencias
 
 **Con pnpm (recomendado):**
+
 ```bash
 pnpm install
 ```
 
 **Con npm:**
+
 ```bash
 npm install
 ```
 
 **Con yarn:**
+
 ```bash
 yarn install
 ```
@@ -219,12 +225,13 @@ yarn install
 #### 3. Configurar Supabase
 
 1. **Crear proyecto en Supabase**
+
    - Ve a [supabase.com](https://supabase.com)
    - Crea una nueva organización y proyecto
    - Anota la URL y las claves API
 
 2. **Configurar variables de entorno**
-   
+
    Crea un archivo `.env.local` en la raíz del proyecto:
 
 ```env
@@ -243,6 +250,7 @@ NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://tu-dominio.com/dashboard
 #### 4. Configurar Base de Datos
 
 **Opción A: Usar la interfaz de Supabase**
+
 1. Ve a tu proyecto en Supabase
 2. Navega a "SQL Editor"
 3. Ejecuta los scripts en orden:
@@ -250,6 +258,7 @@ NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://tu-dominio.com/dashboard
    - `scripts/002_create_profile_trigger.sql`
 
 **Opción B: Usar CLI de Supabase (Avanzado)**
+
 ```bash
 # Instalar Supabase CLI
 npm install -g @supabase/cli
@@ -279,6 +288,7 @@ pnpm start
 <summary><strong>📋 Scripts SQL para Supabase</strong></summary>
 
 #### Script 1: Crear Tablas Principales
+
 Ejecuta `scripts/001_create_tables.sql` en el editor SQL de Supabase:
 
 ```sql
@@ -331,6 +341,7 @@ ALTER TABLE maintenance_records ENABLE ROW LEVEL SECURITY;
 ```
 
 #### Script 2: Crear Triggers
+
 Ejecuta `scripts/002_create_profile_trigger.sql`:
 
 ```sql
@@ -370,15 +381,19 @@ pnpm dev
 <summary><strong>Opciones de Despliegue</strong></summary>
 
 #### Vercel (Recomendado)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/devchemical/CarCare)
 
 #### Netlify
+
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/devchemical/CarCare)
 
 #### Railway
+
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/your-template)
 
 **Variables de entorno necesarias:**
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -452,22 +467,22 @@ graph TD
     A --> C[Dashboard]
     A --> D[Vehicles]
     A --> E[Maintenance]
-    
+
     C --> F[Dashboard Stats]
     C --> G[Recent Activity]
     C --> H[Upcoming Maintenance]
     C --> I[Vehicle Overview]
-    
+
     D --> J[Vehicles List]
     D --> K[Add Vehicle Dialog]
     D --> L[Edit Vehicle Dialog]
     D --> M[Delete Vehicle Dialog]
-    
+
     E --> N[Maintenance List]
     E --> O[Add Maintenance Dialog]
     E --> P[Edit Maintenance Dialog]
     E --> Q[Delete Maintenance Dialog]
-    
+
     J --> R[UI Components]
     K --> R
     L --> R
@@ -487,6 +502,7 @@ graph TD
 <td width="50%">
 
 **Características de Seguridad:**
+
 - ✅ Registro con email y contraseña
 - ✅ Verificación de email automática
 - ✅ Inicio de sesión seguro
@@ -499,6 +515,7 @@ graph TD
 <td width="50%">
 
 **Flow de Autenticación:**
+
 ```mermaid
 graph TD
     A[Usuario] --> B[Registro/Login]
@@ -515,16 +532,17 @@ graph TD
 
 ### 🚗 Gestión Completa de Vehículos
 
-| Función | Descripción | Estado |
-|---------|-------------|--------|
-| **Agregar Vehículo** | Registro completo con todos los datos | ✅ |
-| **Editar Información** | Actualización de datos existentes | ✅ |
-| **Eliminar Vehículo** | Borrado seguro con confirmación | ✅ |
-| **Vista de Lista** | Listado con información resumida | ✅ |
-| **Búsqueda/Filtros** | Encontrar vehículos rápidamente | 🚧 |
-| **Importar/Exportar** | Gestión masiva de datos | 🔄 |
+| Función                | Descripción                           | Estado |
+| ---------------------- | ------------------------------------- | ------ |
+| **Agregar Vehículo**   | Registro completo con todos los datos | ✅     |
+| **Editar Información** | Actualización de datos existentes     | ✅     |
+| **Eliminar Vehículo**  | Borrado seguro con confirmación       | ✅     |
+| **Vista de Lista**     | Listado con información resumida      | ✅     |
+| **Búsqueda/Filtros**   | Encontrar vehículos rápidamente       | 🚧     |
+| **Importar/Exportar**  | Gestión masiva de datos               | 🔄     |
 
 **Información que se gestiona:**
+
 - 📋 Datos básicos (marca, modelo, año, color)
 - 🔢 Números de identificación (VIN, placa)
 - 📏 Control de kilometraje actual
@@ -538,6 +556,7 @@ graph TD
 <summary><strong>Ver funcionalidades de mantenimiento</strong></summary>
 
 #### Tipos de Mantenimiento Soportados
+
 - 🛢️ **Cambio de aceite y filtros**
 - 🔧 **Mantenimiento preventivo**
 - ⚙️ **Reparaciones mecánicas**
@@ -548,6 +567,7 @@ graph TD
 - 🔍 **Inspecciones técnicas**
 
 #### Características Principales
+
 - 📅 **Programación inteligente** de próximos servicios
 - 💰 **Control detallado** de costos por servicio
 - 📊 **Reportes** de gastos por período
@@ -567,6 +587,7 @@ El dashboard centraliza toda la información importante:
 <td width="25%">
 
 **📈 Estadísticas**
+
 - Total de vehículos
 - Mantenimientos del mes
 - Gastos acumulados
@@ -576,6 +597,7 @@ El dashboard centraliza toda la información importante:
 <td width="25%">
 
 **🕒 Actividad Reciente**
+
 - Últimos mantenimientos
 - Nuevos vehículos
 - Actualizaciones
@@ -585,6 +607,7 @@ El dashboard centraliza toda la información importante:
 <td width="25%">
 
 **⏰ Próximos Servicios**
+
 - Mantenimientos pendientes
 - Fechas importantes
 - Alertas por kilometraje
@@ -594,6 +617,7 @@ El dashboard centraliza toda la información importante:
 <td width="25%">
 
 **🚗 Vista General**
+
 - Estado de vehículos
 - Resumen de costos
 - Gráficos de rendimiento
@@ -607,14 +631,14 @@ El dashboard centraliza toda la información importante:
 
 <div align="center">
 
-| 🛡️ Característica | 📋 Descripción | ✅ Estado |
-|:---:|:---:|:---:|
-| **Row Level Security (RLS)** | Cada usuario solo accede a sus datos | Implementado |
-| **Autenticación JWT** | Tokens seguros manejados por Supabase | Implementado |
-| **Validación de Formularios** | Validación cliente y servidor con Zod | Implementado |
-| **Middleware de Protección** | Rutas protegidas automáticamente | Implementado |
-| **Encriptación de Datos** | Datos encriptados en tránsito y reposo | Por defecto |
-| **Auditoría de Accesos** | Registro de actividades del usuario | Planificado |
+|       🛡️ Característica       |             📋 Descripción             |  ✅ Estado   |
+| :---------------------------: | :------------------------------------: | :----------: |
+| **Row Level Security (RLS)**  |  Cada usuario solo accede a sus datos  | Implementado |
+|     **Autenticación JWT**     | Tokens seguros manejados por Supabase  | Implementado |
+| **Validación de Formularios** | Validación cliente y servidor con Zod  | Implementado |
+| **Middleware de Protección**  |    Rutas protegidas automáticamente    | Implementado |
+|   **Encriptación de Datos**   | Datos encriptados en tránsito y reposo | Por defecto  |
+|   **Auditoría de Accesos**    |  Registro de actividades del usuario   | Planificado  |
 
 </div>
 
@@ -634,6 +658,7 @@ graph TD
 ### 🛡️ Implementación de RLS
 
 Las políticas de seguridad garantizan que:
+
 - ✅ Los usuarios solo ven **sus propios vehículos**
 - ✅ Los mantenimientos están **asociados al propietario**
 - ✅ No hay **acceso cruzado** entre usuarios
@@ -650,6 +675,7 @@ Las políticas de seguridad garantizan que:
 <td width="33%">
 
 **🎨 Paleta de Colores**
+
 - 🟢 **Primario**: Verde profesional
 - ⚫ **Neutro**: Grises modernos
 - 🔴 **Alertas**: Rojos para advertencias
@@ -659,6 +685,7 @@ Las políticas de seguridad garantizan que:
 <td width="33%">
 
 **📱 Responsive Design**
+
 - 📱 **Mobile First**: Optimizado para móviles
 - 📱 **Tablet Ready**: Funcional en tablets
 - 💻 **Desktop**: Experiencia completa
@@ -668,6 +695,7 @@ Las políticas de seguridad garantizan que:
 <td width="33%">
 
 **♿ Accesibilidad**
+
 - 🔤 **ARIA Labels**: Etiquetas descriptivas
 - ⌨️ **Navegación**: Uso completo con teclado
 - 🎯 **Contraste**: Cumple estándares WCAG
@@ -694,6 +722,7 @@ Las políticas de seguridad garantizan que:
 <summary><strong>1. 📝 Registro e Inicio de Sesión</strong></summary>
 
 1. **Crear cuenta nueva:**
+
    - Ve a `/auth/signup`
    - Completa email, nombre y contraseña
    - Verifica tu email
@@ -710,6 +739,7 @@ Las políticas de seguridad garantizan que:
 <summary><strong>2. 🚗 Gestionar Vehículos</strong></summary>
 
 1. **Agregar primer vehículo:**
+
    - Desde el dashboard, click "Agregar Vehículo"
    - Completa información básica (marca, modelo, año)
    - Agrega datos opcionales (placa, VIN, color)
@@ -727,6 +757,7 @@ Las políticas de seguridad garantizan que:
 <summary><strong>3. 🔧 Registrar Mantenimientos</strong></summary>
 
 1. **Primer mantenimiento:**
+
    - Selecciona un vehículo
    - Click "Agregar Mantenimiento"
    - Elige tipo de servicio
@@ -762,6 +793,7 @@ Las políticas de seguridad garantizan que:
 <td width="25%">
 
 **🐛 Reportar Bugs**
+
 - Abre un [issue](https://github.com/devchemical/CarCare/issues)
 - Describe el problema detalladamente
 - Incluye pasos para reproducir
@@ -771,6 +803,7 @@ Las políticas de seguridad garantizan que:
 <td width="25%">
 
 **✨ Nuevas Características**
+
 - Propón ideas en [Discussions](https://github.com/devchemical/CarCare/discussions)
 - Abre un issue con tu propuesta
 - Espera feedback antes de desarrollar
@@ -780,6 +813,7 @@ Las políticas de seguridad garantizan que:
 <td width="25%">
 
 **📖 Documentación**
+
 - Mejora el README
 - Agrega comentarios al código
 - Crea guías de usuario
@@ -789,6 +823,7 @@ Las políticas de seguridad garantizan que:
 <td width="25%">
 
 **🧪 Testing**
+
 - Escribe pruebas unitarias
 - Reporta problemas de usabilidad
 - Prueba en diferentes dispositivos
@@ -816,17 +851,20 @@ graph LR
 #### Pasos Detallados
 
 1. **🍴 Fork el Repositorio**
+
    ```bash
    # Crea tu fork desde GitHub UI
    ```
 
 2. **📥 Clona tu Fork**
+
    ```bash
    git clone https://github.com/tu-usuario/CarCare.git
    cd CarCare
    ```
 
 3. **🌿 Crea una Rama**
+
    ```bash
    git checkout -b feature/nombre-descriptivo
    # o
@@ -834,28 +872,31 @@ graph LR
    ```
 
 4. **💻 Desarrolla tu Característica**
+
    ```bash
    # Instala dependencias
    pnpm install
-   
+
    # Ejecuta en modo desarrollo
    pnpm dev
-   
+
    # Haz tus cambios...
    ```
 
 5. **✅ Prueba tus Cambios**
+
    ```bash
    # Ejecuta linting
    pnpm lint
-   
+
    # Construye el proyecto
    pnpm build
-   
+
    # Prueba manualmente
    ```
 
 6. **📝 Commit con Conventional Commits**
+
    ```bash
    git add .
    git commit -m "feat: agrega función de exportar datos"
@@ -864,10 +905,11 @@ graph LR
    ```
 
 7. **📤 Push y Pull Request**
+
    ```bash
    git push origin feature/nombre-descriptivo
    ```
-   
+
    Luego crea un Pull Request desde GitHub UI.
 
 ### 📋 Pautas de Contribución
@@ -876,24 +918,28 @@ graph LR
 <summary><strong>🎨 Estándares de Código</strong></summary>
 
 #### TypeScript
+
 - ✅ Usa tipos estrictos
 - ✅ Evita `any`
 - ✅ Documenta funciones complejas
 - ✅ Usa interfaces para objetos
 
 #### React/Next.js
+
 - ✅ Componentes funcionales con hooks
 - ✅ Usa Server Components cuando sea posible
 - ✅ Props tipadas con TypeScript
 - ✅ Manejo de errores apropiado
 
 #### Styling
+
 - ✅ TailwindCSS para estilos
 - ✅ Usa componentes de shadcn/ui
 - ✅ Mantén consistencia visual
 - ✅ Responsive design obligatorio
 
 #### Base de Datos
+
 - ✅ Usa Row Level Security
 - ✅ Valida datos en servidor
 - ✅ Manejo de errores de DB
@@ -915,6 +961,7 @@ Usamos [Conventional Commits](https://www.conventionalcommits.org/) para mantene
 - `chore:` Mantenimiento y tareas auxiliares
 
 **Ejemplos:**
+
 ```bash
 feat(vehicles): agrega filtro por marca
 fix(auth): corrige redirección después del login
@@ -928,7 +975,9 @@ docs(readme): actualiza guía de instalación
 Todos los contribuidores aparecerán en nuestra sección de reconocimientos:
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg)](#contributors)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Contributors ✨
@@ -954,6 +1003,7 @@ Este proyecto sigue la especificación de [all-contributors](https://github.com/
 ## �️ Roadmap
 
 ### 🎯 Versión Actual (v1.0)
+
 - ✅ Autenticación segura con Supabase
 - ✅ Gestión completa de vehículos
 - ✅ Sistema de mantenimiento
@@ -962,6 +1012,7 @@ Este proyecto sigue la especificación de [all-contributors](https://github.com/
 - ✅ Row Level Security
 
 ### 🚀 Próximas Características (v1.1)
+
 - 🔄 **API REST completa** para integraciones
 - 📱 **Aplicación móvil nativa** (React Native)
 - 🔔 **Notificaciones push** para recordatorios
@@ -970,6 +1021,7 @@ Este proyecto sigue la especificación de [all-contributors](https://github.com/
 - 🔍 **Búsqueda avanzada** con filtros múltiples
 
 ### 🎨 Mejoras Futuras (v1.2+)
+
 - 🤖 **IA para predicción** de mantenimientos
 - 📸 **OCR para facturas** automático
 - 🔗 **Integración con talleres** mecánicos
@@ -980,16 +1032,16 @@ Este proyecto sigue la especificación de [all-contributors](https://github.com/
 <details>
 <summary><strong>Ver roadmap detallado</strong></summary>
 
-| Característica | Prioridad | Estado | Versión Estimada |
-|---|:---:|:---:|:---:|
-| API REST | 🔥 Alta | 🔄 En progreso | v1.1 |
-| App Móvil | 🔥 Alta | 📋 Planificado | v1.1 |
-| Notificaciones Push | 🔥 Alta | 📋 Planificado | v1.1 |
-| Reportes Avanzados | 🟡 Media | 📋 Planificado | v1.1 |
-| Multi-idioma | 🟡 Media | 📋 Planificado | v1.1 |
-| OCR para Facturas | 🟡 Media | 💡 Investigación | v1.2 |
-| IA Predictiva | 🔵 Baja | 💡 Investigación | v2.0 |
-| Integración Talleres | 🔵 Baja | 💡 Investigación | v2.0 |
+| Característica       | Prioridad |      Estado      | Versión Estimada |
+| -------------------- | :-------: | :--------------: | :--------------: |
+| API REST             |  🔥 Alta  |  🔄 En progreso  |       v1.1       |
+| App Móvil            |  🔥 Alta  |  📋 Planificado  |       v1.1       |
+| Notificaciones Push  |  🔥 Alta  |  📋 Planificado  |       v1.1       |
+| Reportes Avanzados   | 🟡 Media  |  📋 Planificado  |       v1.1       |
+| Multi-idioma         | 🟡 Media  |  📋 Planificado  |       v1.1       |
+| OCR para Facturas    | 🟡 Media  | 💡 Investigación |       v1.2       |
+| IA Predictiva        |  🔵 Baja  | 💡 Investigación |       v2.0       |
+| Integración Talleres |  🔵 Baja  | 💡 Investigación |       v2.0       |
 
 </details>
 
@@ -1008,6 +1060,7 @@ Este proyecto está bajo la **Licencia MIT**. Esto significa que puedes:
 - ✅ **Hacer fork** y crear versiones derivadas
 
 **Únicos requisitos:**
+
 - 📄 Incluir el archivo de licencia original
 - 👤 Dar crédito al autor original
 
@@ -1024,6 +1077,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 <td width="25%">
 
 **📖 Documentación**
+
 - [README completo](README.md)
 - [Guía de instalación](#instalación)
 - [Estructura del proyecto](#estructura-del-proyecto)
@@ -1033,6 +1087,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 <td width="25%">
 
 **🐛 Reportar Problemas**
+
 - [Issues de GitHub](https://github.com/devchemical/CarCare/issues)
 - [Template de bug report](https://github.com/devchemical/CarCare/issues/new?template=bug_report.md)
 - [Buscar problemas existentes](https://github.com/devchemical/CarCare/issues?q=is%3Aissue)
@@ -1041,6 +1096,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 <td width="25%">
 
 **💬 Discusiones**
+
 - [GitHub Discussions](https://github.com/devchemical/CarCare/discussions)
 - [Preguntas y respuestas](https://github.com/devchemical/CarCare/discussions/categories/q-a)
 - [Ideas y sugerencias](https://github.com/devchemical/CarCare/discussions/categories/ideas)
@@ -1049,6 +1105,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 <td width="25%">
 
 **📚 Recursos Externos**
+
 - [Documentación de Supabase](https://supabase.com/docs)
 - [Documentación de Next.js](https://nextjs.org/docs)
 - [TailwindCSS Docs](https://tailwindcss.com/docs)
@@ -1092,7 +1149,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 <img src="public/placeholder-logo.svg" alt="CarCare Pro" width="60" height="60">
 
-**CarCare Pro** - *Mantén tus vehículos en perfecto estado* 🚗✨
+**CarCare Pro** - _Mantén tus vehículos en perfecto estado_ 🚗✨
 
 Desarrollado con ❤️ por [DevChemical](https://github.com/devchemical)
 

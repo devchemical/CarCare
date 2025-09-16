@@ -1,17 +1,26 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { VehiclesList } from "@/components/vehicles/vehicles-list"
-import { AddVehicleDialog } from "@/components/vehicles/add-vehicle-dialog"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Car, Plus } from "lucide-react"
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { VehiclesList } from "@/components/vehicles/vehicles-list";
+import { AddVehicleDialog } from "@/components/vehicles/add-vehicle-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Car, Plus } from "lucide-react";
+
+// Force dynamic rendering para páginas que usan Supabase
+export const dynamic = "force-dynamic";
 
 export default async function VehiclesPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) {
-    redirect("/auth/login")
+    redirect("/auth/login");
   }
 
   // Fetch user's vehicles
@@ -19,10 +28,10 @@ export default async function VehiclesPage() {
     .from("vehicles")
     .select("*")
     .eq("user_id", data.user.id)
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (vehiclesError) {
-    console.error("Error fetching vehicles:", vehiclesError)
+    console.error("Error fetching vehicles:", vehiclesError);
   }
 
   return (
@@ -33,7 +42,9 @@ export default async function VehiclesPage() {
             <Car className="h-8 w-8 text-primary" />
             Mis Vehículos
           </h1>
-          <p className="text-muted-foreground mt-2">Gestiona todos tus vehículos desde aquí</p>
+          <p className="text-muted-foreground mt-2">
+            Gestiona todos tus vehículos desde aquí
+          </p>
         </div>
         <AddVehicleDialog>
           <Button className="bg-primary hover:bg-primary/90">
@@ -53,9 +64,12 @@ export default async function VehiclesPage() {
                 <Car className="h-12 w-12 text-muted-foreground" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-foreground">No tienes vehículos registrados</CardTitle>
+            <CardTitle className="text-2xl text-foreground">
+              No tienes vehículos registrados
+            </CardTitle>
             <CardDescription className="text-lg">
-              Comienza agregando tu primer vehículo para llevar un control de su mantenimiento
+              Comienza agregando tu primer vehículo para llevar un control de su
+              mantenimiento
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -69,5 +83,5 @@ export default async function VehiclesPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }
