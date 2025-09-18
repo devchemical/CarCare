@@ -92,7 +92,7 @@ export default async function DashboardPage() {
             <span className="text-sm text-muted-foreground">
               Hola, {profile?.full_name || data.user.email}
             </span>
-            <form action={handleSignOut}>
+            <form onSubmit={handleSignOut}>
               <Button variant="ghost" size="sm" type="submit">
                 <LogOut className="h-4 w-4 mr-2" />
                 Cerrar Sesión
