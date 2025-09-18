@@ -24,7 +24,7 @@ export function GoogleSignInButton({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
+          redirectTo: `https://v0-car-maintenance-app-devchemicals-projects.vercel.app/auth/callback?next=${redirectTo}`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
