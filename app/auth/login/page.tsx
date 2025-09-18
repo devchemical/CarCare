@@ -51,7 +51,21 @@ export default function LoginPage() {
       
       if (data?.user && data?.session) {
         console.log("Login successful, redirecting to dashboard...");
-        router.push("/dashboard");
+        
+        // Intentar diferentes métodos de redirección
+        try {
+          router.push("/dashboard");
+          console.log("router.push executed");
+          
+          // Backup: usar window.location si router.push falla
+          setTimeout(() => {
+            console.log("Using window.location as backup");
+            window.location.href = "/dashboard";
+          }, 1000);
+        } catch (routerError) {
+          console.error("Router push failed:", routerError);
+          window.location.href = "/dashboard";
+        }
       } else {
         throw new Error("No user session created");
       }
