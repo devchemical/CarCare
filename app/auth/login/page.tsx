@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Car } from "lucide-react";
 import { useSupabase } from "@/hooks/useSupabase";
 
@@ -24,10 +24,33 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
   // Crear una sola instancia del cliente de Supabase para toda la página
   const supabase = useSupabase();
+
+  // Verificar si el usuario ya está autenticado al cargar la página
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          // Si ya está autenticado, redirigir al dashboard
+          router.push("/dashboard");
+          return;
+        }
+      } catch (error) {
+        // Silenciosamente manejar errores de autenticación
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, [supabase, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +66,8 @@ export default function LoginPage() {
       if (error) throw error;
 
       if (data?.user && data?.session) {
-        // Intentar diferentes métodos de redirección
         try {
           router.push("/dashboard");
-
-          // Backup: usar window.location si router.push falla
-          setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 1000);
         } catch (routerError) {
           window.location.href = "/dashboard";
         }
@@ -63,6 +80,18 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
+        <div className="flex flex-col items-center gap-4">
+          <Car className="h-8 w-8 text-primary animate-pulse" />
+          <p className="text-muted-foreground">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
