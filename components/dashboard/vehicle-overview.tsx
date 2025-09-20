@@ -1,23 +1,30 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Car, Plus, Gauge } from "lucide-react"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Car, Plus, Gauge } from "lucide-react";
+import Link from "next/link";
+import { formatMileage } from "@/lib/formatters";
 
 interface Vehicle {
-  id: string
-  make: string
-  model: string
-  year: number
-  license_plate?: string
-  color?: string
-  mileage: number
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  license_plate?: string;
+  color?: string;
+  mileage: number;
 }
 
 interface VehicleOverviewProps {
-  vehicles: Vehicle[]
+  vehicles: Vehicle[];
 }
 
 export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
@@ -36,7 +43,9 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
             <div className="p-4 bg-muted rounded-full w-fit mx-auto mb-4">
               <Car className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground mb-4">Comienza agregando tu primer vehículo</p>
+            <p className="text-muted-foreground mb-4">
+              Comienza agregando tu primer vehículo
+            </p>
             <Button asChild className="bg-primary hover:bg-primary/90">
               <Link href="/vehicles">
                 <Plus className="h-4 w-4 mr-2" />
@@ -46,7 +55,7 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -59,7 +68,8 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
               Mis Vehículos
             </CardTitle>
             <CardDescription>
-              {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""} registrado{vehicles.length !== 1 ? "s" : ""}
+              {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""}{" "}
+              registrado{vehicles.length !== 1 ? "s" : ""}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
@@ -86,13 +96,15 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
                     <Badge variant="secondary" className="text-xs">
                       {vehicle.year}
                     </Badge>
-                    {vehicle.license_plate && <span>{vehicle.license_plate}</span>}
+                    {vehicle.license_plate && (
+                      <span>{vehicle.license_plate}</span>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Gauge className="h-4 w-4" />
-                <span>{vehicle.mileage.toLocaleString()} km</span>
+                <span>{formatMileage(vehicle.mileage)}</span>
               </div>
             </div>
           ))}
@@ -101,7 +113,8 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
             <div className="text-center pt-2">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/vehicles">
-                  Ver {vehicles.length - 3} vehículo{vehicles.length - 3 !== 1 ? "s" : ""} más
+                  Ver {vehicles.length - 3} vehículo
+                  {vehicles.length - 3 !== 1 ? "s" : ""} más
                 </Link>
               </Button>
             </div>
@@ -109,5 +122,5 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

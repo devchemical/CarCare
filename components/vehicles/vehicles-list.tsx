@@ -1,40 +1,49 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Car, MoreVertical, Edit, Trash2, Calendar, Gauge } from "lucide-react"
-import { EditVehicleDialog } from "./edit-vehicle-dialog"
-import { DeleteVehicleDialog } from "./delete-vehicle-dialog"
-import { useState } from "react"
-import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Car, MoreVertical, Edit, Trash2, Calendar, Gauge } from "lucide-react";
+import { EditVehicleDialog } from "./edit-vehicle-dialog";
+import { DeleteVehicleDialog } from "./delete-vehicle-dialog";
+import { useState } from "react";
+import Link from "next/link";
+import { formatMileage } from "@/lib/formatters";
 
 interface Vehicle {
-  id: string
-  make: string
-  model: string
-  year: number
-  license_plate?: string
-  vin?: string
-  color?: string
-  mileage: number
-  created_at: string
-  updated_at: string
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  license_plate?: string;
+  vin?: string;
+  color?: string;
+  mileage: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface VehiclesListProps {
-  vehicles: Vehicle[]
+  vehicles: Vehicle[];
 }
 
 export function VehiclesList({ vehicles }: VehiclesListProps) {
-  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
-  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null)
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {vehicles.map((vehicle) => (
-        <Card key={vehicle.id} className="hover:shadow-lg transition-shadow border-border/50">
+        <Card
+          key={vehicle.id}
+          className="hover:shadow-lg transition-shadow border-border/50"
+        >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
@@ -95,7 +104,9 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
             <div className="flex items-center gap-2 text-sm">
               <Gauge className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Kilometraje:</span>
-              <span className="font-medium text-foreground">{vehicle.mileage.toLocaleString()} km</span>
+              <span className="font-medium text-foreground">
+                {formatMileage(vehicle.mileage)}
+              </span>
             </div>
 
             {vehicle.vin && (
@@ -105,7 +116,12 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
             )}
 
             <div className="pt-2">
-              <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full bg-transparent"
+              >
                 <Link href={`/vehicles/${vehicle.id}/maintenance`}>
                   <Calendar className="h-4 w-4 mr-2" />
                   Ver Mantenimientos
@@ -132,5 +148,5 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
         />
       )}
     </div>
-  )
+  );
 }

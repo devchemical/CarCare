@@ -1,24 +1,30 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { MaintenanceList } from "@/components/maintenance/maintenance-list"
-import { AddMaintenanceDialog } from "@/components/maintenance/add-maintenance-dialog"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Car, Plus, Wrench, Gauge } from "lucide-react"
-import Link from "next/link"
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { MaintenanceList } from "@/components/maintenance/maintenance-list";
+import { AddMaintenanceDialog } from "@/components/maintenance/add-maintenance-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Car, Plus, Wrench, Gauge } from "lucide-react";
+import Link from "next/link";
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export default async function VehicleMaintenancePage({ params }: PageProps) {
-  const { id } = await params
-  const supabase = await createClient()
+  const { id } = await params;
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) {
-    redirect("/auth/login")
+    redirect("/auth/login");
   }
 
   // Fetch vehicle details
@@ -27,10 +33,10 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
     .select("*")
     .eq("id", id)
     .eq("user_id", data.user.id)
-    .single()
+    .single();
 
   if (vehicleError || !vehicle) {
-    redirect("/vehicles")
+    redirect("/vehicles");
   }
 
   // Fetch maintenance records
@@ -39,10 +45,10 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
     .select("*")
     .eq("vehicle_id", id)
     .eq("user_id", data.user.id)
-    .order("service_date", { ascending: false })
+    .order("service_date", { ascending: false });
 
   if (maintenanceError) {
-    console.error("Error fetching maintenance records:", maintenanceError)
+    console.error("Error fetching maintenance records:", maintenanceError);
   }
 
   return (
@@ -66,10 +72,12 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
                   </CardTitle>
                   <CardDescription className="flex items-center gap-4 mt-1">
                     <Badge variant="secondary">{vehicle.year}</Badge>
-                    {vehicle.license_plate && <span>Placa: {vehicle.license_plate}</span>}
+                    {vehicle.license_plate && (
+                      <span>Placa: {vehicle.license_plate}</span>
+                    )}
                     <span className="flex items-center gap-1">
                       <Gauge className="h-4 w-4" />
-                      {vehicle.mileage.toLocaleString()} km
+                      {vehicle.mileage.toLocaleString("es-ES")} km
                     </span>
                   </CardDescription>
                 </div>
@@ -91,7 +99,9 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
             <Wrench className="h-6 w-6 text-primary" />
             Historial de Mantenimiento
           </h2>
-          <p className="text-muted-foreground mt-1">{maintenanceRecords?.length || 0} registro(s) de mantenimiento</p>
+          <p className="text-muted-foreground mt-1">
+            {maintenanceRecords?.length || 0} registro(s) de mantenimiento
+          </p>
         </div>
       </div>
 
@@ -105,9 +115,12 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
                 <Wrench className="h-12 w-12 text-muted-foreground" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-foreground">No hay registros de mantenimiento</CardTitle>
+            <CardTitle className="text-2xl text-foreground">
+              No hay registros de mantenimiento
+            </CardTitle>
             <CardDescription className="text-lg">
-              Comienza agregando el primer registro de mantenimiento para este vehículo
+              Comienza agregando el primer registro de mantenimiento para este
+              vehículo
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -121,5 +134,5 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
         </Card>
       )}
     </div>
-  )
+  );
 }

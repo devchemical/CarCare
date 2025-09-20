@@ -2,20 +2,25 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/ui/icons";
+import { useSupabase } from "@/hooks/useSupabase";
 
 interface GoogleSignInButtonProps {
   redirectTo?: string;
   className?: string;
   children?: React.ReactNode;
+  supabaseClient?: ReturnType<typeof createClient>;
 }
 
 export function GoogleSignInButton({
   redirectTo = "/dashboard",
   className,
   children = "Continuar con Google",
+  supabaseClient,
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
+  const defaultSupabase = useSupabase();
+  // Usar el cliente pasado como prop o el hook por defecto
+  const supabase = supabaseClient || defaultSupabase;
 
   const handleGoogleSignIn = async () => {
     try {

@@ -30,7 +30,9 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
     >
-      <body className="font-sans">{children}</body>
+      <body className="font-sans" suppressHydrationWarning={true}>
+        {children}
+      </body>
     </html>
   );
 }

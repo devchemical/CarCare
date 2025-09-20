@@ -1,30 +1,44 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Calendar, DollarSign, Gauge, MoreVertical, Edit, Trash2, AlertCircle, CheckCircle } from "lucide-react"
-import { EditMaintenanceDialog } from "./edit-maintenance-dialog"
-import { DeleteMaintenanceDialog } from "./delete-maintenance-dialog"
-import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Calendar,
+  DollarSign,
+  Gauge,
+  MoreVertical,
+  Edit,
+  Trash2,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { EditMaintenanceDialog } from "./edit-maintenance-dialog";
+import { DeleteMaintenanceDialog } from "./delete-maintenance-dialog";
+import { useState } from "react";
 
 interface MaintenanceRecord {
-  id: string
-  type: string
-  description?: string
-  cost?: number
-  mileage?: number
-  service_date: string
-  next_service_date?: string
-  next_service_mileage?: number
-  notes?: string
-  created_at: string
+  id: string;
+  type: string;
+  description?: string;
+  cost?: number;
+  mileage?: number;
+  service_date: string;
+  next_service_date?: string;
+  next_service_mileage?: number;
+  notes?: string;
+  created_at: string;
 }
 
 interface MaintenanceListProps {
-  records: MaintenanceRecord[]
-  vehicleId: string
+  records: MaintenanceRecord[];
+  vehicleId: string;
 }
 
 const maintenanceTypes = {
@@ -41,44 +55,52 @@ const maintenanceTypes = {
   suspension: "Suspensión",
   exhaust: "Sistema de Escape",
   other: "Otro",
-}
+};
 
 export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
-  const [editingRecord, setEditingRecord] = useState<MaintenanceRecord | null>(null)
-  const [deletingRecord, setDeletingRecord] = useState<MaintenanceRecord | null>(null)
+  const [editingRecord, setEditingRecord] = useState<MaintenanceRecord | null>(
+    null
+  );
+  const [deletingRecord, setDeletingRecord] =
+    useState<MaintenanceRecord | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-ES", {
       style: "currency",
       currency: "EUR",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const isOverdue = (nextServiceDate?: string) => {
-    if (!nextServiceDate) return false
-    return new Date(nextServiceDate) < new Date()
-  }
+    if (!nextServiceDate) return false;
+    return new Date(nextServiceDate) < new Date();
+  };
 
   const isUpcoming = (nextServiceDate?: string) => {
-    if (!nextServiceDate) return false
-    const nextDate = new Date(nextServiceDate)
-    const today = new Date()
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
-    return nextDate >= today && nextDate <= thirtyDaysFromNow
-  }
+    if (!nextServiceDate) return false;
+    const nextDate = new Date(nextServiceDate);
+    const today = new Date();
+    const thirtyDaysFromNow = new Date(
+      today.getTime() + 30 * 24 * 60 * 60 * 1000
+    );
+    return nextDate >= today && nextDate <= thirtyDaysFromNow;
+  };
 
   return (
     <div className="space-y-4">
       {records.map((record) => (
-        <Card key={record.id} className="hover:shadow-md transition-shadow border-border/50">
+        <Card
+          key={record.id}
+          className="hover:shadow-md transition-shadow border-border/50"
+        >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -87,9 +109,13 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
                 </div>
                 <div>
                   <CardTitle className="text-lg text-foreground">
-                    {maintenanceTypes[record.type as keyof typeof maintenanceTypes] || record.type}
+                    {maintenanceTypes[
+                      record.type as keyof typeof maintenanceTypes
+                    ] || record.type}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">{formatDate(record.service_date)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(record.service_date)}
+                  </p>
                 </div>
               </div>
               <DropdownMenu>
@@ -115,26 +141,34 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {record.description && <p className="text-sm text-foreground">{record.description}</p>}
+            {record.description && (
+              <p className="text-sm text-foreground">{record.description}</p>
+            )}
 
             <div className="flex flex-wrap gap-4 text-sm">
               {record.cost && (
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium text-foreground">{formatCurrency(record.cost)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(record.cost)}
+                  </span>
                 </div>
               )}
               {record.mileage && (
                 <div className="flex items-center gap-2">
                   <Gauge className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{record.mileage.toLocaleString()} km</span>
+                  <span className="text-muted-foreground">
+                    {record.mileage.toLocaleString("es-ES")} km
+                  </span>
                 </div>
               )}
             </div>
 
             {(record.next_service_date || record.next_service_mileage) && (
               <div className="border-t border-border pt-3">
-                <h4 className="text-sm font-medium text-foreground mb-2">Próximo Servicio:</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2">
+                  Próximo Servicio:
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {record.next_service_date && (
                     <Badge
@@ -142,8 +176,8 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
                         isOverdue(record.next_service_date)
                           ? "destructive"
                           : isUpcoming(record.next_service_date)
-                            ? "default"
-                            : "secondary"
+                          ? "default"
+                          : "secondary"
                       }
                       className="flex items-center gap-1"
                     >
@@ -158,9 +192,12 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
                     </Badge>
                   )}
                   {record.next_service_mileage && (
-                    <Badge variant="outline" className="flex items-center gap-1">
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
                       <Gauge className="h-3 w-3" />
-                      {record.next_service_mileage.toLocaleString()} km
+                      {record.next_service_mileage.toLocaleString("es-ES")} km
                     </Badge>
                   )}
                 </div>
@@ -169,7 +206,9 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
 
             {record.notes && (
               <div className="border-t border-border pt-3">
-                <h4 className="text-sm font-medium text-foreground mb-1">Notas:</h4>
+                <h4 className="text-sm font-medium text-foreground mb-1">
+                  Notas:
+                </h4>
                 <p className="text-sm text-muted-foreground">{record.notes}</p>
               </div>
             )}
@@ -194,5 +233,5 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
         />
       )}
     </div>
-  )
+  );
 }

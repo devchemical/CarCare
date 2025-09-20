@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Car } from "lucide-react";
+import { useSupabase } from "@/hooks/useSupabase";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -28,9 +28,11 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Crear una sola instancia del cliente de Supabase para toda la página
+  const supabase = useSupabase();
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
@@ -89,7 +91,10 @@ export default function SignUpPage() {
             </CardHeader>
             <CardContent>
               <div className="flex justify-center">
-                <GoogleSignInButton className="cursor-pointer">
+                <GoogleSignInButton
+                  className="cursor-pointer"
+                  supabaseClient={supabase}
+                >
                   Crear cuenta con Google
                 </GoogleSignInButton>
               </div>

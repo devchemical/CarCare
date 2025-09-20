@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Car } from "lucide-react";
+import { useSupabase } from "@/hooks/useSupabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,37 +26,39 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Crear una sola instancia del cliente de Supabase para toda la página
+  const supabase = useSupabase();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
       console.log("Starting login with email:", email);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
-      console.log("Login result:", { 
-        success: !error, 
+
+      console.log("Login result:", {
+        success: !error,
         error: error?.message,
         user: data?.user?.email,
-        session: !!data?.session 
+        session: !!data?.session,
       });
 
       if (error) throw error;
-      
+
       if (data?.user && data?.session) {
         console.log("Login successful, redirecting to dashboard...");
-        
+
         // Intentar diferentes métodos de redirección
         try {
           router.push("/dashboard");
           console.log("router.push executed");
-          
+
           // Backup: usar window.location si router.push falla
           setTimeout(() => {
             console.log("Using window.location as backup");
@@ -149,7 +151,10 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <GoogleSignInButton className="w-full cursor-pointer" />
+                  <GoogleSignInButton
+                    className="w-full cursor-pointer"
+                    supabaseClient={supabase}
+                  />
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                   ¿No tienes una cuenta?{" "}
