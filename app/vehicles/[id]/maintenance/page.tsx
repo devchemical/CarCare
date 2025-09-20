@@ -47,10 +47,6 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
     .eq("user_id", data.user.id)
     .order("service_date", { ascending: false });
 
-  if (maintenanceError) {
-    console.error("Error fetching maintenance records:", maintenanceError);
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">

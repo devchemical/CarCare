@@ -35,44 +35,29 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      console.log("Starting login with email:", email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      console.log("Login result:", {
-        success: !error,
-        error: error?.message,
-        user: data?.user?.email,
-        session: !!data?.session,
-      });
-
       if (error) throw error;
 
       if (data?.user && data?.session) {
-        console.log("Login successful, redirecting to dashboard...");
-
         // Intentar diferentes métodos de redirección
         try {
           router.push("/dashboard");
-          console.log("router.push executed");
 
           // Backup: usar window.location si router.push falla
           setTimeout(() => {
-            console.log("Using window.location as backup");
             window.location.href = "/dashboard";
           }, 1000);
         } catch (routerError) {
-          console.error("Router push failed:", routerError);
           window.location.href = "/dashboard";
         }
       } else {
         throw new Error("No user session created");
       }
     } catch (error: unknown) {
-      console.error("Login error:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);

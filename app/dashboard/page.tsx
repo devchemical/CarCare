@@ -12,24 +12,13 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  console.log("Dashboard: Starting authentication check...");
-
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.getUser();
 
-  console.log("Dashboard: Auth check result:", {
-    hasUser: !!data?.user,
-    userEmail: data?.user?.email,
-    error: error?.message,
-  });
-
   if (error || !data?.user) {
-    console.log("Dashboard: No user found, redirecting to login");
     redirect("/auth/login");
   }
-
-  console.log("Dashboard: User authenticated, rendering dashboard");
 
   // Fetch user profile
   const { data: profile } = await supabase

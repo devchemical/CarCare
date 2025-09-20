@@ -37,11 +37,9 @@ export function GoogleSignInButton({
         },
       });
 
-      if (error) {
-        console.error("Error al iniciar sesión con Google:", error.message);
-      }
+      // Silently handle errors - OAuth redirects will show errors in the URL
     } catch (error) {
-      console.error("Error inesperado:", error);
+      // Silently handle unexpected errors
     } finally {
       setIsLoading(false);
     }

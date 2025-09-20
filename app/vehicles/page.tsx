@@ -30,10 +30,6 @@ export default async function VehiclesPage() {
     .eq("user_id", data.user.id)
     .order("created_at", { ascending: false });
 
-  if (vehiclesError) {
-    console.error("Error fetching vehicles:", vehiclesError);
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
