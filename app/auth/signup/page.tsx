@@ -40,8 +40,8 @@ export default function SignUpPage() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          // Si ya está autenticado, redirigir al dashboard
-          router.push("/dashboard");
+          // Si ya está autenticado, redirigir a la página principal
+          router.push("/");
           return;
         }
       } catch (error) {
@@ -78,7 +78,7 @@ export default function SignUpPage() {
         options: {
           emailRedirectTo:
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/dashboard`,
+            `${window.location.origin}/`,
           data: {
             full_name: fullName,
           },

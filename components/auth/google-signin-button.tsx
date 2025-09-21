@@ -12,7 +12,7 @@ interface GoogleSignInButtonProps {
 }
 
 export function GoogleSignInButton({
-  redirectTo = "/dashboard",
+  redirectTo = "/",
   className,
   children = "Continuar con Google",
   supabaseClient,

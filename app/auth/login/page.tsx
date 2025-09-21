@@ -38,8 +38,8 @@ export default function LoginPage() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          // Si ya está autenticado, redirigir al dashboard
-          router.push("/dashboard");
+          // Si ya está autenticado, redirigir a la página principal
+          router.push("/");
           return;
         }
       } catch (error) {
@@ -67,9 +67,9 @@ export default function LoginPage() {
 
       if (data?.user && data?.session) {
         try {
-          router.push("/dashboard");
+          router.push("/");
         } catch (routerError) {
-          window.location.href = "/dashboard";
+          window.location.href = "/";
         }
       } else {
         throw new Error("No user session created");
