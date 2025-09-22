@@ -2,38 +2,54 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  try {
+    const { searchParams, origin } = new URL(request.url);
+    const code = searchParams.get("code");
+    const error = searchParams.get("error");
+    const next = searchParams.get("next") ?? "/";
 
-  if (code) {
-    const supabase = await createClient();
+    // Si hay un error de OAuth
+    if (error) {
+      return NextResponse.redirect(
+        `${origin}/auth/error?message=${encodeURIComponent(error)}`
+      );
+    }
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error && data?.user) {
-      const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
-
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      } else {
-        return NextResponse.redirect(`${origin}${next}`);
-      }
-    } else {
+    // Si no hay código, redirigir a error
+    if (!code) {
       return NextResponse.redirect(
         `${origin}/auth/error?message=${encodeURIComponent(
-          error?.message || "Authentication failed"
+          "No authorization code"
         )}`
       );
     }
-  }
 
-  return NextResponse.redirect(
-    `${origin}/auth/error?message=${encodeURIComponent(
-      "No authorization code provided"
-    )}`
-  );
+    // Intentar intercambiar el código por una sesión
+    const supabase = await createClient();
+    const { data, error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
+
+    if (exchangeError) {
+      return NextResponse.redirect(
+        `${origin}/auth/error?message=${encodeURIComponent(
+          exchangeError.message
+        )}`
+      );
+    }
+
+    if (!data?.user) {
+      return NextResponse.redirect(
+        `${origin}/auth/error?message=${encodeURIComponent("No user found")}`
+      );
+    }
+
+    // Éxito - redirigir al destino
+    return NextResponse.redirect(`${origin}${next}`);
+  } catch (error) {
+    console.error("Auth callback error:", error);
+    const { origin } = new URL(request.url);
+    return NextResponse.redirect(
+      `${origin}/auth/error?message=${encodeURIComponent("Callback failed")}`
+    );
+  }
 }

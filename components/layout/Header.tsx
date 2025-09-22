@@ -42,34 +42,72 @@ export function Header() {
   useEffect(() => {
     const getUser = async () => {
       try {
-        setIsLoading(true);
+        console.log("Header: Loading user data...");
+
         const {
           data: { user },
+          error: authError,
         } = await supabase.auth.getUser();
 
-        if (user) {
-          // Obtener el perfil del usuario
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
+        console.log("Header: User from auth:", user?.email || "No user");
 
-          // Actualizar estados en lote para reducir re-renders
+        if (user) {
+          console.log(
+            "Header: User authenticated, setting profile from auth data"
+          );
+
+          // Usar directamente los datos del usuario de auth
+          const profileFromAuth = {
+            id: user.id,
+            full_name:
+              user.user_metadata?.full_name ||
+              user.user_metadata?.name ||
+              user.email?.split("@")[0] ||
+              "Usuario",
+            email: user.email || "",
+          };
+
           setUser(user);
-          setProfile(profile);
+          setProfile(profileFromAuth);
+
+          // Cargar vehículos de forma opcional (no bloquear si falla)
+          loadVehicles(user.id);
         } else {
+          console.log("Header: No user found, clearing state");
           setUser(null);
           setProfile(null);
           setVehicles([]);
         }
       } catch (error) {
-        // Silenciosamente manejar errores
+        console.error("Header: Error loading user data:", error);
         setUser(null);
         setProfile(null);
         setVehicles([]);
       } finally {
+        console.log("Header: Setting isLoading to false");
         setIsLoading(false);
+      }
+    };
+
+    const loadVehicles = async (userId: string) => {
+      try {
+        console.log("Header: Loading vehicles for user:", userId);
+        const { data, error } = await supabase
+          .from("vehicles")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.log("Header: Vehicles error:", error);
+          setVehicles([]); // Set empty array if query fails
+        } else if (data) {
+          console.log("Header: Vehicles loaded:", data.length);
+          setVehicles(data);
+        }
+      } catch (error) {
+        console.log("Header: Vehicles load error:", error);
+        setVehicles([]);
       }
     };
 
@@ -79,16 +117,31 @@ export function Header() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+      console.log("Header: Auth state change:", event, session?.user?.email);
 
-        // Actualizar estados en lote
+      if (session?.user) {
+        const basicProfile = {
+          id: session.user.id,
+          full_name:
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split("@")[0] ||
+            "Usuario",
+          email: session.user.email || "",
+        };
+
+        try {
+          const { data: dbProfile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          setProfile(dbProfile || basicProfile);
+        } catch {
+          setProfile(basicProfile);
+        }
+
         setUser(session.user);
-        setProfile(profile);
       } else {
         setUser(null);
         setProfile(null);

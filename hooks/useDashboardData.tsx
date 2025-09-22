@@ -58,13 +58,21 @@ export function useDashboardData(): DashboardData & {
         if (authUser) {
           setUser({ id: authUser.id, email: authUser.email });
 
-          // Cargar datos del usuario autenticado
-          await Promise.all([
-            loadProfile(authUser.id),
-            loadVehicles(authUser.id),
-            loadMaintenanceRecords(authUser.id),
-            loadUpcomingMaintenance(authUser.id),
-          ]);
+          // Crear un perfil básico sin consultar la base de datos
+          const basicProfile = {
+            id: authUser.id,
+            email: authUser.email || "",
+            full_name:
+              authUser.user_metadata?.name ||
+              authUser.email?.split("@")[0] ||
+              "Usuario",
+          };
+          setProfile(basicProfile);
+
+          // Por ahora, usar datos vacíos para vehículos y mantenimiento
+          setVehicles([]);
+          setMaintenanceRecords([]);
+          setUpcomingMaintenance([]);
         } else {
           // Limpiar estado si no hay usuario
           setUser(null);
@@ -74,7 +82,7 @@ export function useDashboardData(): DashboardData & {
           setUpcomingMaintenance([]);
         }
       } catch (error) {
-        // Silenciosamente manejar errores
+        console.error("Error loading user data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -89,13 +97,21 @@ export function useDashboardData(): DashboardData & {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email });
 
-        // Cargar datos del usuario autenticado
-        await Promise.all([
-          loadProfile(session.user.id),
-          loadVehicles(session.user.id),
-          loadMaintenanceRecords(session.user.id),
-          loadUpcomingMaintenance(session.user.id),
-        ]);
+        // Crear perfil básico
+        const basicProfile = {
+          id: session.user.id,
+          email: session.user.email || "",
+          full_name:
+            session.user.user_metadata?.name ||
+            session.user.email?.split("@")[0] ||
+            "Usuario",
+        };
+        setProfile(basicProfile);
+
+        // Datos vacíos por ahora
+        setVehicles([]);
+        setMaintenanceRecords([]);
+        setUpcomingMaintenance([]);
       } else {
         // Limpiar estado cuando se cierra sesión
         setUser(null);
@@ -110,86 +126,129 @@ export function useDashboardData(): DashboardData & {
   }, [supabase]);
 
   const loadProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    try {
+      console.log("Loading profile for user:", userId);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-    if (data) setProfile(data);
+      if (error) {
+        console.log("Profile error:", error);
+        // Si no existe el perfil, crear uno básico
+        if (error.code === "PGRST116") {
+          console.log("Creating basic profile...");
+          const { data: user } = await supabase.auth.getUser();
+          if (user.user) {
+            const basicProfile = {
+              id: userId,
+              email: user.user.email || "",
+              full_name:
+                user.user.user_metadata?.name ||
+                user.user.email?.split("@")[0] ||
+                "Usuario",
+            };
+            setProfile(basicProfile);
+          }
+        }
+      } else if (data) {
+        console.log("Profile loaded:", data);
+        setProfile(data);
+      }
+    } catch (error) {
+      console.log("Profile load error:", error);
+    }
   };
 
   const loadVehicles = async (userId: string) => {
-    const { data } = await supabase
-      .from("vehicles")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    try {
+      console.log("Loading vehicles for user:", userId);
+      const { data, error } = await supabase
+        .from("vehicles")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-    if (data) setVehicles(data);
+      if (error) {
+        console.log("Vehicles error:", error);
+      } else if (data) {
+        console.log("Vehicles loaded:", data.length);
+        setVehicles(data);
+      }
+    } catch (error) {
+      console.log("Vehicles load error:", error);
+    }
   };
 
   const loadMaintenanceRecords = async (userId: string) => {
-    const { data } = await supabase
-      .from("maintenance_records")
-      .select(
+    try {
+      console.log("Loading maintenance records for user:", userId);
+      const { data, error } = await supabase
+        .from("maintenance_records")
+        .select(
+          `
+          *,
+          vehicles (
+            make,
+            model,
+            year
+          )
         `
-        *,
-        vehicles (
-          make,
-          model,
-          year
         )
-      `
-      )
-      .eq("user_id", userId)
-      .order("service_date", { ascending: false })
-      .limit(10);
+        .eq("user_id", userId)
+        .order("service_date", { ascending: false })
+        .limit(10);
 
-    if (data) {
-      // Transformar los datos para que coincidan con el tipo esperado
-      const transformedData = data.map((record) => ({
-        ...record,
-        type: record.service_type,
-        vehicles: record.vehicles,
-      }));
-      setMaintenanceRecords(transformedData);
+      if (error) {
+        console.log("Maintenance records error:", error);
+      } else if (data) {
+        console.log("Maintenance records loaded:", data.length);
+        // Transformar los datos para que coincidan con el tipo esperado
+        const transformedData = data.map((record) => ({
+          ...record,
+          type: record.service_type,
+          vehicles: record.vehicles,
+        }));
+        setMaintenanceRecords(transformedData);
+      }
+    } catch (error) {
+      console.log("Maintenance records load error:", error);
     }
   };
 
   const loadUpcomingMaintenance = async (userId: string) => {
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    try {
+      console.log("Loading upcoming maintenance for user:", userId);
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-    const { data } = await supabase
-      .from("maintenance_records")
-      .select(
+      const { data, error } = await supabase
+        .from("maintenance_records")
+        .select(
+          `
+          *,
+          vehicles (
+            make,
+            model,
+            year,
+            license_plate
+          )
         `
-        *,
-        vehicles (
-          make,
-          model,
-          year,
-          license_plate
         )
-      `
-      )
-      .eq("user_id", userId)
-      .not("next_service_date", "is", null)
-      .lte("next_service_date", thirtyDaysFromNow.toISOString().split("T")[0])
-      .order("next_service_date", { ascending: true });
+        .eq("user_id", userId)
+        .not("next_service_date", "is", null)
+        .lte("next_service_date", thirtyDaysFromNow.toISOString().split("T")[0])
+        .order("next_service_date", { ascending: true });
 
-    if (data) {
-      // Transformar los datos para que coincidan con el tipo esperado
-      const transformedData = data
-        .filter((record) => record.next_service_date)
-        .map((record) => ({
-          ...record,
-          type: record.service_type,
-          next_service_date: record.next_service_date,
-          vehicles: record.vehicles,
-        }));
-      setUpcomingMaintenance(transformedData);
+      if (error) {
+        console.log("Upcoming maintenance error:", error);
+      } else if (data) {
+        console.log("Upcoming maintenance loaded:", data.length);
+        setUpcomingMaintenance(data);
+      }
+    } catch (error) {
+      console.log("Upcoming maintenance load error:", error);
     }
   };
 

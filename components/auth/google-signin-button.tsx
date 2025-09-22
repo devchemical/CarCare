@@ -26,10 +26,20 @@ export function GoogleSignInButton({
     try {
       setIsLoading(true);
 
+      // Detectar el entorno actual
+      const isLocalhost =
+        typeof window !== "undefined" &&
+        window.location.hostname === "localhost";
+      const baseUrl = isLocalhost
+        ? "http://localhost:3000"
+        : "https://v0-car-maintenance-app-devchemicals-projects.vercel.app";
+
+      const redirectUrl = `${baseUrl}/auth/callback?next=${redirectTo}`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `https://v0-car-maintenance-app-devchemicals-projects.vercel.app/auth/callback?next=${redirectTo}`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -37,10 +47,13 @@ export function GoogleSignInButton({
         },
       });
 
-      // Silently handle errors - OAuth redirects will show errors in the URL
+      if (error) {
+        console.error("Google OAuth error:", error);
+        setIsLoading(false);
+      }
+      // No quitamos el loading state si no hay error porque seremos redirigidos
     } catch (error) {
-      // Silently handle unexpected errors
-    } finally {
+      console.error("Unexpected error during Google sign-in:", error);
       setIsLoading(false);
     }
   };
