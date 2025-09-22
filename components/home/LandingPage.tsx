@@ -20,25 +20,7 @@ import {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Car className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">CarCare Pro</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/login">Iniciar Sesión</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/auth/signup">Registrarse</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <>
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-4xl mx-auto">
@@ -238,6 +220,6 @@ export function LandingPage() {
           </p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

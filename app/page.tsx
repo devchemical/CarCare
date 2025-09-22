@@ -3,6 +3,7 @@
 import { Car } from "lucide-react";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { LandingPage } from "@/components/home/LandingPage";
+import { Layout } from "@/components/layout/Layout";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 export default function HomePage() {
@@ -29,16 +30,20 @@ export default function HomePage() {
   }
 
   // Renderizado condicional basado en autenticación
-  return user ? (
-    <Dashboard
-      user={user}
-      profile={profile}
-      vehicles={vehicles}
-      maintenanceRecords={maintenanceRecords}
-      upcomingMaintenance={upcomingMaintenance}
-      onSignOut={signOut}
-    />
-  ) : (
-    <LandingPage />
+  return (
+    <Layout showHeader={true}>
+      {user ? (
+        <Dashboard
+          user={user}
+          profile={profile}
+          vehicles={vehicles}
+          maintenanceRecords={maintenanceRecords}
+          upcomingMaintenance={upcomingMaintenance}
+          onSignOut={signOut}
+        />
+      ) : (
+        <LandingPage />
+      )}
+    </Layout>
   );
 }

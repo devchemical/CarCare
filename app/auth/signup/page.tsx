@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { Layout } from "../../../components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -96,24 +96,21 @@ export default function SignUpPage() {
   // Mostrar loading mientras se verifica la autenticación
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
-        <div className="flex flex-col items-center gap-4">
-          <Car className="h-8 w-8 text-primary animate-pulse" />
-          <p className="text-muted-foreground">Verificando sesión...</p>
+      <Layout showHeader={false}>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="flex flex-col items-center gap-4">
+            <Car className="h-8 w-8 text-primary animate-pulse" />
+            <p className="text-muted-foreground">Verificando sesión...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Car className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">CarCare Pro</h1>
-          </div>
-
+    <Layout showHeader={true}>
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-foreground">
@@ -232,6 +229,6 @@ export default function SignUpPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

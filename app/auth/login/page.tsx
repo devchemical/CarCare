@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
+import { Layout } from "../../../components/layout/Layout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -94,14 +95,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-6">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Car className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">CarCare Pro</h1>
-          </div>
-
+    <Layout showHeader={true}>
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-foreground">
@@ -184,6 +180,6 @@ export default function LoginPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
