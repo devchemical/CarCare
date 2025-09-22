@@ -65,6 +65,13 @@ export function useDashboardData(): DashboardData & {
             loadMaintenanceRecords(authUser.id),
             loadUpcomingMaintenance(authUser.id),
           ]);
+        } else {
+          // Limpiar estado si no hay usuario
+          setUser(null);
+          setProfile(null);
+          setVehicles([]);
+          setMaintenanceRecords([]);
+          setUpcomingMaintenance([]);
         }
       } catch (error) {
         // Silenciosamente manejar errores
@@ -74,6 +81,32 @@ export function useDashboardData(): DashboardData & {
     };
 
     loadUserData();
+
+    // Escuchar cambios de autenticación
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser({ id: session.user.id, email: session.user.email });
+
+        // Cargar datos del usuario autenticado
+        await Promise.all([
+          loadProfile(session.user.id),
+          loadVehicles(session.user.id),
+          loadMaintenanceRecords(session.user.id),
+          loadUpcomingMaintenance(session.user.id),
+        ]);
+      } else {
+        // Limpiar estado cuando se cierra sesión
+        setUser(null);
+        setProfile(null);
+        setVehicles([]);
+        setMaintenanceRecords([]);
+        setUpcomingMaintenance([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   const loadProfile = async (userId: string) => {
