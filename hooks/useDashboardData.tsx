@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSupabase } from "@/hooks/useSupabase";
-
-interface AuthUser {
-  id: string;
-  email?: string;
-}
+import { useAuth } from "@/hooks/useAuth";
 
 interface Vehicle {
   id: string;
@@ -21,149 +17,28 @@ interface Vehicle {
   updated_at: string;
 }
 
-interface Profile {
-  id: string;
-  full_name?: string;
-  email: string;
-}
-
 interface DashboardData {
-  user: AuthUser | null;
-  profile: Profile | null;
   vehicles: Vehicle[];
   maintenanceRecords: any[];
   upcomingMaintenance: any[];
-  isLoading: boolean;
 }
 
 export function useDashboardData(): DashboardData & {
+  user: any;
+  profile: any;
+  isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshData: () => Promise<void>;
 } {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { user, profile, isLoading: authLoading, signOut } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [maintenanceRecords, setMaintenanceRecords] = useState<any[]>([]);
   const [upcomingMaintenance, setUpcomingMaintenance] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const supabase = useSupabase();
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        // Verificar autenticación
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser();
-
-        if (authUser) {
-          setUser({ id: authUser.id, email: authUser.email });
-
-          // Crear un perfil básico sin consultar la base de datos
-          const basicProfile = {
-            id: authUser.id,
-            email: authUser.email || "",
-            full_name:
-              authUser.user_metadata?.name ||
-              authUser.email?.split("@")[0] ||
-              "Usuario",
-          };
-          setProfile(basicProfile);
-
-          // Por ahora, usar datos vacíos para vehículos y mantenimiento
-          setVehicles([]);
-          setMaintenanceRecords([]);
-          setUpcomingMaintenance([]);
-        } else {
-          // Limpiar estado si no hay usuario
-          setUser(null);
-          setProfile(null);
-          setVehicles([]);
-          setMaintenanceRecords([]);
-          setUpcomingMaintenance([]);
-        }
-      } catch (error) {
-        console.error("Error loading user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
-
-    // Escuchar cambios de autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email });
-
-        // Crear perfil básico
-        const basicProfile = {
-          id: session.user.id,
-          email: session.user.email || "",
-          full_name:
-            session.user.user_metadata?.name ||
-            session.user.email?.split("@")[0] ||
-            "Usuario",
-        };
-        setProfile(basicProfile);
-
-        // Datos vacíos por ahora
-        setVehicles([]);
-        setMaintenanceRecords([]);
-        setUpcomingMaintenance([]);
-      } else {
-        // Limpiar estado cuando se cierra sesión
-        setUser(null);
-        setProfile(null);
-        setVehicles([]);
-        setMaintenanceRecords([]);
-        setUpcomingMaintenance([]);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  const loadProfile = async (userId: string) => {
+  const loadVehicles = useCallback(async (userId: string) => {
     try {
-      console.log("Loading profile for user:", userId);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.log("Profile error:", error);
-        // Si no existe el perfil, crear uno básico
-        if (error.code === "PGRST116") {
-          console.log("Creating basic profile...");
-          const { data: user } = await supabase.auth.getUser();
-          if (user.user) {
-            const basicProfile = {
-              id: userId,
-              email: user.user.email || "",
-              full_name:
-                user.user.user_metadata?.name ||
-                user.user.email?.split("@")[0] ||
-                "Usuario",
-            };
-            setProfile(basicProfile);
-          }
-        }
-      } else if (data) {
-        console.log("Profile loaded:", data);
-        setProfile(data);
-      }
-    } catch (error) {
-      console.log("Profile load error:", error);
-    }
-  };
-
-  const loadVehicles = async (userId: string) => {
-    try {
-      console.log("Loading vehicles for user:", userId);
       const { data, error } = await supabase
         .from("vehicles")
         .select("*")
@@ -171,19 +46,21 @@ export function useDashboardData(): DashboardData & {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.log("Vehicles error:", error);
+        console.error("Vehicles error:", error);
+        setVehicles([]);
       } else if (data) {
-        console.log("Vehicles loaded:", data.length);
         setVehicles(data);
+      } else {
+        setVehicles([]);
       }
     } catch (error) {
-      console.log("Vehicles load error:", error);
+      console.error("Vehicles load error:", error);
+      setVehicles([]);
     }
-  };
+  }, [supabase]);
 
-  const loadMaintenanceRecords = async (userId: string) => {
+  const loadMaintenanceRecords = useCallback(async (userId: string) => {
     try {
-      console.log("Loading maintenance records for user:", userId);
       const { data, error } = await supabase
         .from("maintenance_records")
         .select(
@@ -201,25 +78,26 @@ export function useDashboardData(): DashboardData & {
         .limit(10);
 
       if (error) {
-        console.log("Maintenance records error:", error);
+        console.error("Maintenance records error:", error);
+        setMaintenanceRecords([]);
       } else if (data) {
-        console.log("Maintenance records loaded:", data.length);
-        // Transformar los datos para que coincidan con el tipo esperado
+        // Los datos ya tienen el campo 'type' según el esquema
         const transformedData = data.map((record) => ({
           ...record,
-          type: record.service_type,
           vehicles: record.vehicles,
         }));
         setMaintenanceRecords(transformedData);
+      } else {
+        setMaintenanceRecords([]);
       }
     } catch (error) {
-      console.log("Maintenance records load error:", error);
+      console.error("Maintenance records load error:", error);
+      setMaintenanceRecords([]);
     }
-  };
+  }, [supabase]);
 
-  const loadUpcomingMaintenance = async (userId: string) => {
+  const loadUpcomingMaintenance = useCallback(async (userId: string) => {
     try {
-      console.log("Loading upcoming maintenance for user:", userId);
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
@@ -242,24 +120,55 @@ export function useDashboardData(): DashboardData & {
         .order("next_service_date", { ascending: true });
 
       if (error) {
-        console.log("Upcoming maintenance error:", error);
+        console.error("Upcoming maintenance error:", error);
+        setUpcomingMaintenance([]);
       } else if (data) {
-        console.log("Upcoming maintenance loaded:", data.length);
         setUpcomingMaintenance(data);
+      } else {
+        setUpcomingMaintenance([]);
       }
     } catch (error) {
-      console.log("Upcoming maintenance load error:", error);
+      console.error("Upcoming maintenance load error:", error);
+      setUpcomingMaintenance([]);
     }
-  };
+  }, [supabase]);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    setVehicles([]);
-    setMaintenanceRecords([]);
-    setUpcomingMaintenance([]);
-  };
+  // Cargar datos cuando el usuario esté disponible
+  useEffect(() => {
+    if (!authLoading && user?.id) {
+      setIsDataLoading(true);
+      Promise.all([
+        loadVehicles(user.id),
+        loadMaintenanceRecords(user.id),
+        loadUpcomingMaintenance(user.id),
+      ]).finally(() => {
+        setIsDataLoading(false);
+      });
+    } else if (!authLoading && !user) {
+      // Limpiar datos cuando no hay usuario
+      setVehicles([]);
+      setMaintenanceRecords([]);
+      setUpcomingMaintenance([]);
+      setIsDataLoading(false);
+    }
+  }, [user?.id, authLoading, loadVehicles, loadMaintenanceRecords, loadUpcomingMaintenance]);
+
+  const refreshData = useCallback(async () => {
+    if (user?.id) {
+      setIsDataLoading(true);
+      try {
+        await Promise.all([
+          loadVehicles(user.id),
+          loadMaintenanceRecords(user.id),
+          loadUpcomingMaintenance(user.id),
+        ]);
+      } catch (error) {
+        console.error("Error refreshing data:", error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    }
+  }, [user?.id, loadVehicles, loadMaintenanceRecords, loadUpcomingMaintenance]);
 
   return {
     user,
@@ -267,7 +176,8 @@ export function useDashboardData(): DashboardData & {
     vehicles,
     maintenanceRecords,
     upcomingMaintenance,
-    isLoading,
+    isLoading: authLoading || isDataLoading,
     signOut,
+    refreshData,
   };
 }

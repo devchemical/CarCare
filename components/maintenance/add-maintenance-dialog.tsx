@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { Wrench } from "lucide-react"
+import { Wrench, Loader2 } from "lucide-react"
 
 interface AddMaintenanceDialogProps {
   children: React.ReactNode
@@ -45,6 +45,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingStep, setLoadingStep] = useState<string>("")
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -62,31 +63,123 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
     e.preventDefault()
     setIsLoading(true)
     setError(null)
-
-    const supabase = createClient()
+    setLoadingStep("Iniciando...")
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error("Usuario no autenticado")
+      // Validaciones básicas
+      if (!vehicleId) {
+        throw new Error("ID del vehículo no válido")
+      }
 
-      const { error } = await supabase.from("maintenance_records").insert({
+      if (!formData.type) {
+        throw new Error("Debe seleccionar un tipo de mantenimiento")
+      }
+
+      setLoadingStep("Conectando con la base de datos...")
+      const supabase = createClient()
+
+      // Verificar autenticación
+      setLoadingStep("Verificando autenticación...")
+
+      // Agregar timeout para la verificación de sesión
+      const sessionPromise = supabase.auth.getSession()
+      const sessionTimeout = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Timeout al verificar sesión")), 5000)
+      })
+
+      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, sessionTimeout]) as any
+
+      if (sessionError) {
+        throw new Error(`Error de sesión: ${sessionError.message}`)
+      }
+
+      if (!session) {
+        throw new Error("No hay sesión activa. Por favor, inicia sesión.")
+      }
+
+      const user = session.user
+      if (!user) {
+        throw new Error("Usuario no válido en la sesión.")
+      }
+
+      // Verificar que el vehículo existe y pertenece al usuario
+      setLoadingStep("Verificando permisos del vehículo...")
+
+      const vehiclePromise = supabase
+        .from("vehicles")
+        .select("id, user_id")
+        .eq("id", vehicleId)
+        .eq("user_id", user.id)
+        .single()
+
+      const vehicleTimeout = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Timeout al verificar vehículo")), 5000)
+      })
+
+      const { data: vehicle, error: vehicleError } = await Promise.race([vehiclePromise, vehicleTimeout]) as any
+
+      if (vehicleError) {
+        if (vehicleError.code === 'PGRST116') {
+          throw new Error("No se encontró el vehículo o no tienes permisos para acceder a él")
+        }
+        throw new Error(`Error al verificar vehículo: ${vehicleError.message}`)
+      }
+
+      if (!vehicle) {
+        throw new Error("No tienes permisos para agregar mantenimiento a este vehículo")
+      }
+
+      // Preparar datos para inserción con validación de números
+      const cost = formData.cost ? parseFloat(formData.cost) : null
+      const mileage = formData.mileage ? parseInt(formData.mileage, 10) : null
+      const nextServiceMileage = formData.next_service_mileage ? parseInt(formData.next_service_mileage, 10) : null
+
+      // Verificar que los números sean válidos si se proporcionaron
+      if (formData.cost && (isNaN(cost!) || cost! < 0)) {
+        throw new Error("El costo debe ser un número válido mayor o igual a 0")
+      }
+
+      if (formData.mileage && (isNaN(mileage!) || mileage! < 0)) {
+        throw new Error("El kilometraje debe ser un número válido mayor o igual a 0")
+      }
+
+      if (formData.next_service_mileage && (isNaN(nextServiceMileage!) || nextServiceMileage! < 0)) {
+        throw new Error("El kilometraje del próximo servicio debe ser un número válido mayor o igual a 0")
+      }
+
+      const insertData = {
         vehicle_id: vehicleId,
         user_id: user.id,
         type: formData.type,
-        description: formData.description || null,
-        cost: formData.cost ? Number.parseFloat(formData.cost) : null,
-        mileage: formData.mileage ? Number.parseInt(formData.mileage) : null,
+        description: formData.description?.trim() || null,
+        cost,
+        mileage,
         service_date: formData.service_date,
         next_service_date: formData.next_service_date || null,
-        next_service_mileage: formData.next_service_mileage ? Number.parseInt(formData.next_service_mileage) : null,
-        notes: formData.notes || null,
+        next_service_mileage: nextServiceMileage,
+        notes: formData.notes?.trim() || null,
+      }
+
+      // Agregar timeout para evitar operaciones colgadas
+      setLoadingStep("Guardando registro de mantenimiento...")
+      const insertPromise = supabase
+        .from("maintenance_records")
+        .insert(insertData)
+        .select()
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("La operación tardó demasiado tiempo. Inténtalo de nuevo.")), 8000)
       })
 
-      if (error) throw error
+      const { data, error: insertError } = await Promise.race([insertPromise, timeoutPromise]) as any
 
-      setOpen(false)
+      if (insertError) {
+        throw new Error(`Error al insertar: ${insertError.message}`)
+      }
+
+      setLoadingStep("Finalizando...")
+
+      // Reset form and close dialog
       setFormData({
         type: "",
         description: "",
@@ -97,11 +190,16 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
         next_service_mileage: "",
         notes: "",
       })
+
+      setOpen(false)
       router.refresh()
+
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al agregar mantenimiento")
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido al agregar mantenimiento"
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
+      setLoadingStep("")
     }
   }
 
@@ -231,7 +329,14 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
               disabled={isLoading || !formData.type}
               className="flex-1 bg-primary hover:bg-primary/90"
             >
-              {isLoading ? "Agregando..." : "Agregar Mantenimiento"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Agregando...
+                </>
+              ) : (
+                "Agregar Mantenimiento"
+              )}
             </Button>
           </div>
         </form>

@@ -39,6 +39,10 @@ interface DashboardProps {
   onSignOut: () => void;
 }
 
+interface ExtendedDashboardProps extends DashboardProps {
+  onRefresh?: () => void;
+}
+
 export function Dashboard({
   user,
   profile,
@@ -46,7 +50,8 @@ export function Dashboard({
   maintenanceRecords,
   upcomingMaintenance,
   onSignOut,
-}: DashboardProps) {
+  onRefresh,
+}: ExtendedDashboardProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
@@ -73,6 +78,11 @@ export function Dashboard({
             Agregar Vehículo
           </Link>
         </Button>
+        {onRefresh && (
+          <Button variant="secondary" onClick={onRefresh}>
+            Actualizar Datos
+          </Button>
+        )}
       </div>
 
       {/* Dashboard Stats */}

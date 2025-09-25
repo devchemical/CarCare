@@ -13,6 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 import { useSupabase } from "@/hooks/useSupabase";
 
 interface Vehicle {
@@ -23,75 +24,17 @@ interface Vehicle {
   license_plate?: string;
 }
 
-interface Profile {
-  id: string;
-  full_name?: string;
-  email: string;
-}
-
 export function Header() {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [vehicles, setVehicles] = useState<any[]>([]);
+  const { user, profile, isLoading: authLoading, signOut } = useAuth();
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [showVehiclesDropdown, setShowVehiclesDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = useSupabase();
 
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        console.log("Header: Loading user data...");
-
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-
-        console.log("Header: User from auth:", user?.email || "No user");
-
-        if (user) {
-          console.log(
-            "Header: User authenticated, setting profile from auth data"
-          );
-
-          // Usar directamente los datos del usuario de auth
-          const profileFromAuth = {
-            id: user.id,
-            full_name:
-              user.user_metadata?.full_name ||
-              user.user_metadata?.name ||
-              user.email?.split("@")[0] ||
-              "Usuario",
-            email: user.email || "",
-          };
-
-          setUser(user);
-          setProfile(profileFromAuth);
-
-          // Cargar vehículos de forma opcional (no bloquear si falla)
-          loadVehicles(user.id);
-        } else {
-          console.log("Header: No user found, clearing state");
-          setUser(null);
-          setProfile(null);
-          setVehicles([]);
-        }
-      } catch (error) {
-        console.error("Header: Error loading user data:", error);
-        setUser(null);
-        setProfile(null);
-        setVehicles([]);
-      } finally {
-        console.log("Header: Setting isLoading to false");
-        setIsLoading(false);
-      }
-    };
-
     const loadVehicles = async (userId: string) => {
       try {
-        console.log("Header: Loading vehicles for user:", userId);
         const { data, error } = await supabase
           .from("vehicles")
           .select("*")
@@ -99,86 +42,39 @@ export function Header() {
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.log("Header: Vehicles error:", error);
-          setVehicles([]); // Set empty array if query fails
+          console.error("Header vehicles error:", error);
+          setVehicles([]);
         } else if (data) {
-          console.log("Header: Vehicles loaded:", data.length);
           setVehicles(data);
+        } else {
+          setVehicles([]);
         }
       } catch (error) {
-        console.log("Header: Vehicles load error:", error);
+        console.error("Header vehicles load error:", error);
         setVehicles([]);
       }
     };
 
-    getUser();
-
-    // Escuchar cambios de autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Header: Auth state change:", event, session?.user?.email);
-
-      if (session?.user) {
-        const basicProfile = {
-          id: session.user.id,
-          full_name:
-            session.user.user_metadata?.full_name ||
-            session.user.email?.split("@")[0] ||
-            "Usuario",
-          email: session.user.email || "",
-        };
-
-        try {
-          const { data: dbProfile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          setProfile(dbProfile || basicProfile);
-        } catch {
-          setProfile(basicProfile);
-        }
-
-        setUser(session.user);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setVehicles([]);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (user?.id) {
+    // Cargar vehículos cuando el usuario esté disponible
+    if (!authLoading && user?.id) {
       loadVehicles(user.id);
+    } else if (!authLoading && !user) {
+      setVehicles([]);
     }
-  }, [user]);
+  }, [user?.id, authLoading, supabase]);
 
-  const loadVehicles = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from("vehicles")
-        .select("id, make, model, year, license_plate")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (data) setVehicles(data);
-    } catch (error) {
-      // Silenciosamente manejar errores
-    }
+  const handleVehicleSelect = (vehicleId: string) => {
+    router.push(`/vehicles/${vehicleId}/maintenance`);
+    setShowVehiclesDropdown(false);
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     router.push("/");
   };
 
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
-  if (isLoading) {
+  if (authLoading) {
     return (
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

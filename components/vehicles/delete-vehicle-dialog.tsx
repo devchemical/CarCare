@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Loader2 } from "lucide-react"
 
 interface Vehicle {
   id: string
@@ -80,7 +80,8 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
             Cancelar
           </Button>
           <Button onClick={handleDelete} disabled={isLoading} variant="destructive" className="flex-1">
-            {isLoading ? "Eliminando..." : "Eliminar Vehículo"}
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Eliminar Vehículo
           </Button>
         </div>
       </DialogContent>

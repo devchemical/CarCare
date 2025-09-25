@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { Car } from "lucide-react"
+import { Car, Loader2 } from "lucide-react"
 
 interface Vehicle {
   id: string
@@ -217,7 +217,8 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading} className="flex-1 bg-primary hover:bg-primary/90">
-              {isLoading ? "Actualizando..." : "Actualizar Vehículo"}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Actualizar Vehículo
             </Button>
           </div>
         </form>

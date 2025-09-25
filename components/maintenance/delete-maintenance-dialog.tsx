@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Loader2 } from "lucide-react"
 
 interface MaintenanceRecord {
   id: string
@@ -38,25 +38,82 @@ const maintenanceTypes = {
 export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMaintenanceDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingStep, setLoadingStep] = useState<string>("")
   const router = useRouter()
 
   const handleDelete = async () => {
     setIsLoading(true)
     setError(null)
-
-    const supabase = createClient()
+    setLoadingStep("Iniciando...")
 
     try {
-      const { error } = await supabase.from("maintenance_records").delete().eq("id", record.id)
+      // Validaciones básicas
+      if (!record?.id) {
+        throw new Error("ID del registro no válido")
+      }
 
-      if (error) throw error
+      setLoadingStep("Conectando con la base de datos...")
+      const supabase = createClient()
 
+      // Verificar autenticación
+      setLoadingStep("Verificando autenticación...")
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
+
+      if (authError) {
+        throw new Error(`Error de autenticación: ${authError.message}`)
+      }
+
+      if (!user) {
+        throw new Error("Usuario no autenticado. Por favor, inicia sesión nuevamente.")
+      }
+
+      // Verificar que el registro existe y pertenece al usuario
+      setLoadingStep("Verificando permisos del registro...")
+      const { data: maintenanceRecord, error: recordError } = await supabase
+        .from("maintenance_records")
+        .select("id, user_id")
+        .eq("id", record.id)
+        .eq("user_id", user.id)
+        .single()
+
+      if (recordError) {
+        throw new Error("No se pudo verificar el registro de mantenimiento")
+      }
+
+      if (!maintenanceRecord) {
+        throw new Error("No tienes permisos para eliminar este registro de mantenimiento")
+      }
+
+      // Eliminar el registro con timeout
+      setLoadingStep("Eliminando registro...")
+      const deletePromise = supabase
+        .from("maintenance_records")
+        .delete()
+        .eq("id", record.id)
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("La operación tardó demasiado tiempo. Inténtalo de nuevo.")), 10000)
+      })
+
+      const { error: deleteError } = await Promise.race([deletePromise, timeoutPromise]) as any
+
+      if (deleteError) {
+        throw new Error(`Error al eliminar: ${deleteError.message}`)
+      }
+
+      setLoadingStep("Finalizando...")
       onOpenChange(false)
       router.refresh()
+
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al eliminar registro")
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido al eliminar registro"
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
+      setLoadingStep("")
     }
   }
 
@@ -103,7 +160,14 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
             Cancelar
           </Button>
           <Button onClick={handleDelete} disabled={isLoading} variant="destructive" className="flex-1">
-            {isLoading ? "Eliminando..." : "Eliminar Registro"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Eliminando...
+              </>
+            ) : (
+              "Eliminar Registro"
+            )}
           </Button>
         </div>
       </DialogContent>

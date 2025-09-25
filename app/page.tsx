@@ -15,7 +15,10 @@ export default function HomePage() {
     upcomingMaintenance,
     isLoading,
     signOut,
+    refreshData,
   } = useDashboardData();
+
+
 
   // Mostrar loading mientras se carga
   if (isLoading) {
@@ -23,7 +26,7 @@ export default function HomePage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
         <div className="flex flex-col items-center gap-4">
           <Car className="h-8 w-8 text-primary animate-pulse" />
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">Cargando datos del dashboard...</p>
         </div>
       </div>
     );
@@ -40,6 +43,7 @@ export default function HomePage() {
           maintenanceRecords={maintenanceRecords}
           upcomingMaintenance={upcomingMaintenance}
           onSignOut={signOut}
+          onRefresh={refreshData}
         />
       ) : (
         <LandingPage />
