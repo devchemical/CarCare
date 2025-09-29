@@ -1,35 +1,35 @@
 "use client";
 
-import { Car } from "lucide-react";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { LandingPage } from "@/components/home/LandingPage";
 import { Layout } from "@/components/layout/Layout";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useAuth, useData } from "@/contexts";
 
 export default function HomePage() {
+  const { user, profile, isLoading: authLoading, signOut } = useAuth();
   const {
-    user,
-    profile,
     vehicles,
     maintenanceRecords,
     upcomingMaintenance,
+    isLoading: dataLoading,
+    refreshAll
+  } = useData();
+
+  const isLoading = authLoading || dataLoading;
+
+  // Debug logging
+  console.log('HomePage state:', {
+    authLoading,
+    dataLoading,
     isLoading,
-    signOut,
-    refreshData,
-  } = useDashboardData();
-
-
+    user: !!user,
+    isAuthenticated: !!user
+  });
 
   // Mostrar loading mientras se carga
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
-        <div className="flex flex-col items-center gap-4">
-          <Car className="h-8 w-8 text-primary animate-pulse" />
-          <p className="text-muted-foreground">Cargando datos del dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Cargando datos del dashboard..." />;
   }
 
   // Renderizado condicional basado en autenticación
@@ -43,7 +43,7 @@ export default function HomePage() {
           maintenanceRecords={maintenanceRecords}
           upcomingMaintenance={upcomingMaintenance}
           onSignOut={signOut}
-          onRefresh={refreshData}
+          onRefresh={refreshAll}
         />
       ) : (
         <LandingPage />

@@ -13,8 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/useAuth";
-import { useSupabase } from "@/hooks/useSupabase";
+import { useAuth, useData, useSupabase } from "@/contexts";
 
 interface Vehicle {
   id: string;
@@ -26,42 +25,10 @@ interface Vehicle {
 
 export function Header() {
   const { user, profile, isLoading: authLoading, signOut } = useAuth();
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const { vehicles } = useData();
   const [showVehiclesDropdown, setShowVehiclesDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const router = useRouter();
-  const supabase = useSupabase();
-
-  useEffect(() => {
-    const loadVehicles = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("vehicles")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Header vehicles error:", error);
-          setVehicles([]);
-        } else if (data) {
-          setVehicles(data);
-        } else {
-          setVehicles([]);
-        }
-      } catch (error) {
-        console.error("Header vehicles load error:", error);
-        setVehicles([]);
-      }
-    };
-
-    // Cargar vehículos cuando el usuario esté disponible
-    if (!authLoading && user?.id) {
-      loadVehicles(user.id);
-    } else if (!authLoading && !user) {
-      setVehicles([]);
-    }
-  }, [user?.id, authLoading, supabase]);
 
   const handleVehicleSelect = (vehicleId: string) => {
     router.push(`/vehicles/${vehicleId}/maintenance`);
