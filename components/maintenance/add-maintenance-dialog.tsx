@@ -206,21 +206,25 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Wrench className="h-5 w-5 text-primary" />
-            Agregar Registro de Mantenimiento
+            <span className="hidden sm:inline">Agregar Registro de Mantenimiento</span>
+            <span className="sm:hidden">Nuevo Mantenimiento</span>
           </DialogTitle>
-          <DialogDescription>Registra un nuevo servicio o mantenimiento realizado al vehículo.</DialogDescription>
+          <DialogDescription className="text-sm">
+            Registra un nuevo servicio o mantenimiento realizado al vehículo.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Campos principales - Layout responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Tipo de Mantenimiento *</Label>
+              <Label htmlFor="type" className="text-sm font-medium">Tipo de Mantenimiento *</Label>
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,30 +237,33 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="service_date">Fecha de Servicio *</Label>
+              <Label htmlFor="service_date" className="text-sm font-medium">Fecha de Servicio *</Label>
               <Input
                 id="service_date"
                 type="date"
                 value={formData.service_date}
                 onChange={(e) => setFormData({ ...formData, service_date: e.target.value })}
                 required
+                className="h-11"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description" className="text-sm font-medium">Descripción</Label>
             <Input
               id="description"
               placeholder="Descripción breve del servicio realizado"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="h-11"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Campos numéricos - Stack en mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost">Costo (€)</Label>
+              <Label htmlFor="cost" className="text-sm font-medium">Costo (€)</Label>
               <Input
                 id="cost"
                 type="number"
@@ -264,53 +271,61 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 placeholder="0.00"
                 value={formData.cost}
                 onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="mileage">Kilometraje</Label>
+              <Label htmlFor="mileage" className="text-sm font-medium">Kilometraje</Label>
               <Input
                 id="mileage"
                 type="number"
                 placeholder="50000"
                 value={formData.mileage}
                 onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
+                className="h-11"
               />
             </div>
           </div>
 
-          <div className="border-t border-border pt-4">
-            <h4 className="text-sm font-medium text-foreground mb-3">Próximo Servicio (Opcional)</h4>
-            <div className="grid grid-cols-2 gap-4">
+          {/* Sección próximo servicio - Collapsible en mobile */}
+          <div className="border-t border-border pt-4 space-y-4">
+            <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+              📅 Próximo Servicio (Opcional)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="next_service_date">Fecha del Próximo Servicio</Label>
+                <Label htmlFor="next_service_date" className="text-sm font-medium">Fecha del Próximo Servicio</Label>
                 <Input
                   id="next_service_date"
                   type="date"
                   value={formData.next_service_date}
                   onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
+                  className="h-11"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="next_service_mileage">Kilometraje del Próximo Servicio</Label>
+                <Label htmlFor="next_service_mileage" className="text-sm font-medium">Kilometraje del Próximo Servicio</Label>
                 <Input
                   id="next_service_mileage"
                   type="number"
                   placeholder="55000"
                   value={formData.next_service_mileage}
                   onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
+                  className="h-11"
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas Adicionales</Label>
+            <Label htmlFor="notes" className="text-sm font-medium">Notas Adicionales</Label>
             <Textarea
               id="notes"
               placeholder="Cualquier información adicional sobre el servicio..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
+              className="resize-none"
             />
           </div>
 
@@ -320,22 +335,32 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
             </div>
           )}
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
+          {/* Botones optimizados para touch */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="flex-1 h-11 text-base"
+            >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !formData.type}
-              className="flex-1 bg-primary hover:bg-primary/90"
+              className="flex-1 h-11 text-base bg-primary hover:bg-primary/90 font-medium"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Agregando...
+                  <span className="hidden sm:inline">Agregando...</span>
+                  <span className="sm:hidden">Guardando...</span>
                 </>
               ) : (
-                "Agregar Mantenimiento"
+                <>
+                  <span className="hidden sm:inline">Agregar Mantenimiento</span>
+                  <span className="sm:hidden">Agregar</span>
+                </>
               )}
             </Button>
           </div>

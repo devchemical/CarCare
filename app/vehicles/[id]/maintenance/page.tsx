@@ -61,31 +61,36 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
 
           <Card className="mb-6">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Car className="h-6 w-6 text-primary" />
-                  <div>
-                    <CardTitle className="text-2xl">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-2xl truncate">
                       {vehicle.make} {vehicle.model}
                     </CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-1">
+                    <CardDescription className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
                       <Badge variant="secondary">{vehicle.year}</Badge>
                       {vehicle.license_plate && (
-                        <span>Placa: {vehicle.license_plate}</span>
+                        <span className="text-sm">Placa: {vehicle.license_plate}</span>
                       )}
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 text-sm">
                         <Gauge className="h-4 w-4" />
                         {vehicle.mileage.toLocaleString("es-ES")} km
                       </span>
                     </CardDescription>
                   </div>
                 </div>
-                <AddMaintenanceDialog vehicleId={id}>
-                  <Button className="bg-primary hover:bg-primary/90">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Mantenimiento
-                  </Button>
-                </AddMaintenanceDialog>
+
+                {/* Botón separado en su propia fila para mejor responsive */}
+                <div className="flex justify-end pt-2 border-t border-border/50">
+                  <AddMaintenanceDialog vehicleId={id}>
+                    <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                      <Plus className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Agregar Mantenimiento</span>
+                      <span className="sm:hidden">Agregar</span>
+                    </Button>
+                  </AddMaintenanceDialog>
+                </div>
               </div>
             </CardHeader>
           </Card>
