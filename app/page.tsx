@@ -16,20 +16,14 @@ export default function HomePage() {
     refreshAll
   } = useData();
 
-  const isLoading = authLoading || dataLoading;
+  // Show loading screen only during initial auth check to prevent flash
+  const showLoadingScreen = authLoading;
 
-  // Debug logging
-  console.log('HomePage state:', {
-    authLoading,
-    dataLoading,
-    isLoading,
-    user: !!user,
-    isAuthenticated: !!user
-  });
+  // Production ready - no debug logging
 
-  // Mostrar loading mientras se carga
-  if (isLoading) {
-    return <LoadingScreen message="Cargando datos del dashboard..." />;
+  // Show loading screen during initial auth verification
+  if (showLoadingScreen) {
+    return <LoadingScreen message="Verificando autenticación..." />;
   }
 
   // Renderizado condicional basado en autenticación

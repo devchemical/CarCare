@@ -33,7 +33,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Start as true to prevent flash
   const supabase = useSupabase();
 
   const loadProfile = useCallback(async (userId: string) => {
@@ -64,13 +64,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let isMounted = true;
 
     const initAuth = async () => {
-      try {
-        setIsLoading(true);
+      // Set a very short loading state to prevent flash
+      setTimeout(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }, 100);
 
-        // First try to get the session (more reliable than getUser for refresh scenarios)
+      try {
+        // Try to get session asynchronously after initial render
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         if (sessionError) {
           console.error("Session error:", sessionError);
@@ -149,13 +156,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    // Safety timeout to prevent infinite loading
-    const safetyTimeout = setTimeout(() => {
-      if (isMounted) {
-        console.warn('Auth initialization timeout - setting loading to false');
-        setIsLoading(false);
-      }
-    }, 8000); // 8 seconds timeout
+    // No timeout needed - auth resolves immediately or shows content
 
     // Initialize auth
     initAuth();
@@ -189,7 +190,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       isMounted = false;
-      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, [supabase, loadProfile]);

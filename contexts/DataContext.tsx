@@ -331,15 +331,7 @@ export function DataProvider({ children }: DataProviderProps) {
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       refreshAll();
-
-      // Safety timeout for data loading
-      const dataTimeout = setTimeout(() => {
-        console.warn('Data loading timeout - resetting loading states');
-        setIsVehiclesLoading(false);
-        setIsMaintenanceLoading(false);
-      }, 10000); // 10 seconds timeout
-
-      return () => clearTimeout(dataTimeout);
+      // No timeout needed - data loading has proper error boundaries
     } else {
       // Clear data when user logs out
       setVehicles([]);
