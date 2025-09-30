@@ -23,6 +23,11 @@ export function usePWA() {
 
         setIsStandalone(isInstalledMode)
         setIsInstalled(isInstalledMode)
+
+        // Si ya está instalado, no es instalable
+        if (isInstalledMode) {
+          setIsInstallable(false)
+        }
       }
     }
 
@@ -30,6 +35,7 @@ export function usePWA() {
 
     // Listener para el evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log("beforeinstallprompt event fired")
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setIsInstallable(true)
@@ -43,12 +49,34 @@ export function usePWA() {
       console.log("CarCare ha sido instalada exitosamente")
     }
 
+    // Detectar si el service worker está registrado
+    const checkServiceWorker = async () => {
+      if ("serviceWorker" in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration()
+          if (registration) {
+            console.log("Service Worker está registrado")
+          } else {
+            console.warn("Service Worker no está registrado")
+          }
+        } catch (error) {
+          console.error("Error verificando Service Worker:", error)
+        }
+      }
+    }
+
+    checkServiceWorker()
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
     window.addEventListener("appinstalled", handleAppInstalled)
+
+    // Verificar periódicamente si el estado cambia
+    const intervalId = setInterval(checkIfInstalled, 1000)
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
       window.removeEventListener("appinstalled", handleAppInstalled)
+      clearInterval(intervalId)
     }
   }, [])
 

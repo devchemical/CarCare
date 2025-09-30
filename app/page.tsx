@@ -1,29 +1,24 @@
-"use client";
+"use client"
 
-import { Dashboard } from "@/components/dashboard/Dashboard";
-import { LandingPage } from "@/components/home/LandingPage";
-import { Layout } from "@/components/layout/Layout";
-import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useAuth, useData } from "@/contexts";
+import { Dashboard } from "@/components/dashboard/Dashboard"
+import { LandingPage } from "@/components/home/LandingPage"
+import { Layout } from "@/components/layout/Layout"
+import { LoadingScreen } from "@/components/ui/loading-screen"
+// import { PWADebug } from "@/components/pwa/pwa-debug"; // Comentado para producción
+import { useAuth, useData } from "@/contexts"
 
 export default function HomePage() {
-  const { user, profile, isLoading: authLoading, signOut } = useAuth();
-  const {
-    vehicles,
-    maintenanceRecords,
-    upcomingMaintenance,
-    isLoading: dataLoading,
-    refreshAll
-  } = useData();
+  const { user, profile, isLoading: authLoading, signOut } = useAuth()
+  const { vehicles, maintenanceRecords, upcomingMaintenance, isLoading: dataLoading, refreshAll } = useData()
 
   // Show loading screen only during initial auth check to prevent flash
-  const showLoadingScreen = authLoading;
+  const showLoadingScreen = authLoading
 
   // Production ready - no debug logging
 
   // Show loading screen during initial auth verification
   if (showLoadingScreen) {
-    return <LoadingScreen message="Verificando autenticación..." />;
+    return <LoadingScreen message="Verificando autenticación..." />
   }
 
   // Renderizado condicional basado en autenticación
@@ -43,5 +38,5 @@ export default function HomePage() {
         <LandingPage />
       )}
     </Layout>
-  );
+  )
 }

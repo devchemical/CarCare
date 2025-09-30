@@ -83,9 +83,6 @@ export function Dashboard({
         )}
       </div>
 
-      {/* PWA Install Prompt */}
-      <InstallPrompt className="mb-6" />
-
       {/* Dashboard Stats */}
       <DashboardStats vehicles={vehicles} maintenanceRecords={maintenanceRecords} />
 

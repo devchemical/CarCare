@@ -19,7 +19,7 @@ export default withPWA({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   swcMinify: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: false, // Habilitar PWA también en desarrollo para testing
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching: [
