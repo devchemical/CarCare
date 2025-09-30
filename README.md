@@ -1,4 +1,4 @@
-# 🚗 CarCare Pro
+# 🚗 CarCare
 
 <p align="center">
   <strong>Sistema completo de gestión de mantenimiento automotriz</strong>
@@ -225,7 +225,6 @@ yarn install
 #### 3. Configurar Supabase
 
 1. **Crear proyecto en Supabase**
-
    - Ve a [supabase.com](https://supabase.com)
    - Crea una nueva organización y proyecto
    - Anota la URL y las claves API
@@ -722,7 +721,6 @@ Las políticas de seguridad garantizan que:
 <summary><strong>1. 📝 Registro e Inicio de Sesión</strong></summary>
 
 1. **Crear cuenta nueva:**
-
    - Ve a `/auth/signup`
    - Completa email, nombre y contraseña
    - Verifica tu email
@@ -739,7 +737,6 @@ Las políticas de seguridad garantizan que:
 <summary><strong>2. 🚗 Gestionar Vehículos</strong></summary>
 
 1. **Agregar primer vehículo:**
-
    - Desde el dashboard, click "Agregar Vehículo"
    - Completa información básica (marca, modelo, año)
    - Agrega datos opcionales (placa, VIN, color)
@@ -757,7 +754,6 @@ Las políticas de seguridad garantizan que:
 <summary><strong>3. 🔧 Registrar Mantenimientos</strong></summary>
 
 1. **Primer mantenimiento:**
-
    - Selecciona un vehículo
    - Click "Agregar Mantenimiento"
    - Elige tipo de servicio
@@ -784,7 +780,7 @@ Las políticas de seguridad garantizan que:
 
 ## 🤝 Contribuir al Proyecto
 
-¡Nos encanta recibir contribuciones! Hay muchas formas de ayudar a mejorar CarCare Pro.
+¡Nos encanta recibir contribuciones! Hay muchas formas de ayudar a mejorar CarCare.
 
 ### 🎯 Formas de Contribuir
 
@@ -1119,7 +1115,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 - **📧 Email**: [soporte@carcare.dev](mailto:soporte@carcare.dev)
 - **🐦 Twitter**: [@CarCareDev](https://twitter.com/CarCareDev)
-- **💼 LinkedIn**: [CarCare Pro](https://linkedin.com/company/carcare-pro)
+- **💼 LinkedIn**: [CarCare](https://linkedin.com/company/carcare-pro)
 
 ### ⚡ Tiempo de Respuesta
 
@@ -1134,7 +1130,7 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 ## 🌟 ¡Apoya el Proyecto!
 
-<p>Si CarCare Pro te ha sido útil, considera:</p>
+<p>Si CarCare te ha sido útil, considera:</p>
 
 [![GitHub Stars](https://img.shields.io/github/stars/devchemical/CarCare?style=social)](https://github.com/devchemical/CarCare/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/devchemical/CarCare?style=social)](https://github.com/devchemical/CarCare/network/members)
@@ -1147,14 +1143,14 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 ---
 
-<img src="public/placeholder-logo.svg" alt="CarCare Pro" width="60" height="60">
+<img src="public/placeholder-logo.svg" alt="CarCare" width="60" height="60">
 
-**CarCare Pro** - _Mantén tus vehículos en perfecto estado_ 🚗✨
+**CarCare** - _Mantén tus vehículos en perfecto estado_ 🚗✨
 
 Desarrollado con ❤️ por [DevChemical](https://github.com/devchemical)
 
 ---
 
-<sub>© 2024 CarCare Pro. Todos los derechos reservados bajo la Licencia MIT.</sub>
+<sub>© 2024 CarCare. Todos los derechos reservados bajo la Licencia MIT.</sub>
 
 </div>

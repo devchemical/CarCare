@@ -1,7 +1,8 @@
 # Context Architecture Implementation Plan
 
 ## Overview
-This implementation introduces a three-layer context architecture for CarCare Pro:
+
+This implementation introduces a three-layer context architecture for CarCare:
 
 1. **SupabaseContext** - Provides consistent Supabase client access
 2. **AuthContext** - Manages authentication state and user profile
@@ -10,26 +11,31 @@ This implementation introduces a three-layer context architecture for CarCare Pr
 ## Benefits
 
 ### 1. **Eliminates Prop Drilling**
+
 - User/profile data available anywhere via `useAuth()`
 - Vehicle/maintenance data available via `useData()`
 - No need to pass data through multiple component layers
 
 ### 2. **Consistent Supabase Client Usage**
+
 - Single client instance across the app
 - Eliminates direct `createClient()` imports in components
 - Centralized client configuration
 
 ### 3. **Optimistic Updates**
+
 - Immediate UI feedback for better UX
 - Automatic rollback on errors
 - Reduced perceived latency
 
 ### 4. **Better Separation of Concerns**
+
 - Auth logic isolated from data logic
 - Clear boundaries between contexts
 - Easier testing and maintenance
 
 ### 5. **Simplified Component Logic**
+
 - Components focus on presentation
 - Business logic centralized in contexts
 - Reduced code duplication
@@ -37,6 +43,7 @@ This implementation introduces a three-layer context architecture for CarCare Pr
 ## Migration Strategy
 
 ### Phase 1: Install Contexts (Current)
+
 ```typescript
 // app/layout.tsx
 import { AppProviders } from '@/contexts';
@@ -55,33 +62,36 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 ### Phase 2: Update Components
+
 Replace current hook usage:
 
 ```typescript
 // OLD - Multiple hooks
-const { user, profile, isLoading, signOut } = useAuth();
-const { vehicles, maintenanceRecords, refreshData } = useDashboardData();
+const { user, profile, isLoading, signOut } = useAuth()
+const { vehicles, maintenanceRecords, refreshData } = useDashboardData()
 
 // NEW - Context-based
-const { user, profile, isLoading, signOut } = useAuth();
-const { vehicles, maintenanceRecords, refreshAll } = useData();
+const { user, profile, isLoading, signOut } = useAuth()
+const { vehicles, maintenanceRecords, refreshAll } = useData()
 ```
 
 ### Phase 3: Update Dialog Components
+
 Replace direct Supabase usage:
 
 ```typescript
 // OLD
-import { createClient } from '@/lib/supabase/client';
-const supabase = createClient();
+import { createClient } from "@/lib/supabase/client"
+const supabase = createClient()
 
 // NEW
-import { useSupabase, useData } from '@/contexts';
-const supabase = useSupabase();
-const { addVehicleOptimistic } = useData();
+import { useSupabase, useData } from "@/contexts"
+const supabase = useSupabase()
+const { addVehicleOptimistic } = useData()
 ```
 
 ### Phase 4: Remove Legacy Code
+
 - Delete `hooks/useAuth.ts` (replaced by AuthContext)
 - Delete `hooks/useDashboardData.tsx` (replaced by DataContext)
 - Update `hooks/useSupabase.ts` to re-export context version
@@ -89,6 +99,7 @@ const { addVehicleOptimistic } = useData();
 ## Implementation Examples
 
 ### Dashboard Component
+
 ```typescript
 "use client";
 
@@ -111,6 +122,7 @@ export function Dashboard() {
 ```
 
 ### Add Vehicle Dialog
+
 ```typescript
 "use client";
 
@@ -140,6 +152,7 @@ export function AddVehicleDialog() {
 ## Performance Considerations
 
 ### Context Splitting Benefits
+
 - **AuthContext**: Changes infrequently (login/logout)
 - **DataContext**: Changes with user actions
 - **SupabaseContext**: Never changes (static client)
@@ -147,6 +160,7 @@ export function AddVehicleDialog() {
 This prevents unnecessary re-renders when only specific data changes.
 
 ### Memory Management
+
 - Automatic cleanup on user logout
 - Subscription management in contexts
 - Optimized re-render patterns
@@ -154,6 +168,7 @@ This prevents unnecessary re-renders when only specific data changes.
 ## Testing Strategy
 
 ### Context Testing
+
 ```typescript
 // Test contexts in isolation
 import { renderHook } from '@testing-library/react';
@@ -168,20 +183,21 @@ test('should provide auth state', () => {
 ```
 
 ### Component Testing
+
 ```typescript
 // Mock contexts for component tests
 const mockUseAuth = {
-  user: { id: '1', email: 'test@example.com' },
-  profile: { id: '1', full_name: 'Test User', email: 'test@example.com' },
+  user: { id: "1", email: "test@example.com" },
+  profile: { id: "1", full_name: "Test User", email: "test@example.com" },
   isLoading: false,
   isAuthenticated: true,
   signOut: jest.fn(),
-};
+}
 
-jest.mock('@/contexts', () => ({
+jest.mock("@/contexts", () => ({
   useAuth: () => mockUseAuth,
   useData: () => mockUseData,
-}));
+}))
 ```
 
 ## Next Steps
