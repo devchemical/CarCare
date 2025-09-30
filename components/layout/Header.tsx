@@ -38,7 +38,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     await signOut()
-    router.push("/")
+    // No need to redirect manually, signOut handles it
   }
 
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
