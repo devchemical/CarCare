@@ -1,50 +1,44 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { Layout } from "../../../components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { GoogleSignInButton } from "@/components/auth/google-signin-button";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useSupabase } from "@/hooks/useSupabase";
+import type React from "react"
+import { Layout } from "../../../components/layout/Layout"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { GoogleSignInButton } from "@/components/auth/google-signin-button"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useSupabase } from "@/hooks/useSupabase"
 
 export default function SignUpPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   // Crear una sola instancia del cliente de Supabase para toda la página
-  const supabase = useSupabase();
+  const supabase = useSupabase()
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      setIsLoading(false);
-      return;
+      setError("Las contraseñas no coinciden")
+      setIsLoading(false)
+      return
     }
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
-      setIsLoading(false);
-      return;
+      setError("La contraseña debe tener al menos 6 caracteres")
+      setIsLoading(false)
+      return
     }
 
     try {
@@ -52,43 +46,35 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/`,
+          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/`,
           data: {
             full_name: fullName,
           },
         },
-      });
-      if (error) throw error;
-      router.push("/auth/signup-success");
+      })
+      if (error) throw error
+      router.push("/auth/signup-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Layout showHeader={true}>
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md">
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-foreground">
-                Crear Cuenta
-              </CardTitle>
+              <CardTitle className="text-foreground text-2xl">Crear Cuenta</CardTitle>
               <CardDescription>
-                Crea tu cuenta para comenzar a gestionar el mantenimiento de tus
-                vehículos
+                Crea tu cuenta para comenzar a gestionar el mantenimiento de tus vehículos
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-center">
-                <GoogleSignInButton
-                  className="cursor-pointer"
-                  supabaseClient={supabase}
-                >
+                <GoogleSignInButton className="cursor-pointer" supabaseClient={supabase}>
                   Crear cuenta con Google
                 </GoogleSignInButton>
               </div>
@@ -97,9 +83,7 @@ export default function SignUpPage() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    O continúa con email
-                  </span>
+                  <span className="bg-background text-muted-foreground px-2">O continúa con email</span>
                 </div>
               </div>
 
@@ -148,10 +132,7 @@ export default function SignUpPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-foreground"
-                    >
+                    <Label htmlFor="confirmPassword" className="text-foreground">
                       Confirmar Contraseña
                     </Label>
                     <Input
@@ -165,24 +146,21 @@ export default function SignUpPage() {
                     />
                   </div>
                   {error && (
-                    <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+                    <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
                       {error}
                     </div>
                   )}
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground w-full cursor-pointer"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
                   </Button>
                 </div>
-                <div className="mt-4 text-center text-sm text-muted-foreground">
+                <div className="text-muted-foreground mt-4 text-center text-sm">
                   ¿Ya tienes una cuenta?{" "}
-                  <Link
-                    href="/auth/login"
-                    className="text-primary hover:text-primary/80 underline underline-offset-4"
-                  >
+                  <Link href="/auth/login" className="text-primary hover:text-primary/80 underline underline-offset-4">
                     Inicia sesión
                   </Link>
                 </div>
@@ -192,5 +170,5 @@ export default function SignUpPage() {
         </div>
       </div>
     </Layout>
-  );
+  )
 }

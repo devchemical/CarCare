@@ -1,12 +1,12 @@
-import { createBrowserClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
-let supabaseClient: SupabaseClient | null = null;
+let supabaseClient: SupabaseClient | null = null
 
 export function createClient() {
   // Si ya existe una instancia, la reutilizamos
   if (supabaseClient) {
-    return supabaseClient;
+    return supabaseClient
   }
 
   // Crear una nueva instancia con manejo correcto de cookies
@@ -17,51 +17,51 @@ export function createClient() {
       cookies: {
         get(name: string) {
           // Usar document.cookie para leer cookies
-          if (typeof document === 'undefined') return undefined;
-          const cookies = document.cookie.split('; ');
-          const cookie = cookies.find(c => c.startsWith(`${name}=`));
-          return cookie ? decodeURIComponent(cookie.split('=')[1]) : undefined;
+          if (typeof document === "undefined") return undefined
+          const cookies = document.cookie.split("; ")
+          const cookie = cookies.find((c) => c.startsWith(`${name}=`))
+          return cookie ? decodeURIComponent(cookie.split("=")[1]) : undefined
         },
         set(name: string, value: string, options: any) {
           // Usar document.cookie para escribir cookies
-          if (typeof document === 'undefined') return;
-          let cookie = `${name}=${encodeURIComponent(value)}`;
-          
+          if (typeof document === "undefined") return
+          let cookie = `${name}=${encodeURIComponent(value)}`
+
           if (options?.maxAge) {
-            cookie += `; max-age=${options.maxAge}`;
+            cookie += `; max-age=${options.maxAge}`
           }
           if (options?.path) {
-            cookie += `; path=${options.path}`;
+            cookie += `; path=${options.path}`
           }
           if (options?.domain) {
-            cookie += `; domain=${options.domain}`;
+            cookie += `; domain=${options.domain}`
           }
           if (options?.sameSite) {
-            cookie += `; samesite=${options.sameSite}`;
+            cookie += `; samesite=${options.sameSite}`
           }
           if (options?.secure) {
-            cookie += '; secure';
+            cookie += "; secure"
           }
-          
-          document.cookie = cookie;
+
+          document.cookie = cookie
         },
         remove(name: string, options: any) {
           // Eliminar cookie estableciendo max-age a 0
-          if (typeof document === 'undefined') return;
-          let cookie = `${name}=; max-age=0`;
-          
+          if (typeof document === "undefined") return
+          let cookie = `${name}=; max-age=0`
+
           if (options?.path) {
-            cookie += `; path=${options.path}`;
+            cookie += `; path=${options.path}`
           }
           if (options?.domain) {
-            cookie += `; domain=${options.domain}`;
+            cookie += `; domain=${options.domain}`
           }
-          
-          document.cookie = cookie;
+
+          document.cookie = cookie
         },
       },
     }
-  );
+  )
 
-  return supabaseClient;
+  return supabaseClient
 }

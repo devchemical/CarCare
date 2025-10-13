@@ -170,7 +170,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       console.log("🔔 Auth state change:", event, "Session:", !!session)
-      
+
       if (!isMounted) return
 
       if (event === "SIGNED_IN" && session?.user) {
@@ -204,7 +204,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async () => {
     console.log("🚀 Starting signOut process...")
-    
+
     try {
       setIsLoggingOut(true)
 
@@ -215,10 +215,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // 2. Call server-side logout API to clear HTTP-only cookies
       console.log("🔐 Calling server-side logout API...")
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
+      const response = await fetch("/api/auth/signout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       })
 
@@ -231,7 +231,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // 3. Also call client-side signOut for good measure
       console.log("🔐 Calling client-side supabase.auth.signOut()...")
       const { error } = await supabase.auth.signOut()
-      
+
       if (error) {
         console.error("⚠️ Client signOut error (may be expected):", error)
       } else {
@@ -239,8 +239,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // 4. Small delay to ensure server has processed the logout
-      await new Promise(resolve => setTimeout(resolve, 300))
-      
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
       console.log("🔄 Redirecting to /...")
 
       // 5. Force hard redirect - this will trigger middleware to re-check auth
@@ -249,12 +249,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("❌ Critical error during sign out:", error)
-      
+
       // Emergency cleanup and redirect
       setUser(null)
       setProfile(null)
       setIsLoggingOut(false)
-      
+
       if (typeof window !== "undefined") {
         setTimeout(() => {
           window.location.href = "/"
