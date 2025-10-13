@@ -15,8 +15,7 @@ import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Car } from "lucide-react";
+import { useState } from "react";
 import { useSupabase } from "@/hooks/useSupabase";
 
 export default function SignUpPage() {
@@ -26,33 +25,10 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
   // Crear una sola instancia del cliente de Supabase para toda la página
   const supabase = useSupabase();
-
-  // Verificar si el usuario ya está autenticado al cargar la página
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          // Si ya está autenticado, redirigir a la página principal
-          router.push("/");
-          return;
-        }
-      } catch (error) {
-        // Silenciosamente manejar errores de autenticación
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, [supabase, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,20 +68,6 @@ export default function SignUpPage() {
       setIsLoading(false);
     }
   };
-
-  // Mostrar loading mientras se verifica la autenticación
-  if (isCheckingAuth) {
-    return (
-      <Layout showHeader={false}>
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="flex flex-col items-center gap-4">
-            <Car className="h-8 w-8 text-primary animate-pulse" />
-            <p className="text-muted-foreground">Verificando sesión...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout showHeader={true}>

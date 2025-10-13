@@ -148,9 +148,45 @@ export function useAuth(): AuthState & {
   }, [supabase, loadProfile]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+    try {
+      // 1. Clear local state
+      setUser(null);
+      setProfile(null);
+
+      // 2. Call server-side logout API to clear HTTP-only cookies
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Server logout failed:", response.status);
+      }
+
+      // 3. Also call client-side signOut
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Client signOut error:", error);
+      }
+
+      // 4. Wait for server to process
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // 5. Hard redirect
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      setUser(null);
+      setProfile(null);
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    }
   };
 
   return {

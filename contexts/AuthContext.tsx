@@ -19,6 +19,7 @@ interface AuthContextType {
   user: AuthUser | null
   profile: Profile | null
   isLoading: boolean
+  isLoggingOut: boolean
   isAuthenticated: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true) // Start as true to prevent flash
+  const [isLoggingOut, setIsLoggingOut] = useState(false) // Loading state for logout
   const supabase = useSupabase()
 
   const loadProfile = useCallback(
@@ -167,9 +169,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      console.log("🔔 Auth state change:", event, "Session:", !!session)
+      
       if (!isMounted) return
 
       if (event === "SIGNED_IN" && session?.user) {
+        console.log("✅ User signed in:", session.user.email)
         setUser({ id: session.user.id, email: session.user.email })
 
         const basicProfile = {
@@ -185,6 +190,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         await loadProfile(session.user.id)
       } else if (event === "SIGNED_OUT") {
+        console.log("🚪 User signed out event received")
         setUser(null)
         setProfile(null)
       }
@@ -197,25 +203,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [supabase, loadProfile])
 
   const signOut = async () => {
+    console.log("🚀 Starting signOut process...")
+    
     try {
-      // Clear local state first to ensure immediate UI update
+      setIsLoggingOut(true)
+
+      // 1. Clear local state FIRST (immediate UI feedback)
       setUser(null)
       setProfile(null)
+      console.log("✅ Local state cleared")
 
-      // Sign out from Supabase
-      await supabase.auth.signOut()
+      // 2. Call server-side logout API to clear HTTP-only cookies
+      console.log("🔐 Calling server-side logout API...")
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-      // Force a page reload to ensure clean state
+      if (!response.ok) {
+        console.error("❌ Server logout failed:", response.status)
+      } else {
+        console.log("✅ Server logout successful")
+      }
+
+      // 3. Also call client-side signOut for good measure
+      console.log("🔐 Calling client-side supabase.auth.signOut()...")
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error("⚠️ Client signOut error (may be expected):", error)
+      } else {
+        console.log("✅ Client signOut successful")
+      }
+
+      // 4. Small delay to ensure server has processed the logout
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      console.log("🔄 Redirecting to /...")
+
+      // 5. Force hard redirect - this will trigger middleware to re-check auth
       if (typeof window !== "undefined") {
         window.location.href = "/"
       }
     } catch (error) {
-      console.error("Error signing out:", error)
-      // Even if there's an error, clear the local state and redirect
+      console.error("❌ Critical error during sign out:", error)
+      
+      // Emergency cleanup and redirect
       setUser(null)
       setProfile(null)
+      setIsLoggingOut(false)
+      
       if (typeof window !== "undefined") {
-        window.location.href = "/"
+        setTimeout(() => {
+          window.location.href = "/"
+        }, 100)
       }
     }
   }
@@ -224,6 +267,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     profile,
     isLoading,
+    isLoggingOut,
     isAuthenticated: !!user,
     signOut,
     refreshProfile,

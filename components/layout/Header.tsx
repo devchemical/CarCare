@@ -25,11 +25,27 @@ interface Vehicle {
 }
 
 export function Header() {
-  const { user, profile, isLoading: authLoading, signOut } = useAuth()
+  const { user, profile, isLoading: authLoading, isLoggingOut, signOut } = useAuth()
   const { vehicles } = useData()
   const [showVehiclesDropdown, setShowVehiclesDropdown] = useState(false)
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const router = useRouter()
+
+  // Safety timeout: if logout takes more than 3 seconds, force redirect
+  useEffect(() => {
+    if (isLoggingOut) {
+      console.log("⏱️ Logout safety timer started (3s)")
+      const timeoutId = setTimeout(() => {
+        console.log("⚠️ Logout timeout reached, forcing redirect...")
+        window.location.replace("/")
+      }, 3000)
+
+      return () => {
+        console.log("⏱️ Logout safety timer cleared")
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [isLoggingOut])
 
   const handleVehicleSelect = (vehicleId: string) => {
     router.push(`/vehicles/${vehicleId}/maintenance`)
@@ -37,8 +53,27 @@ export function Header() {
   }
 
   const handleSignOut = async () => {
+    setShowUserDropdown(false)
     await signOut()
-    // No need to redirect manually, signOut handles it
+  }
+
+  // Mostrar pantalla de carga completa durante logout
+  if (isLoggingOut) {
+    return (
+      <div className="bg-background/95 fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-4">
+          <Car className="text-primary h-12 w-12 animate-pulse" />
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-foreground text-xl font-semibold">Cerrando sesión...</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="bg-primary h-2 w-2 animate-bounce rounded-full [animation-delay:-0.3s]"></div>
+            <div className="bg-primary h-2 w-2 animate-bounce rounded-full [animation-delay:-0.15s]"></div>
+            <div className="bg-primary h-2 w-2 animate-bounce rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
