@@ -17,7 +17,7 @@ export function LandingPage() {
           </h2>
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
             Mantén un registro completo del mantenimiento, recibe recordatorios personalizados y prolonga la vida útil
-            de tu automóvil con Keepel Pro.
+            de tu automóvil con Keepel.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button size="lg" asChild className="bg-primary hover:bg-primary/90">
