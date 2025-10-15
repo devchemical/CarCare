@@ -1,8 +1,8 @@
-# CarCare - AI Coding Instructions
+# Keepel - AI Coding Instructions
 
 ## Project Overview
 
-**CarCare** is a vehicle maintenance management system built with Next.js 14, TypeScript, Supabase, and Tailwind CSS. It follows a component-driven architecture with server-side rendering and client-side interactivity.
+**Keepel** is a vehicle maintenance management system built with Next.js 14, TypeScript, Supabase, and Tailwind CSS. It follows a component-driven architecture with server-side rendering and client-side interactivity.
 
 ## Architecture Patterns
 

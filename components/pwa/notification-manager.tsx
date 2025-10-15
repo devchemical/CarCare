@@ -37,7 +37,7 @@ export function NotificationManager() {
 
       if (result === "granted") {
         // Enviar notificación de bienvenida
-        new Notification("¡CarCare habilitado!", {
+        new Notification("¡Keepel habilitado!", {
           body: "Recibirás recordatorios de mantenimiento",
           icon: "/icons/icon-192x192.png",
           badge: "/icons/icon-96x96.png",

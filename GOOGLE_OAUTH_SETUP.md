@@ -1,6 +1,6 @@
-# Configuración de Google OAuth para CarCare
+# Configuración de Google OAuth para Keepel
 
-Esta guía te ayudará a configurar la autenticación con Google en tu aplicación CarCare.
+Esta guía te ayudará a configurar la autenticación con Google en tu aplicación Keepel.
 
 ## 📋 Requisitos previos
 
@@ -29,7 +29,7 @@ Si no tienes un proyecto de Google Cloud:
 1. Ve a **APIs & Services** > **OAuth consent screen**
 2. Selecciona **External** como User Type
 3. Completa la información requerida:
-   - **App name**: CarCare
+   - **App name**: Keepel
    - **User support email**: tu email
    - **Developer contact information**: tu email
 4. En **Scopes**, añade:
@@ -43,7 +43,7 @@ Si no tienes un proyecto de Google Cloud:
 2. Haz clic en **+ CREATE CREDENTIALS** > **OAuth client ID**
 3. Selecciona **Web application**
 4. Configura:
-   - **Name**: CarCare Web Client
+   - **Name**: Keepel Web Client
    - **Authorized JavaScript origins**:
      ```
      http://localhost:3000
@@ -171,4 +171,4 @@ npm run dev
 
 ---
 
-¡Una vez completados todos los pasos, la autenticación con Google debería funcionar perfectamente en tu aplicación CarCare! 🎉
+¡Una vez completados todos los pasos, la autenticación con Google debería funcionar perfectamente en tu aplicación Keepel! 🎉
