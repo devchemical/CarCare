@@ -17,7 +17,7 @@ export function LandingPage() {
           </h2>
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
             Mantén un registro completo del mantenimiento, recibe recordatorios personalizados y prolonga la vida útil
-            de tu automóvil con CarCare Pro.
+            de tu automóvil con Keepel Pro.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button size="lg" asChild className="bg-primary hover:bg-primary/90">
@@ -92,7 +92,7 @@ export function LandingPage() {
       <section className="bg-card/30 container mx-4 mx-auto rounded-3xl px-4 py-16">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <h3 className="text-foreground mb-6 text-3xl font-bold">Beneficios de usar CarCare</h3>
+            <h3 className="text-foreground mb-6 text-3xl font-bold">Beneficios de usar Keepel</h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
@@ -144,7 +144,7 @@ export function LandingPage() {
           <CardContent className="py-12 text-center">
             <h3 className="text-foreground mb-4 text-3xl font-bold">¿Listo para comenzar?</h3>
             <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-lg">
-              Únete a miles de usuarios que ya confían en CarCare para mantener sus vehículos en perfecto estado.
+              Únete a miles de usuarios que ya confían en Keepel para mantener sus vehículos en perfecto estado.
             </p>
             <Button size="lg" asChild className="bg-primary hover:bg-primary/90">
               <Link href="/auth/signup">Crear Cuenta Gratis</Link>
@@ -158,9 +158,9 @@ export function LandingPage() {
         <div className="container mx-auto px-4 py-8 text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
             <Car className="text-primary h-6 w-6" />
-            <span className="text-foreground text-lg font-semibold">CarCare</span>
+            <span className="text-foreground text-lg font-semibold">Keepel</span>
           </div>
-          <p className="text-muted-foreground text-sm">© 2024 CarCare. Todos los derechos reservados.</p>
+          <p className="text-muted-foreground text-sm">© 2025 Keepel. Todos los derechos reservados.</p>
         </div>
       </footer>
     </>
