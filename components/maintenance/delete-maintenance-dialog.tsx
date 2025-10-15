@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
 import { AlertTriangle, Loader2 } from "lucide-react"
 
 interface MaintenanceRecord {
@@ -39,6 +39,9 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingStep, setLoadingStep] = useState<string>("")
+
+  const supabase = useSupabase()
+  const { refreshMaintenance } = useData()
   const router = useRouter()
 
   const handleDelete = async () => {
@@ -52,53 +55,15 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
         throw new Error("ID del registro no válido")
       }
 
-      setLoadingStep("Conectando con la base de datos...")
-      const supabase = createClient()
-
-      // Verificar autenticación
-      setLoadingStep("Verificando autenticación...")
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
-
-      if (authError) {
-        throw new Error(`Error de autenticación: ${authError.message}`)
-      }
-
-      if (!user) {
-        throw new Error("Usuario no autenticado. Por favor, inicia sesión nuevamente.")
-      }
-
-      // Verificar que el registro existe y pertenece al usuario
-      setLoadingStep("Verificando permisos del registro...")
-      const { data: maintenanceRecord, error: recordError } = await supabase
-        .from("maintenance_records")
-        .select("id, user_id")
-        .eq("id", record.id)
-        .eq("user_id", user.id)
-        .single()
-
-      if (recordError) {
-        throw new Error("No se pudo verificar el registro de mantenimiento")
-      }
-
-      if (!maintenanceRecord) {
-        throw new Error("No tienes permisos para eliminar este registro de mantenimiento")
-      }
-
-      // Eliminar el registro con timeout
+      // RLS se encarga de verificar permisos automáticamente
       setLoadingStep("Eliminando registro...")
-      const deletePromise = supabase
-        .from("maintenance_records")
-        .delete()
-        .eq("id", record.id)
+      const deletePromise = supabase.from("maintenance_records").delete().eq("id", record.id)
 
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("La operación tardó demasiado tiempo. Inténtalo de nuevo.")), 10000)
       })
 
-      const { error: deleteError } = await Promise.race([deletePromise, timeoutPromise]) as any
+      const { error: deleteError } = (await Promise.race([deletePromise, timeoutPromise])) as any
 
       if (deleteError) {
         throw new Error(`Error al eliminar: ${deleteError.message}`)
@@ -106,14 +71,18 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
 
       setLoadingStep("Finalizando...")
       onOpenChange(false)
-      router.refresh()
-
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al eliminar registro"
       setError(errorMessage)
     } finally {
       setIsLoading(false)
       setLoadingStep("")
+
+      // Recargar datos tanto del contexto como de la ruta actual
+      refreshMaintenance().catch((err) => {
+        console.error("Error al refrescar (no crítico):", err)
+      })
+      router.refresh()
     }
   }
 
@@ -129,7 +98,7 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
+          <DialogTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Eliminar Registro de Mantenimiento
           </DialogTitle>
@@ -142,15 +111,15 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
-          <p className="text-sm text-destructive-foreground">
+        <div className="bg-destructive/10 border-destructive/20 mb-4 rounded-md border p-3">
+          <p className="text-destructive-foreground text-sm">
             <strong>Advertencia:</strong> Esta acción eliminará permanentemente este registro de mantenimiento. Esta
             acción no se puede deshacer.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
             {error}
           </div>
         )}

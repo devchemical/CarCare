@@ -3,13 +3,13 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useSupabase, useData, useAuth } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
 import { Car, Loader2 } from "lucide-react"
 
 interface Vehicle {
@@ -50,6 +50,10 @@ const colors = [
 export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { user } = useAuth()
+  const supabase = useSupabase()
+  const { refreshVehicles } = useData()
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -79,8 +83,6 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
     setIsLoading(true)
     setError(null)
 
-    const supabase = createClient()
-
     try {
       const { error } = await supabase
         .from("vehicles")
@@ -99,11 +101,12 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
       if (error) throw error
 
       onOpenChange(false)
-      router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Error al actualizar vehículo")
     } finally {
       setIsLoading(false)
+      refreshVehicles().catch((err) => console.error("Error al refrescar:", err))
+      router.refresh()
     }
   }
 
@@ -112,7 +115,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5 text-primary" />
+            <Car className="text-primary h-5 w-5" />
             Editar Vehículo
           </DialogTitle>
           <DialogDescription>Actualiza la información de tu vehículo.</DialogDescription>
@@ -207,7 +210,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
           </div>
 
           {error && (
-            <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
               {error}
             </div>
           )}
@@ -216,7 +219,7 @@ export function EditVehicleDialog({ vehicle, open, onOpenChange }: EditVehicleDi
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading} className="flex-1 bg-primary hover:bg-primary/90">
+            <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90 flex-1">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Actualizar Vehículo
             </Button>

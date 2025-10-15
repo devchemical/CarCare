@@ -1,31 +1,25 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { MaintenanceList } from "@/components/maintenance/maintenance-list";
-import { AddMaintenanceDialog } from "@/components/maintenance/add-maintenance-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Car, Plus, Wrench, Gauge } from "lucide-react";
-import Link from "next/link";
-import { Layout } from "../../../../components/layout/Layout";
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { MaintenanceList } from "@/components/maintenance/maintenance-list"
+import { AddMaintenanceDialog } from "@/components/maintenance/add-maintenance-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Car, Plus, Wrench, Gauge } from "lucide-react"
+import Link from "next/link"
+import { Layout } from "../../../../components/layout/Layout"
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }
 
 export default async function VehicleMaintenancePage({ params }: PageProps) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const { id } = await params
+  const supabase = await createClient()
 
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser()
   if (error || !data?.user) {
-    redirect("/auth/login");
+    redirect("/auth/login")
   }
 
   // Fetch vehicle details
@@ -34,10 +28,10 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
     .select("*")
     .eq("id", id)
     .eq("user_id", data.user.id)
-    .single();
+    .single()
 
   if (vehicleError || !vehicle) {
-    redirect("/vehicles");
+    redirect("/vehicles")
   }
 
   // Fetch maintenance records
@@ -46,7 +40,7 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
     .select("*")
     .eq("vehicle_id", id)
     .eq("user_id", data.user.id)
-    .order("service_date", { ascending: false });
+    .order("service_date", { ascending: false })
 
   return (
     <Layout showHeader={true}>
@@ -63,16 +57,14 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
             <CardHeader>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Car className="h-6 w-6 text-primary" />
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-2xl truncate">
+                  <Car className="text-primary h-6 w-6" />
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="truncate text-2xl">
                       {vehicle.make} {vehicle.model}
                     </CardTitle>
-                    <CardDescription className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
+                    <CardDescription className="mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
                       <Badge variant="secondary">{vehicle.year}</Badge>
-                      {vehicle.license_plate && (
-                        <span className="text-sm">Placa: {vehicle.license_plate}</span>
-                      )}
+                      {vehicle.license_plate && <span className="text-sm">Placa: {vehicle.license_plate}</span>}
                       <span className="flex items-center gap-1 text-sm">
                         <Gauge className="h-4 w-4" />
                         {vehicle.mileage.toLocaleString("es-ES")} km
@@ -82,10 +74,10 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
                 </div>
 
                 {/* Botón separado en su propia fila para mejor responsive */}
-                <div className="flex justify-end pt-2 border-t border-border/50">
+                <div className="border-border/50 flex justify-end border-t pt-2">
                   <AddMaintenanceDialog vehicleId={id}>
                     <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="mr-2 h-4 w-4" />
                       <span className="hidden sm:inline">Agregar Mantenimiento</span>
                       <span className="sm:hidden">Agregar</span>
                     </Button>
@@ -96,40 +88,35 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
           </Card>
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Wrench className="h-6 w-6 text-primary" />
+            <h2 className="text-foreground flex items-center gap-2 text-2xl font-bold">
+              <Wrench className="text-primary h-6 w-6" />
               Historial de Mantenimiento
             </h2>
-            <p className="text-muted-foreground mt-1">
-              {maintenanceRecords?.length || 0} registro(s) de mantenimiento
-            </p>
+            <p className="text-muted-foreground mt-1">{maintenanceRecords?.length || 0} registro(s) de mantenimiento</p>
           </div>
         </div>
 
         {maintenanceRecords && maintenanceRecords.length > 0 ? (
           <MaintenanceList records={maintenanceRecords} vehicleId={id} />
         ) : (
-          <Card className="text-center py-12">
+          <Card className="py-12 text-center">
             <CardHeader>
-              <div className="flex justify-center mb-4">
-                <div className="p-4 bg-muted rounded-full">
-                  <Wrench className="h-12 w-12 text-muted-foreground" />
+              <div className="mb-4 flex justify-center">
+                <div className="bg-muted rounded-full p-4">
+                  <Wrench className="text-muted-foreground h-12 w-12" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-foreground">
-                No hay registros de mantenimiento
-              </CardTitle>
+              <CardTitle className="text-foreground text-2xl">No hay registros de mantenimiento</CardTitle>
               <CardDescription className="text-lg">
-                Comienza agregando el primer registro de mantenimiento para este
-                vehículo
+                Comienza agregando el primer registro de mantenimiento para este vehículo
               </CardDescription>
             </CardHeader>
             <CardContent>
               <AddMaintenanceDialog vehicleId={id}>
                 <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  <Plus className="h-5 w-5 mr-2" />
+                  <Plus className="mr-2 h-5 w-5" />
                   Agregar Primer Mantenimiento
                 </Button>
               </AddMaintenanceDialog>
@@ -138,5 +125,5 @@ export default async function VehicleMaintenancePage({ params }: PageProps) {
         )}
       </div>
     </Layout>
-  );
+  )
 }

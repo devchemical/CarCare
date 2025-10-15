@@ -46,6 +46,8 @@
 
 ### Commands
 
+Use `pnpm` for package management and scripts:
+
 ```bash
 pnpm dev          # Start development server
 pnpm build        # Production build
@@ -122,3 +124,5 @@ Follow the updated pattern with context integration:
 - **Optimistic Updates**: Use context methods like `addVehicleOptimistic()` for better UX
 
 When working on this codebase, prioritize consistency with existing patterns, maintain TypeScript strict mode compliance, and ensure responsive design across all components.
+
+Don't create any documents when you do code changes

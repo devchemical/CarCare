@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
 import { AlertTriangle, Loader2 } from "lucide-react"
 
 interface Vehicle {
@@ -23,13 +23,14 @@ interface DeleteVehicleDialogProps {
 export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehicleDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const supabase = useSupabase()
+  const { refreshVehicles } = useData()
   const router = useRouter()
 
   const handleDelete = async () => {
     setIsLoading(true)
     setError(null)
-
-    const supabase = createClient()
 
     try {
       const { error } = await supabase.from("vehicles").delete().eq("id", vehicle.id)
@@ -37,11 +38,12 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
       if (error) throw error
 
       onOpenChange(false)
-      router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Error al eliminar vehículo")
     } finally {
       setIsLoading(false)
+      refreshVehicles().catch((err) => console.error("Error al refrescar:", err))
+      router.refresh()
     }
   }
 
@@ -49,7 +51,7 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
+          <DialogTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Eliminar Vehículo
           </DialogTitle>
@@ -62,15 +64,15 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
-          <p className="text-sm text-destructive-foreground">
+        <div className="bg-destructive/10 border-destructive/20 mb-4 rounded-md border p-3">
+          <p className="text-destructive-foreground text-sm">
             <strong>Advertencia:</strong> Esta acción eliminará permanentemente el vehículo y todos sus registros de
             mantenimiento asociados. Esta acción no se puede deshacer.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
             {error}
           </div>
         )}

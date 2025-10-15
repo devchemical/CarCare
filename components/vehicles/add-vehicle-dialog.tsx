@@ -3,7 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useSupabase, useData, useAuth } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
 import { Car, Loader2 } from "lucide-react"
 
 interface AddVehicleDialogProps {
@@ -45,6 +45,10 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { user } = useAuth()
+  const supabase = useSupabase()
+  const { refreshVehicles } = useData()
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -62,12 +66,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
     setIsLoading(true)
     setError(null)
 
-    const supabase = createClient()
-
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
       if (!user) throw new Error("Usuario no autenticado")
 
       const { error } = await supabase.from("vehicles").insert({
@@ -93,11 +92,12 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
         color: "",
         mileage: "",
       })
-      router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Error al agregar vehículo")
     } finally {
       setIsLoading(false)
+      refreshVehicles().catch((err) => console.error("Error al refrescar:", err))
+      router.refresh()
     }
   }
 
@@ -107,7 +107,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5 text-primary" />
+            <Car className="text-primary h-5 w-5" />
             Agregar Nuevo Vehículo
           </DialogTitle>
           <DialogDescription>
@@ -204,7 +204,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
           </div>
 
           {error && (
-            <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
               {error}
             </div>
           )}
@@ -213,7 +213,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading} className="flex-1 bg-primary hover:bg-primary/90">
+            <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90 flex-1">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Agregar Vehículo
             </Button>

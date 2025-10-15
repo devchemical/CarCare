@@ -3,7 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useAuth, useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,12 +18,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
-import { Wrench, Loader2 } from "lucide-react"
+import { Wrench, Loader2, Plus, X } from "lucide-react"
 
 interface AddMaintenanceDialogProps {
   children: React.ReactNode
   vehicleId: string
+}
+
+interface ServiceItem {
+  id: string
+  type: string
+  description: string
+  cost: string
 }
 
 const maintenanceTypes = [
@@ -45,13 +52,19 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingStep, setLoadingStep] = useState<string>("")
+
+  // Usar contextos en lugar de crear cliente directamente
+  const { user } = useAuth()
+  const supabase = useSupabase()
+  const { refreshMaintenance } = useData()
   const router = useRouter()
 
+  // Lista de servicios múltiples
+  const [services, setServices] = useState<ServiceItem[]>([
+    { id: crypto.randomUUID(), type: "", description: "", cost: "" },
+  ])
+
   const [formData, setFormData] = useState({
-    type: "",
-    description: "",
-    cost: "",
     mileage: "",
     service_date: new Date().toISOString().split("T")[0],
     next_service_date: "",
@@ -59,85 +72,47 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
     notes: "",
   })
 
+  // Funciones para manejar múltiples servicios
+  const addService = () => {
+    setServices([...services, { id: crypto.randomUUID(), type: "", description: "", cost: "" }])
+  }
+
+  const removeService = (id: string) => {
+    if (services.length > 1) {
+      setServices(services.filter((s) => s.id !== id))
+    }
+  }
+
+  const updateService = (id: string, field: keyof ServiceItem, value: string) => {
+    setServices(services.map((s) => (s.id === id ? { ...s, [field]: value } : s)))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
-    setLoadingStep("Iniciando...")
 
     try {
+      console.log("🚀 [DEBUG] Iniciando handleSubmit")
       // Validaciones básicas
       if (!vehicleId) {
         throw new Error("ID del vehículo no válido")
       }
 
-      if (!formData.type) {
-        throw new Error("Debe seleccionar un tipo de mantenimiento")
+      // Validar que al menos un servicio tiene tipo seleccionado
+      const validServices = services.filter((s) => s.type)
+
+      if (validServices.length === 0) {
+        throw new Error("Debe seleccionar al menos un tipo de mantenimiento")
       }
 
-      setLoadingStep("Conectando con la base de datos...")
-      const supabase = createClient()
-
-      // Verificar autenticación
-      setLoadingStep("Verificando autenticación...")
-
-      // Agregar timeout para la verificación de sesión
-      const sessionPromise = supabase.auth.getSession()
-      const sessionTimeout = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Timeout al verificar sesión")), 5000)
-      })
-
-      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, sessionTimeout]) as any
-
-      if (sessionError) {
-        throw new Error(`Error de sesión: ${sessionError.message}`)
-      }
-
-      if (!session) {
+      if (!user) {
         throw new Error("No hay sesión activa. Por favor, inicia sesión.")
       }
 
-      const user = session.user
-      if (!user) {
-        throw new Error("Usuario no válido en la sesión.")
-      }
-
-      // Verificar que el vehículo existe y pertenece al usuario
-      setLoadingStep("Verificando permisos del vehículo...")
-
-      const vehiclePromise = supabase
-        .from("vehicles")
-        .select("id, user_id")
-        .eq("id", vehicleId)
-        .eq("user_id", user.id)
-        .single()
-
-      const vehicleTimeout = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Timeout al verificar vehículo")), 5000)
-      })
-
-      const { data: vehicle, error: vehicleError } = await Promise.race([vehiclePromise, vehicleTimeout]) as any
-
-      if (vehicleError) {
-        if (vehicleError.code === 'PGRST116') {
-          throw new Error("No se encontró el vehículo o no tienes permisos para acceder a él")
-        }
-        throw new Error(`Error al verificar vehículo: ${vehicleError.message}`)
-      }
-
-      if (!vehicle) {
-        throw new Error("No tienes permisos para agregar mantenimiento a este vehículo")
-      }
-
-      // Preparar datos para inserción con validación de números
-      const cost = formData.cost ? parseFloat(formData.cost) : null
+      // Validar números comunes
       const mileage = formData.mileage ? parseInt(formData.mileage, 10) : null
       const nextServiceMileage = formData.next_service_mileage ? parseInt(formData.next_service_mileage, 10) : null
-
-      // Verificar que los números sean válidos si se proporcionaron
-      if (formData.cost && (isNaN(cost!) || cost! < 0)) {
-        throw new Error("El costo debe ser un número válido mayor o igual a 0")
-      }
 
       if (formData.mileage && (isNaN(mileage!) || mileage! < 0)) {
         throw new Error("El kilometraje debe ser un número válido mayor o igual a 0")
@@ -147,43 +122,47 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
         throw new Error("El kilometraje del próximo servicio debe ser un número válido mayor o igual a 0")
       }
 
-      const insertData = {
-        vehicle_id: vehicleId,
-        user_id: user.id,
-        type: formData.type,
-        description: formData.description?.trim() || null,
-        cost,
-        mileage,
-        service_date: formData.service_date,
-        next_service_date: formData.next_service_date || null,
-        next_service_mileage: nextServiceMileage,
-        notes: formData.notes?.trim() || null,
-      }
+      // Preparar datos para inserción múltiple
+      const maintenanceRecords = validServices.map((service) => {
+        const cost = service.cost ? parseFloat(service.cost) : null
 
-      // Agregar timeout para evitar operaciones colgadas
-      setLoadingStep("Guardando registro de mantenimiento...")
-      const insertPromise = supabase
-        .from("maintenance_records")
-        .insert(insertData)
-        .select()
+        // Validar costo
+        if (service.cost && (isNaN(cost!) || cost! < 0)) {
+          throw new Error(
+            `El costo para ${maintenanceTypes.find((t) => t.value === service.type)?.label} debe ser un número válido`
+          )
+        }
 
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("La operación tardó demasiado tiempo. Inténtalo de nuevo.")), 8000)
+        return {
+          vehicle_id: vehicleId,
+          user_id: user.id,
+          type: service.type,
+          description: service.description?.trim() || null,
+          cost,
+          mileage,
+          service_date: formData.service_date,
+          next_service_date: formData.next_service_date || null,
+          next_service_mileage: nextServiceMileage,
+          notes: formData.notes?.trim() || null,
+        }
       })
 
-      const { data, error: insertError } = await Promise.race([insertPromise, timeoutPromise]) as any
+      try {
+        const { error } = await supabase.from("maintenance_records").insert(maintenanceRecords).select()
 
-      if (insertError) {
-        throw new Error(`Error al insertar: ${insertError.message}`)
+        if (error) {
+          throw new Error(`Error al insertar: ${error.message}`)
+        }
+
+        await refreshMaintenance()
+        router.refresh()
+      } catch (error) {
+        throw error
       }
 
-      setLoadingStep("Finalizando...")
-
       // Reset form and close dialog
+      setServices([{ id: crypto.randomUUID(), type: "", description: "", cost: "" }])
       setFormData({
-        type: "",
-        description: "",
-        cost: "",
         mileage: "",
         service_date: new Date().toISOString().split("T")[0],
         next_service_date: "",
@@ -192,24 +171,21 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
       })
 
       setOpen(false)
-      router.refresh()
-
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al agregar mantenimiento"
       setError(errorMessage)
     } finally {
       setIsLoading(false)
-      setLoadingStep("")
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
+      <DialogContent className="max-h-[95vh] w-[95vw] overflow-y-auto sm:w-full sm:max-w-[600px]">
         <DialogHeader className="space-y-3">
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Wrench className="h-5 w-5 text-primary" />
+            <Wrench className="text-primary h-5 w-5" />
             <span className="hidden sm:inline">Agregar Registro de Mantenimiento</span>
             <span className="sm:hidden">Nuevo Mantenimiento</span>
           </DialogTitle>
@@ -219,25 +195,12 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Campos principales - Layout responsive */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Información general */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-medium">Tipo de Mantenimiento *</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Seleccionar tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {maintenanceTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="service_date" className="text-sm font-medium">Fecha de Servicio *</Label>
+              <Label htmlFor="service_date" className="text-sm font-medium">
+                Fecha de Servicio *
+              </Label>
               <Input
                 id="service_date"
                 type="date"
@@ -247,35 +210,10 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 className="h-11"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">Descripción</Label>
-            <Input
-              id="description"
-              placeholder="Descripción breve del servicio realizado"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="h-11"
-            />
-          </div>
-
-          {/* Campos numéricos - Stack en mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost" className="text-sm font-medium">Costo (€)</Label>
-              <Input
-                id="cost"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={formData.cost}
-                onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="mileage" className="text-sm font-medium">Kilometraje</Label>
+              <Label htmlFor="mileage" className="text-sm font-medium">
+                Kilometraje Actual
+              </Label>
               <Input
                 id="mileage"
                 type="number"
@@ -287,14 +225,88 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
             </div>
           </div>
 
+          {/* Sección de servicios múltiples */}
+          <div className="border-border bg-muted/30 space-y-4 rounded-lg border p-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+                <Wrench className="h-4 w-4" />
+                Servicios Realizados
+              </h4>
+              <Button type="button" size="sm" variant="outline" onClick={addService} className="h-8 gap-1">
+                <Plus className="h-3 w-3" />
+                <span className="hidden sm:inline">Agregar Servicio</span>
+                <span className="sm:hidden">Agregar</span>
+              </Button>
+            </div>
+
+            {services.map((service, index) => (
+              <div key={service.id} className="border-border bg-background relative space-y-3 rounded-md border p-3">
+                {services.length > 1 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeService(service.id)}
+                    className="text-muted-foreground hover:text-destructive absolute top-2 right-2 h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">
+                    Tipo de Mantenimiento {services.length > 1 ? `#${index + 1}` : ""} *
+                  </Label>
+                  <Select value={service.type} onValueChange={(value) => updateService(service.id, "type", value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Seleccionar tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {maintenanceTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Descripción</Label>
+                    <Input
+                      placeholder="Ej: Marca, modelo específico..."
+                      value={service.description}
+                      onChange={(e) => updateService(service.id, "description", e.target.value)}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Costo (€)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={service.cost}
+                      onChange={(e) => updateService(service.id, "cost", e.target.value)}
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Sección próximo servicio - Collapsible en mobile */}
-          <div className="border-t border-border pt-4 space-y-4">
-            <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+          <div className="border-border space-y-4 border-t pt-4">
+            <h4 className="text-foreground flex items-center gap-2 text-sm font-medium">
               📅 Próximo Servicio (Opcional)
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="next_service_date" className="text-sm font-medium">Fecha del Próximo Servicio</Label>
+                <Label htmlFor="next_service_date" className="text-sm font-medium">
+                  Fecha del Próximo Servicio
+                </Label>
                 <Input
                   id="next_service_date"
                   type="date"
@@ -304,7 +316,9 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="next_service_mileage" className="text-sm font-medium">Kilometraje del Próximo Servicio</Label>
+                <Label htmlFor="next_service_mileage" className="text-sm font-medium">
+                  Kilometraje del Próximo Servicio
+                </Label>
                 <Input
                   id="next_service_mileage"
                   type="number"
@@ -318,7 +332,9 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-sm font-medium">Notas Adicionales</Label>
+            <Label htmlFor="notes" className="text-sm font-medium">
+              Notas Adicionales
+            </Label>
             <Textarea
               id="notes"
               placeholder="Cualquier información adicional sobre el servicio..."
@@ -330,25 +346,20 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
           </div>
 
           {error && (
-            <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
               {error}
             </div>
           )}
 
           {/* Botones optimizados para touch */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1 h-11 text-base"
-            >
+          <div className="border-border flex flex-col gap-3 border-t pt-4 sm:flex-row">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1 text-base">
               Cancelar
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !formData.type}
-              className="flex-1 h-11 text-base bg-primary hover:bg-primary/90 font-medium"
+              disabled={isLoading || services.every((s) => !s.type)}
+              className="bg-primary hover:bg-primary/90 h-11 flex-1 text-base font-medium"
             >
               {isLoading ? (
                 <>
@@ -358,7 +369,9 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 </>
               ) : (
                 <>
-                  <span className="hidden sm:inline">Agregar Mantenimiento</span>
+                  <span className="hidden sm:inline">
+                    Agregar {services.filter((s) => s.type).length > 1 ? "Servicios" : "Mantenimiento"}
+                  </span>
                   <span className="sm:hidden">Agregar</span>
                 </>
               )}

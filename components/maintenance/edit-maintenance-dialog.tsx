@@ -3,14 +3,14 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
 import { Wrench, Loader2 } from "lucide-react"
 
 interface MaintenanceRecord {
@@ -52,6 +52,9 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingStep, setLoadingStep] = useState<string>("")
+
+  const supabase = useSupabase()
+  const { refreshMaintenance } = useData()
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -98,41 +101,8 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
         throw new Error("Debe seleccionar un tipo de mantenimiento")
       }
 
-      setLoadingStep("Conectando con la base de datos...")
-      const supabase = createClient()
-
-      // Verificar autenticación
-      setLoadingStep("Verificando autenticación...")
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
-
-      if (authError) {
-        throw new Error(`Error de autenticación: ${authError.message}`)
-      }
-
-      if (!user) {
-        throw new Error("Usuario no autenticado. Por favor, inicia sesión nuevamente.")
-      }
-
-      // Verificar que el registro existe y pertenece al usuario
-      setLoadingStep("Verificando permisos del registro...")
-      const { data: maintenanceRecord, error: recordError } = await supabase
-        .from("maintenance_records")
-        .select("id, user_id, vehicle_id")
-        .eq("id", record.id)
-        .eq("user_id", user.id)
-        .eq("vehicle_id", vehicleId)
-        .single()
-
-      if (recordError) {
-        throw new Error("No se pudo verificar el registro de mantenimiento")
-      }
-
-      if (!maintenanceRecord) {
-        throw new Error("No tienes permisos para editar este registro de mantenimiento")
-      }
+      // RLS se encarga de verificar permisos automáticamente
+      setLoadingStep("Preparando actualización...")
 
       // Preparar datos para actualización con validación de números
       const cost = formData.cost ? parseFloat(formData.cost) : null
@@ -166,16 +136,13 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
 
       // Actualizar el registro con timeout
       setLoadingStep("Actualizando registro de mantenimiento...")
-      const updatePromise = supabase
-        .from("maintenance_records")
-        .update(updateData)
-        .eq("id", record.id)
+      const updatePromise = supabase.from("maintenance_records").update(updateData).eq("id", record.id)
 
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("La operación tardó demasiado tiempo. Inténtalo de nuevo.")), 10000)
       })
 
-      const { error: updateError } = await Promise.race([updatePromise, timeoutPromise]) as any
+      const { error: updateError } = (await Promise.race([updatePromise, timeoutPromise])) as any
 
       if (updateError) {
         throw new Error(`Error al actualizar: ${updateError.message}`)
@@ -183,23 +150,27 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
 
       setLoadingStep("Finalizando...")
       onOpenChange(false)
-      router.refresh()
-
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al actualizar mantenimiento"
       setError(errorMessage)
     } finally {
       setIsLoading(false)
       setLoadingStep("")
+
+      // Recargar datos tanto del contexto como de la ruta actual
+      refreshMaintenance().catch((err) => {
+        console.error("Error al refrescar (no crítico):", err)
+      })
+      router.refresh()
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-primary" />
+            <Wrench className="text-primary h-5 w-5" />
             Editar Registro de Mantenimiento
           </DialogTitle>
           <DialogDescription>Actualiza la información del registro de mantenimiento.</DialogDescription>
@@ -268,8 +239,8 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
             </div>
           </div>
 
-          <div className="border-t border-border pt-4">
-            <h4 className="text-sm font-medium text-foreground mb-3">Próximo Servicio (Opcional)</h4>
+          <div className="border-border border-t pt-4">
+            <h4 className="text-foreground mb-3 text-sm font-medium">Próximo Servicio (Opcional)</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="next_service_date">Fecha del Próximo Servicio</Label>
@@ -305,7 +276,7 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
           </div>
 
           {error && (
-            <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
               {error}
             </div>
           )}
@@ -314,7 +285,11 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading || !formData.type} className="flex-1 bg-primary hover:bg-primary/90">
+            <Button
+              type="submit"
+              disabled={isLoading || !formData.type}
+              className="bg-primary hover:bg-primary/90 flex-1"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
