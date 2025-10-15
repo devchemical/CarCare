@@ -54,7 +54,7 @@ export function InstallPrompt({ onDismiss, className }: InstallPromptProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Instalar CarCare</CardTitle>
+              <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Instalar Keepel</CardTitle>
             </div>
             <Button
               variant="ghost"
@@ -84,7 +84,7 @@ export function InstallPrompt({ onDismiss, className }: InstallPromptProps) {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Cómo instalar en {instructions.browser}</DialogTitle>
-                  <DialogDescription>Sigue estos pasos para instalar CarCare en tu dispositivo:</DialogDescription>
+                  <DialogDescription>Sigue estos pasos para instalar Keepel en tu dispositivo:</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   {instructions.steps.map((step, index) => (
@@ -98,7 +98,7 @@ export function InstallPrompt({ onDismiss, className }: InstallPromptProps) {
                 </div>
                 <div className="mt-4 rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    💡 Una vez instalada, podrás acceder a CarCare desde tu pantalla de inicio como cualquier otra
+                    💡 Una vez instalada, podrás acceder a Keepel desde tu pantalla de inicio como cualquier otra
                     aplicación.
                   </p>
                 </div>

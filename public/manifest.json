@@ -1,6 +1,6 @@
 {
-  "name": "CarCare - Gestión de Vehículos",
-  "short_name": "CarCare",
+  "name": "Keepel - Gestión de Vehículos",
+  "short_name": "Keepel",
   "description": "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
   "theme_color": "#0f172a",
   "background_color": "#ffffff",
@@ -107,14 +107,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "CarCare en escritorio"
+      "label": "Keepel en escritorio"
     },
     {
       "src": "/screenshots/mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "CarCare en móvil"
+      "label": "Keepel en móvil"
     }
   ]
 }
