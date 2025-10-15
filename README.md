@@ -1,4 +1,4 @@
-# 🚗 CarCare
+# 🚗 Keepel
 
 <p align="center">
   <strong>Sistema completo de gestión de mantenimiento automotriz</strong>
@@ -177,7 +177,7 @@ Antes de comenzar, asegúrate de tener instalado:
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/devchemical/CarCare.git
-cd CarCare
+cd Keepel
 
 # 2. Instalar dependencias
 pnpm install
@@ -199,7 +199,7 @@ pnpm dev
 
 ```bash
 git clone https://github.com/devchemical/CarCare.git
-cd CarCare
+cd Keepel
 ```
 
 #### 2. Instalar Dependencias
@@ -403,7 +403,7 @@ pnpm dev
 ## 📁 Estructura del Proyecto
 
 ```
-CarCare/
+Keepel/
 ├── 📁 app/                          # Next.js App Router
 │   ├── 🔐 auth/                     # Páginas de autenticación
 │   │   ├── login/                   # Inicio de sesión
@@ -780,7 +780,7 @@ Las políticas de seguridad garantizan que:
 
 ## 🤝 Contribuir al Proyecto
 
-¡Nos encanta recibir contribuciones! Hay muchas formas de ayudar a mejorar CarCare.
+¡Nos encanta recibir contribuciones! Hay muchas formas de ayudar a mejorar Keepel.
 
 ### 🎯 Formas de Contribuir
 
@@ -855,8 +855,8 @@ graph LR
 2. **📥 Clona tu Fork**
 
    ```bash
-   git clone https://github.com/tu-usuario/CarCare.git
-   cd CarCare
+   git clone https://github.com/tu-usuario/Keepel.git
+   cd Keepel
    ```
 
 3. **🌿 Crea una Rama**
@@ -1114,8 +1114,8 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 ### 📧 Contacto Directo
 
 - **📧 Email**: [soporte@carcare.dev](mailto:soporte@carcare.dev)
-- **🐦 Twitter**: [@CarCareDev](https://twitter.com/CarCareDev)
-- **💼 LinkedIn**: [CarCare](https://linkedin.com/company/carcare-pro)
+- **🐦 Twitter**: [@KeepelDev](https://twitter.com/KeepelDev)
+- **💼 LinkedIn**: [Keepel](https://linkedin.com/company/carcare-pro)
 
 ### ⚡ Tiempo de Respuesta
 
@@ -1130,11 +1130,11 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 ## 🌟 ¡Apoya el Proyecto!
 
-<p>Si CarCare te ha sido útil, considera:</p>
+<p>Si Keepel te ha sido útil, considera:</p>
 
-[![GitHub Stars](https://img.shields.io/github/stars/devchemical/CarCare?style=social)](https://github.com/devchemical/CarCare/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/devchemical/CarCare?style=social)](https://github.com/devchemical/CarCare/network/members)
-[![GitHub Watchers](https://img.shields.io/github/watchers/devchemical/CarCare?style=social)](https://github.com/devchemical/CarCare/watchers)
+[![GitHub Stars](https://img.shields.io/github/stars/devchemical/Keepel?style=social)](https://github.com/devchemical/CarCare/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/devchemical/Keepel?style=social)](https://github.com/devchemical/CarCare/network/members)
+[![GitHub Watchers](https://img.shields.io/github/watchers/devchemical/Keepel?style=social)](https://github.com/devchemical/CarCare/watchers)
 
 <p>⭐ <strong>Dar una estrella al repositorio</strong></p>
 <p>🔄 <strong>Compartir con otros desarrolladores</strong></p>
@@ -1143,14 +1143,14 @@ Ver el archivo [`LICENSE`](LICENSE) para más detalles.
 
 ---
 
-<img src="public/placeholder-logo.svg" alt="CarCare" width="60" height="60">
+<img src="public/placeholder-logo.svg" alt="Keepel" width="60" height="60">
 
-**CarCare** - _Mantén tus vehículos en perfecto estado_ 🚗✨
+**Keepel** - _Mantén tus vehículos en perfecto estado_ 🚗✨
 
 Desarrollado con ❤️ por [DevChemical](https://github.com/devchemical)
 
 ---
 
-<sub>© 2024 CarCare. Todos los derechos reservados bajo la Licencia MIT.</sub>
+<sub>© 2025 Keepel. Todos los derechos reservados bajo la Licencia MIT.</sub>
 
 </div>

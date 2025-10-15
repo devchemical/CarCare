@@ -1,8 +1,8 @@
-# CarCare - PWA Setup
+# Keepel - PWA Setup
 
 ## ✅ Configuración PWA Implementada
 
-Tu aplicación CarCare ahora está completamente configurada como PWA (Progressive Web App) con las siguientes características:
+Tu aplicación Keepel ahora está completamente configurada como PWA (Progressive Web App) con las siguientes características:
 
 ### 🚀 Funcionalidades PWA
 

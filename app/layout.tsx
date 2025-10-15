@@ -15,49 +15,49 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "CarCare - Gestión de Mantenimiento Automotriz",
+  title: "Keepel - Gestión de Mantenimiento Automotriz",
   description: "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: ["vehículos", "mantenimiento", "carros", "mecánica", "servicio", "gestión"],
-  authors: [{ name: "CarCare Team" }],
-  creator: "CarCare",
-  publisher: "CarCare",
+  authors: [{ name: "Keepel Team" }],
+  creator: "Keepel",
+  publisher: "Keepel",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://carcare-pro.vercel.app"),
+  metadataBase: new URL("https://keepel.chemicaldev.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "es_ES",
-    url: "https://carcare-pro.vercel.app",
-    title: "CarCare - Gestión de Mantenimiento Automotriz",
+    url: "https://keepel.chemicaldev.com",
+    title: "Keepel - Gestión de Mantenimiento Automotriz",
     description: "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
-    siteName: "CarCare",
+    siteName: "Keepel",
     images: [
       {
         url: "/icons/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "CarCare Logo",
+        alt: "Keepel Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CarCare - Gestión de Mantenimiento Automotriz",
+    title: "Keepel - Gestión de Mantenimiento Automotriz",
     description: "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
     images: ["/icons/icon-512x512.png"],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CarCare",
+    title: "Keepel",
   },
   verification: {
     google: "google-site-verification-token",
@@ -77,8 +77,8 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="CarCare" />
-        <meta name="application-name" content="CarCare" />
+        <meta name="apple-mobile-web-app-title" content="Keepel" />
+        <meta name="application-name" content="Keepel" />
         <meta name="msapplication-TileColor" content="#0f172a" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
 

@@ -84,7 +84,7 @@ export function Header() {
           {/* Logo y nombre */}
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Car className="text-primary h-8 w-8" />
-            <h1 className="text-foreground text-2xl font-bold">CarCare</h1>
+            <h1 className="text-foreground text-2xl font-bold">Keepel</h1>
           </Link>
 
           {/* Skeleton para el área de navegación */}
@@ -104,7 +104,7 @@ export function Header() {
         {/* Logo y nombre */}
         <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
           <Car className="text-primary h-8 w-8" />
-          <h1 className="text-foreground text-2xl font-bold">CarCare</h1>
+          <h1 className="text-foreground text-2xl font-bold">Keepel</h1>
         </Link>
 
         {/* Navegación del usuario autenticado */}

@@ -46,7 +46,7 @@ export function usePWA() {
       setIsInstalled(true)
       setIsInstallable(false)
       setDeferredPrompt(null)
-      console.log("CarCare ha sido instalada exitosamente")
+      console.log("Keepel ha sido instalada exitosamente")
     }
 
     // Detectar si el service worker está registrado

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation introduces a three-layer context architecture for CarCare:
+This implementation introduces a three-layer context architecture for Keepel:
 
 1. **SupabaseContext** - Provides consistent Supabase client access
 2. **AuthContext** - Manages authentication state and user profile
