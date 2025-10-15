@@ -28,14 +28,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://carcare-pro.vercel.app"),
+  metadataBase: new URL("https://keepel.chemicaldev.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "es_ES",
-    url: "https://carcare-pro.vercel.app",
+    url: "https://keepel.chemicaldev.com",
     title: "Keepel - Gestión de Mantenimiento Automotriz",
     description: "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
     siteName: "Keepel",

@@ -1151,6 +1151,6 @@ Desarrollado con ❤️ por [DevChemical](https://github.com/devchemical)
 
 ---
 
-<sub>© 2024 Keepel. Todos los derechos reservados bajo la Licencia MIT.</sub>
+<sub>© 2025 Keepel. Todos los derechos reservados bajo la Licencia MIT.</sub>
 
 </div>
