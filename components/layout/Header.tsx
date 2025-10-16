@@ -33,14 +33,14 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
 
-  // Safety timeout: if logout takes more than 3 seconds, force redirect
+  // Safety timeout: if logout takes more than 2 seconds, force redirect
   useEffect(() => {
     if (isLoggingOut) {
-      console.log("⏱️ Logout safety timer started (3s)")
+      console.log("⏱️ Logout safety timer started (2s)")
       const timeoutId = setTimeout(() => {
         console.log("⚠️ Logout timeout reached, forcing redirect...")
-        window.location.replace("/")
-      }, 3000)
+        window.location.replace("/auth/login")
+      }, 2000)
 
       return () => {
         console.log("⏱️ Logout safety timer cleared")

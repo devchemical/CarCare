@@ -84,7 +84,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (sessionError) {
-          console.error("Session error:", sessionError)
+          // Only log error if it's not the expected "session missing" error
+          if (sessionError.name !== "AuthSessionMissingError") {
+            console.error("Session error:", sessionError)
+          }
           setUser(null)
           setProfile(null)
           setIsLoading(false)
@@ -120,7 +123,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (!isMounted) return
 
           if (authError) {
-            console.error("Auth error:", authError)
+            // Only log error if it's not the expected "session missing" error
+            if (authError.name !== "AuthSessionMissingError") {
+              console.error("Auth error:", authError)
+            }
             setUser(null)
             setProfile(null)
             setIsLoading(false)
@@ -205,48 +211,81 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     console.log("🚀 Starting signOut process...")
 
+    // Prevent multiple simultaneous logout attempts
+    if (isLoggingOut) {
+      console.log("⚠️ Logout already in progress")
+      return
+    }
+
     try {
       setIsLoggingOut(true)
 
-      // 1. Clear local state FIRST (immediate UI feedback)
+      // 1. Clear local state FIRST for immediate UI feedback
+      console.log("🧹 Clearing local state...")
       setUser(null)
       setProfile(null)
-      console.log("✅ Local state cleared")
 
-      // 2. Call Supabase signOut (clears cookies automatically)
-      console.log("🔐 Calling supabase.auth.signOut()...")
-      const { error } = await supabase.auth.signOut()
+      // 2. Manual cookie cleanup FIRST (most aggressive approach)
+      console.log("🍪 Manually clearing ALL auth cookies...")
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie.split(";")
+        const cookiesToDelete = []
 
-      if (error) {
-        console.error("⚠️ SignOut error:", error)
-        throw error
+        for (let cookie of cookies) {
+          const cookieName = cookie.split("=")[0].trim()
+          // Clear all Supabase auth cookies
+          if (cookieName.includes("supabase") || cookieName.includes("sb-") || cookieName.startsWith("auth-")) {
+            cookiesToDelete.push(cookieName)
+          }
+        }
+
+        // Delete each cookie with multiple strategies
+        for (let cookieName of cookiesToDelete) {
+          // Strategy 1: Delete with path=/
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+          // Strategy 2: Delete with domain
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+          // Strategy 3: Delete with root domain
+          const rootDomain = window.location.hostname.split(".").slice(-2).join(".")
+          if (rootDomain !== window.location.hostname) {
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${rootDomain};`
+          }
+          console.log(`  ✓ Cleared cookie: ${cookieName}`)
+        }
       }
 
-      console.log("✅ SignOut successful")
+      // 3. Call Supabase signOut API
+      console.log("🔐 Calling supabase.auth.signOut()...")
+      try {
+        await supabase.auth.signOut()
+        console.log("✅ SignOut API call successful")
+      } catch (signOutError) {
+        console.error("⚠️ SignOut error (continuing anyway):", signOutError)
+      }
 
-      // 3. Small delay to ensure server has processed the logout
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      console.log("✅ Cookie cleanup complete")
 
-      console.log("🔄 Redirecting to /...")
+      // 4. Force immediate redirect with cache busting
+      console.log("🔄 Forcing redirect to /auth/login...")
 
-      // 4. Force hard redirect - this will trigger middleware to re-check auth
       if (typeof window !== "undefined") {
-        window.location.href = "/"
+        // Add timestamp to prevent caching
+        const timestamp = Date.now()
+        window.location.href = `/auth/login?logout=${timestamp}`
       }
     } catch (error) {
       console.error("❌ Critical error during sign out:", error)
 
-      // Emergency cleanup and redirect
+      // Emergency cleanup
       setUser(null)
       setProfile(null)
-      setIsLoggingOut(false)
 
+      // Force redirect regardless of errors
       if (typeof window !== "undefined") {
-        setTimeout(() => {
-          window.location.href = "/"
-        }, 100)
+        window.location.href = `/auth/login?logout=${Date.now()}`
       }
     }
+    // Note: No finally block to reset isLoggingOut because we're doing a hard redirect
   }
 
   const value: AuthContextType = {

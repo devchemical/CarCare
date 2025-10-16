@@ -10,7 +10,7 @@ import { GoogleSignInButton } from "@/components/auth/google-signin-button"
 import { Layout } from "../../../components/layout/Layout"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSupabase } from "@/hooks/useSupabase"
 
 export default function LoginPage() {
@@ -20,6 +20,60 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = useSupabase()
+
+  // Ensure we're fully logged out when landing on login page
+  useEffect(() => {
+    const clearSession = async () => {
+      try {
+        // Check if we're coming from a logout action
+        const urlParams = new URLSearchParams(window.location.search)
+        const isLogout = urlParams.has("logout")
+
+        if (isLogout) {
+          console.log("🧹 Login page: Logout detected, performing aggressive cleanup...")
+
+          // Force sign out again to be absolutely sure
+          await supabase.auth.signOut()
+
+          // Clear local storage
+          if (typeof window !== "undefined") {
+            Object.keys(localStorage).forEach((key) => {
+              if (key.includes("supabase") || key.includes("sb-")) {
+                localStorage.removeItem(key)
+                console.log(`  ✓ Cleared localStorage: ${key}`)
+              }
+            })
+
+            // Clear session storage
+            Object.keys(sessionStorage).forEach((key) => {
+              if (key.includes("supabase") || key.includes("sb-")) {
+                sessionStorage.removeItem(key)
+                console.log(`  ✓ Cleared sessionStorage: ${key}`)
+              }
+            })
+          }
+
+          // Clean up the URL
+          window.history.replaceState({}, document.title, "/auth/login")
+          console.log("✅ Aggressive cleanup complete")
+        } else {
+          // Regular check
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+
+          if (session) {
+            console.log("🧹 Login page: Found existing session, clearing...")
+            await supabase.auth.signOut()
+          }
+        }
+      } catch (error) {
+        console.error("Error clearing session on login page:", error)
+      }
+    }
+
+    clearSession()
+  }, [supabase])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
