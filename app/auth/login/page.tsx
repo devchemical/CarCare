@@ -19,8 +19,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
-  // Crear una sola instancia del cliente de Supabase para toda la página
   const supabase = useSupabase()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,15 +34,14 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      if (data?.user && data?.session) {
-        try {
-          router.push("/")
-        } catch (routerError) {
-          window.location.href = "/"
-        }
-      } else {
-        throw new Error("No user session created")
+      if (!data?.user || !data?.session) {
+        throw new Error("No se pudo crear la sesión")
       }
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      router.refresh()
+      router.push("/")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {

@@ -12,6 +12,7 @@ Instructions for high-quality Next.js applications with Tailwind CSS styling and
 - Latest Next.js (App Router)
 - TypeScript for type safety
 - Tailwind CSS for styling
+- Supabase for backend (database + auth)
 
 ## Development Standards
 

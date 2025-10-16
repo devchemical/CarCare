@@ -213,37 +213,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setProfile(null)
       console.log("✅ Local state cleared")
 
-      // 2. Call server-side logout API to clear HTTP-only cookies
-      console.log("🔐 Calling server-side logout API...")
-      const response = await fetch("/api/auth/signout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!response.ok) {
-        console.error("❌ Server logout failed:", response.status)
-      } else {
-        console.log("✅ Server logout successful")
-      }
-
-      // 3. Also call client-side signOut for good measure
-      console.log("🔐 Calling client-side supabase.auth.signOut()...")
+      // 2. Call Supabase signOut (clears cookies automatically)
+      console.log("🔐 Calling supabase.auth.signOut()...")
       const { error } = await supabase.auth.signOut()
 
       if (error) {
-        console.error("⚠️ Client signOut error (may be expected):", error)
-      } else {
-        console.log("✅ Client signOut successful")
+        console.error("⚠️ SignOut error:", error)
+        throw error
       }
 
-      // 4. Small delay to ensure server has processed the logout
+      console.log("✅ SignOut successful")
+
+      // 3. Small delay to ensure server has processed the logout
       await new Promise((resolve) => setTimeout(resolve, 300))
 
       console.log("🔄 Redirecting to /...")
 
-      // 5. Force hard redirect - this will trigger middleware to re-check auth
+      // 4. Force hard redirect - this will trigger middleware to re-check auth
       if (typeof window !== "undefined") {
         window.location.href = "/"
       }
