@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { AppProviders } from "@/contexts"
 import "./globals.css"
+import "@/styles/responsive.css"
 
 const inter = Inter({
   variable: "--font-inter",

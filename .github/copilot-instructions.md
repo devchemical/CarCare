@@ -1,128 +1,110 @@
 # Keepel - AI Coding Instructions
 
-## Project Overview
+A Next.js 14 vehicle maintenance management system with TypeScript, Supabase, and Tailwind CSS.
 
 **Keepel** is a vehicle maintenance management system built with Next.js 14, TypeScript, Supabase, and Tailwind CSS. It follows a component-driven architecture with server-side rendering and client-side interactivity.
 
-## Architecture Patterns
+## Critical Architecture: Three-Layer Context System
 
-### Supabase Integration
+**Must understand before coding:** The app uses a hierarchical context chain that eliminates prop drilling:
 
-- **Triple Client Pattern**: Use separate Supabase clients for different contexts:
-  - `lib/supabase/client.ts` - Browser client (singleton pattern)
-  - `lib/supabase/server.ts` - Server-side client with cookie handling
-  - `lib/supabase/middleware.ts` - Middleware client for auth session management
-- Auth flow uses middleware to redirect unauthenticated users to `/auth/login`
-- Profile data is automatically created from auth metadata in `useAuth` hook
+```tsx
+<SupabaseContext>        // Singleton Supabase client
+  <AuthContext>          // User auth + profile
+    <DataContext>        // Vehicles + maintenance records
+```
 
-### Component Structure
+All wrapped in `contexts/AppProviders.tsx`. **Never import Supabase clients directly** - always use contexts.
 
-- **shadcn/ui Components**: All UI components use the shadcn/ui pattern with `cva` for variant styling
-- **Feature Components**: Organized by domain (`dashboard/`, `vehicles/`, `maintenance/`, `auth/`)
-- **Dialog Pattern**: CRUD operations use dialog components (e.g., `add-vehicle-dialog.tsx`)
-- **Server Components by Default**: Client components explicitly marked with `"use client"`
+### Context Usage Pattern
 
-### Context Architecture (NEW)
+```tsx
+"use client"
+import { useAuth, useData, useSupabase } from "@/contexts"
 
-- **Three-Layer Context System**: `SupabaseContext` → `AuthContext` → `DataContext`
-- **AppProviders**: Wrap app in `contexts/AppProviders.tsx` for unified context access
-- **Optimistic Updates**: Use `useData()` methods like `addVehicleOptimistic()` for immediate UI feedback
-- **No Prop Drilling**: Access user/data state directly via `useAuth()` and `useData()` hooks
+const { user, profile, isLoading } = useAuth() // Auth state
+const { vehicles, addVehicleOptimistic } = useData() // App data + optimistic updates
+const supabase = useSupabase() // Database client
+```
 
-### Data Flow
+## Supabase Triple-Client Pattern
 
-- **Context-Based**: Primary data access through `useAuth()` and `useData()` contexts
-- **Legacy Hooks**: Some components still use `useDashboardData`, `useAuth` hooks (being migrated)
-- **Conditional Rendering**: Main page (`app/page.tsx`) renders `Dashboard` or `LandingPage` based on auth state
-- **Loading States**: Consistent loading patterns with Lucide icons and skeleton states
+Three separate client instances for different execution contexts:
 
-## Development Workflows
+1. **Browser** (`lib/supabase/client.ts`): Singleton with manual cookie handling via `document.cookie`
+2. **Server** (`lib/supabase/server.ts`): Per-request client using Next.js `cookies()` helper
+3. **Middleware** (`lib/supabase/middleware.ts`): Session refresh + auth redirects to `/auth/login`
 
-### Database Schema
+**Access via contexts only** - don't import these files directly in components.
 
-- Tables: `profiles`, `vehicles`, `maintenance_records` (see `scripts/001_create_tables.sql`)
-- All entities are user-scoped with `user_id` foreign keys
-- Profile creation handled automatically via trigger (`scripts/002_create_profile_trigger.sql`)
+## Database & Security
 
-### Commands
+- **Schema**: `profiles`, `vehicles`, `maintenance_records` (see `scripts/001_create_tables.sql`)
+- **RLS**: All tables user-scoped with `auth.uid() = user_id` policies
+- **Auto-Profile**: Created via trigger from `auth.users` metadata
+- **User Relations**: All entities linked to `user_id` with CASCADE deletes
 
-Use `pnpm` for package management and scripts:
+## CRUD Pattern with Dual Refresh
+
+**Critical:** All mutations require TWO refresh calls for full UI update:
+
+```tsx
+import { useRouter } from "next/navigation"
+const router = useRouter()
+const { addVehicleOptimistic } = useData()
+
+// After mutation:
+await addVehicleOptimistic(data) // Updates context state
+router.refresh() // Refreshes server components
+```
+
+Same for `updateVehicleOptimistic()`, `deleteVehicleOptimistic()`, and maintenance methods.
+
+## Component Patterns
+
+### Dialog Components (CRUD)
+
+See `components/vehicles/add-vehicle-dialog-context.tsx` for reference:
+
+- **Multi-Service**: Maintenance dialogs support dynamic service arrays (add/remove items)
+- **Loading States**: Use `isLoading` state + `Loader2` icon from Lucide
+- **Error Handling**: Display errors inline with user-friendly messages
+- **Form Reset**: Clear state + close dialog on success
+
+### Conditional Rendering
+
+Main page (`app/page.tsx`) pattern:
+
+```tsx
+if (authLoading) return <LoadingScreen />
+return user ? <Dashboard /> : <LandingPage />
+```
+
+## Development Commands
 
 ```bash
-pnpm dev          # Start development server
+pnpm dev          # Development server (port 3000)
 pnpm build        # Production build
 pnpm type-check   # TypeScript validation
-pnpm format       # Prettier formatting
+pnpm format       # Prettier format
 ```
+
+**Package manager:** `pnpm` only (enforced in `package.json`)
 
 ## Key Conventions
 
-### File Organization
+- **Imports**: Use `@/` prefix for absolute imports
+- **Client Components**: Explicit `"use client"` directive (Server Components default)
+- **UI Library**: shadcn/ui with Radix primitives + `cva` variants
+- **Icons**: Lucide React only
+- **Forms**: React Hook Form + Zod validation (see maintenance dialogs)
+- **Styling**: Tailwind with mobile-first responsive design
 
-- **Route Groups**: Auth pages in `app/auth/` directory
-- **Component Co-location**: Related components grouped by feature
-- **Absolute Imports**: Use `@/` prefix for all internal imports
-- **TypeScript**: Interface definitions inline with components, shared types extracted when reused
+## Files to Reference
 
-### UI Patterns
+- Context implementation: `contexts/AppProviders.tsx`, `contexts/DataContext.tsx`
+- CRUD example: `components/maintenance/add-maintenance-dialog.tsx` (multi-service pattern)
+- Auth flow: `middleware.ts` → `lib/supabase/middleware.ts`
+- Database schema: `scripts/001_create_tables.sql`
 
-- **Tailwind Classes**: Use design system tokens, responsive modifiers, dark mode variants
-- **Icon Library**: Lucide React for consistent iconography
-- **Form Handling**: React Hook Form with Zod validation (following existing patterns)
-- **Responsive Design**: Mobile-first approach with Tailwind breakpoints
-
-### Authentication
-
-- **Protected Routes**: Middleware handles automatic redirects
-- **AuthContext**: Access via `useAuth()` from `contexts/AuthContext` for user, profile, and auth state
-- **Session Management**: Automatic session refresh in middleware
-- **Supabase Client**: Use `useSupabase()` from `contexts/SupabaseContext` instead of direct imports
-
-### Database Queries
-
-- **Row Level Security**: All tables use RLS policies (user-scoped access)
-- **Real-time**: Supabase real-time subscriptions for live data updates
-- **Error Handling**: Graceful degradation with user-friendly error messages
-
-## Common Patterns
-
-### Component Creation
-
-```tsx
-"use client" // Only when needed for interactivity
-
-import { useAuth, useData, useSupabase } from "@/contexts"
-
-interface ComponentProps {
-  // Props interface above component
-}
-
-export function Component({ prop }: ComponentProps) {
-  const { user, profile } = useAuth()
-  const { vehicles, addVehicleOptimistic } = useData()
-  const supabase = useSupabase()
-
-  // Event handlers
-  // Render logic with early returns for loading/error states
-}
-```
-
-### Dialog Components
-
-Follow the updated pattern with context integration:
-
-- Use `useData()` optimistic update methods
-- Access user data via `useAuth()` context
-- Supabase client via `useSupabase()` context
-- Immediate UI feedback with automatic rollback on errors
-
-### Data Access Patterns
-
-- **Auth State**: `const { user, profile, isLoading } = useAuth()`
-- **App Data**: `const { vehicles, maintenanceRecords, refreshAll } = useData()`
-- **Database**: `const supabase = useSupabase()` for custom queries
-- **Optimistic Updates**: Use context methods like `addVehicleOptimistic()` for better UX
-
-When working on this codebase, prioritize consistency with existing patterns, maintain TypeScript strict mode compliance, and ensure responsive design across all components.
-
-Don't create any documents when you do code changes
+**Don't create summary documents after code changes**

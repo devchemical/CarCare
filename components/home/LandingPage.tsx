@@ -11,7 +11,7 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-foreground mb-6 text-5xl font-bold leading-tight">
+          <h2 className="text-foreground mb-6 text-5xl leading-tight font-bold">
             Gestiona el cuidado de tu <span className="text-primary">vehículo</span> de manera{" "}
             <span className="text-primary">inteligente</span>
           </h2>
@@ -89,51 +89,55 @@ export function LandingPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="bg-card/30 container mx-4 mx-auto rounded-3xl px-4 py-16">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <h3 className="text-foreground mb-6 text-3xl font-bold">Beneficios de usar Keepel</h3>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
-                <div>
-                  <h4 className="text-foreground font-semibold">Ahorra dinero</h4>
-                  <p className="text-muted-foreground">
-                    Prevén reparaciones costosas con mantenimiento preventivo oportuno.
-                  </p>
+      <section className="container mx-auto px-4 py-16">
+        <div className="bg-card/30 rounded-3xl p-4 sm:p-8 lg:p-12">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h3 className="text-foreground mb-6 text-3xl font-bold">Beneficios de usar Keepel</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-foreground font-semibold">Ahorra dinero</h4>
+                    <p className="text-muted-foreground">
+                      Prevén reparaciones costosas con mantenimiento preventivo oportuno.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
-                <div>
-                  <h4 className="text-foreground font-semibold">Prolonga la vida útil</h4>
-                  <p className="text-muted-foreground">Mantén tu vehículo en óptimas condiciones por más tiempo.</p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-foreground font-semibold">Prolonga la vida útil</h4>
+                    <p className="text-muted-foreground">Mantén tu vehículo en óptimas condiciones por más tiempo.</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
-                <div>
-                  <h4 className="text-foreground font-semibold">Aumenta el valor de reventa</h4>
-                  <p className="text-muted-foreground">
-                    Un historial completo de mantenimiento incrementa el valor de tu auto.
-                  </p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-foreground font-semibold">Aumenta el valor de reventa</h4>
+                    <p className="text-muted-foreground">
+                      Un historial completo de mantenimiento incrementa el valor de tu auto.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
-                <div>
-                  <h4 className="text-foreground font-semibold">Tranquilidad total</h4>
-                  <p className="text-muted-foreground">Nunca más olvides un cambio de aceite o revisión importante.</p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="text-primary mt-0.5 h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-foreground font-semibold">Tranquilidad total</h4>
+                    <p className="text-muted-foreground">
+                      Nunca más olvides un cambio de aceite o revisión importante.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="from-primary/20 to-primary/5 rounded-2xl bg-gradient-to-br p-8 text-center">
-            <Users className="text-primary mx-auto mb-4 h-16 w-16" />
-            <h4 className="text-foreground mb-2 text-2xl font-bold">+10,000 usuarios confían en nosotros</h4>
-            <p className="text-muted-foreground">
-              Únete a la comunidad de propietarios responsables que cuidan sus vehículos de manera profesional.
-            </p>
+            <div className="from-primary/20 to-primary/5 rounded-2xl bg-gradient-to-br p-8 text-center">
+              <Users className="text-primary mx-auto mb-4 h-16 w-16" />
+              <h4 className="text-foreground mb-2 text-2xl font-bold">+10,000 usuarios confían en nosotros</h4>
+              <p className="text-muted-foreground">
+                Únete a la comunidad de propietarios responsables que cuidan sus vehículos de manera profesional.
+              </p>
+            </div>
           </div>
         </div>
       </section>

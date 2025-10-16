@@ -182,22 +182,21 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-h-[95vh] w-[95vw] overflow-y-auto sm:w-full sm:max-w-[600px]">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
             <Wrench className="text-primary h-5 w-5" />
-            <span className="hidden sm:inline">Agregar Registro de Mantenimiento</span>
-            <span className="sm:hidden">Nuevo Mantenimiento</span>
+            <span>Agregar Mantenimiento</span>
           </DialogTitle>
           <DialogDescription className="text-sm">
             Registra un nuevo servicio o mantenimiento realizado al vehículo.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Información general */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
               <Label htmlFor="service_date" className="text-sm font-medium">
                 Fecha de Servicio *
               </Label>
@@ -207,10 +206,10 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 value={formData.service_date}
                 onChange={(e) => setFormData({ ...formData, service_date: e.target.value })}
                 required
-                className="h-11"
+                className="h-10"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="mileage" className="text-sm font-medium">
                 Kilometraje Actual
               </Label>
@@ -220,45 +219,42 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                 placeholder="50000"
                 value={formData.mileage}
                 onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
-                className="h-11"
+                className="h-10"
               />
             </div>
           </div>
 
           {/* Sección de servicios múltiples */}
-          <div className="border-border bg-muted/30 space-y-4 rounded-lg border p-4">
+          <div className="border-border bg-muted/30 space-y-3 rounded-lg border p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
                 <Wrench className="h-4 w-4" />
-                Servicios Realizados
+                Servicios
               </h4>
-              <Button type="button" size="sm" variant="outline" onClick={addService} className="h-8 gap-1">
-                <Plus className="h-3 w-3" />
-                <span className="hidden sm:inline">Agregar Servicio</span>
-                <span className="sm:hidden">Agregar</span>
+              <Button type="button" size="sm" variant="outline" onClick={addService} className="h-8 gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" />
+                Agregar
               </Button>
             </div>
 
             {services.map((service, index) => (
-              <div key={service.id} className="border-border bg-background relative space-y-3 rounded-md border p-3">
+              <div key={service.id} className="border-border bg-background relative space-y-2.5 rounded-md border p-3">
                 {services.length > 1 && (
                   <Button
                     type="button"
                     size="sm"
                     variant="ghost"
                     onClick={() => removeService(service.id)}
-                    className="text-muted-foreground hover:text-destructive absolute top-2 right-2 h-6 w-6 p-0"
+                    className="text-muted-foreground hover:text-destructive absolute top-1.5 right-1.5 h-6 w-6 p-0"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </Button>
                 )}
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">
-                    Tipo de Mantenimiento {services.length > 1 ? `#${index + 1}` : ""} *
-                  </Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Tipo {services.length > 1 ? `#${index + 1}` : ""} *</Label>
                   <Select value={service.type} onValueChange={(value) => updateService(service.id, "type", value)}>
-                    <SelectTrigger className="h-10">
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -271,17 +267,17 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Descripción</Label>
                     <Input
-                      placeholder="Ej: Marca, modelo específico..."
+                      placeholder="Marca, modelo..."
                       value={service.description}
                       onChange={(e) => updateService(service.id, "description", e.target.value)}
-                      className="h-10"
+                      className="h-9 text-sm"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Costo (€)</Label>
                     <Input
                       type="number"
@@ -289,7 +285,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                       placeholder="0.00"
                       value={service.cost}
                       onChange={(e) => updateService(service.id, "cost", e.target.value)}
-                      className="h-10"
+                      className="h-9 text-sm"
                     />
                   </div>
                 </div>
@@ -297,27 +293,27 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
             ))}
           </div>
 
-          {/* Sección próximo servicio - Collapsible en mobile */}
-          <div className="border-border space-y-4 border-t pt-4">
-            <h4 className="text-foreground flex items-center gap-2 text-sm font-medium">
+          {/* Sección próximo servicio */}
+          <div className="border-border space-y-3 border-t pt-3">
+            <h4 className="text-foreground flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               📅 Próximo Servicio (Opcional)
             </h4>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="next_service_date" className="text-sm font-medium">
-                  Fecha del Próximo Servicio
+                  Fecha
                 </Label>
                 <Input
                   id="next_service_date"
                   type="date"
                   value={formData.next_service_date}
                   onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
-                  className="h-11"
+                  className="h-10"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="next_service_mileage" className="text-sm font-medium">
-                  Kilometraje del Próximo Servicio
+                  Kilometraje
                 </Label>
                 <Input
                   id="next_service_mileage"
@@ -325,55 +321,49 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
                   placeholder="55000"
                   value={formData.next_service_mileage}
                   onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
-                  className="h-11"
+                  className="h-10"
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="notes" className="text-sm font-medium">
-              Notas Adicionales
+              Notas
             </Label>
             <Textarea
               id="notes"
-              placeholder="Cualquier información adicional sobre el servicio..."
+              placeholder="Información adicional..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="resize-none"
+              className="resize-none text-sm"
             />
           </div>
 
           {error && (
-            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
+            <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-2.5 text-xs sm:text-sm">
               {error}
             </div>
           )}
 
           {/* Botones optimizados para touch */}
-          <div className="border-border flex flex-col gap-3 border-t pt-4 sm:flex-row">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1 text-base">
+          <div className="border-border flex flex-col-reverse gap-2 border-t pt-3 sm:flex-row sm:gap-3">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-10 flex-1 sm:h-11">
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || services.every((s) => !s.type)}
-              className="bg-primary hover:bg-primary/90 h-11 flex-1 text-base font-medium"
+              className="bg-primary hover:bg-primary/90 h-10 flex-1 font-medium sm:h-11"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  <span className="hidden sm:inline">Agregando...</span>
-                  <span className="sm:hidden">Guardando...</span>
+                  Guardando...
                 </>
               ) : (
-                <>
-                  <span className="hidden sm:inline">
-                    Agregar {services.filter((s) => s.type).length > 1 ? "Servicios" : "Mantenimiento"}
-                  </span>
-                  <span className="sm:hidden">Agregar</span>
-                </>
+                `Agregar ${services.filter((s) => s.type).length > 1 ? "Servicios" : "Mantenimiento"}`
               )}
             </Button>
           </div>
