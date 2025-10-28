@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/ui/icons";
-import { useSupabase } from "@/hooks/useSupabase";
+import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Icons } from "@/components/ui/icons"
+import { useSupabase } from "@/hooks/useSupabase"
 
 interface GoogleSignInButtonProps {
-  redirectTo?: string;
-  className?: string;
-  children?: React.ReactNode;
-  supabaseClient?: ReturnType<typeof createClient>;
+  redirectTo?: string
+  className?: string
+  children?: React.ReactNode
+  supabaseClient?: ReturnType<typeof createClient>
 }
 
 export function GoogleSignInButton({
@@ -17,24 +17,20 @@ export function GoogleSignInButton({
   children = "Continuar con Google",
   supabaseClient,
 }: GoogleSignInButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const defaultSupabase = useSupabase();
+  const [isLoading, setIsLoading] = useState(false)
+  const defaultSupabase = useSupabase()
   // Usar el cliente pasado como prop o el hook por defecto
-  const supabase = supabaseClient || defaultSupabase;
+  const supabase = supabaseClient || defaultSupabase
 
   const handleGoogleSignIn = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       // Detectar el entorno actual
-      const isLocalhost =
-        typeof window !== "undefined" &&
-        window.location.hostname === "localhost";
-      const baseUrl = isLocalhost
-        ? "http://localhost:3000"
-        : "https://v0-car-maintenance-app-devchemicals-projects.vercel.app";
+      const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost"
+      const baseUrl = isLocalhost ? process.env.NEXT_PUBLIC_APP_URL_DEV! : process.env.NEXT_PUBLIC_APP_URL_PROD!
 
-      const redirectUrl = `${baseUrl}/auth/callback?next=${redirectTo}`;
+      const redirectUrl = `${baseUrl}/auth/callback?next=${redirectTo}`
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -45,33 +41,23 @@ export function GoogleSignInButton({
             prompt: "consent",
           },
         },
-      });
+      })
 
       if (error) {
-        console.error("Google OAuth error:", error);
-        setIsLoading(false);
+        console.error("Google OAuth error:", error)
+        setIsLoading(false)
       }
       // No quitamos el loading state si no hay error porque seremos redirigidos
     } catch (error) {
-      console.error("Unexpected error during Google sign-in:", error);
-      setIsLoading(false);
+      console.error("Unexpected error during Google sign-in:", error)
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={handleGoogleSignIn}
-      disabled={isLoading}
-      className={className}
-    >
-      {isLoading ? (
-        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <Icons.google className="mr-2 h-4 w-4" />
-      )}
+    <Button type="button" variant="outline" onClick={handleGoogleSignIn} disabled={isLoading} className={className}>
+      {isLoading ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.google className="mr-2 h-4 w-4" />}
       {children}
     </Button>
-  );
+  )
 }
