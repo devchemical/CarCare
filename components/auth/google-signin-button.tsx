@@ -26,9 +26,11 @@ export function GoogleSignInButton({
     try {
       setIsLoading(true)
 
-      // Detectar el entorno actual
-      const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost"
-      const baseUrl = isLocalhost ? process.env.NEXT_PUBLIC_APP_URL_DEV! : process.env.NEXT_PUBLIC_APP_URL_PROD!
+      // Usar la URL actual del navegador para garantizar la redirección correcta
+      const baseUrl =
+        typeof window !== "undefined"
+          ? `${window.location.protocol}//${window.location.host}`
+          : process.env.NEXT_PUBLIC_APP_URL_PROD!
 
       const redirectUrl = `${baseUrl}/auth/callback?next=${redirectTo}`
 
