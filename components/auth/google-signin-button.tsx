@@ -34,12 +34,6 @@ export function GoogleSignInButton({
 
       const redirectUrl = `${baseUrl}/auth/callback?next=${redirectTo}`
 
-      console.log("🔐 OAuth Debug:", {
-        baseUrl,
-        redirectUrl,
-        hostname: window.location.hostname,
-      })
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

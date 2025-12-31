@@ -36,14 +36,11 @@ export function Header() {
   // Safety timeout: if logout takes more than 2 seconds, force redirect
   useEffect(() => {
     if (isLoggingOut) {
-      console.log("⏱️ Logout safety timer started (2s)")
       const timeoutId = setTimeout(() => {
-        console.log("⚠️ Logout timeout reached, forcing redirect...")
         window.location.replace("/auth/login")
       }, 2000)
 
       return () => {
-        console.log("⏱️ Logout safety timer cleared")
         clearTimeout(timeoutId)
       }
     }

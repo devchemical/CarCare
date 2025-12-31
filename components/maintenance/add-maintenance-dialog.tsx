@@ -93,7 +93,6 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
     setError(null)
 
     try {
-      console.log("🚀 [DEBUG] Iniciando handleSubmit")
       // Validaciones básicas
       if (!vehicleId) {
         throw new Error("ID del vehículo no válido")

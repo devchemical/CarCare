@@ -35,7 +35,6 @@ export function usePWA() {
 
     // Listener para el evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log("beforeinstallprompt event fired")
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setIsInstallable(true)
@@ -46,7 +45,6 @@ export function usePWA() {
       setIsInstalled(true)
       setIsInstallable(false)
       setDeferredPrompt(null)
-      console.log("Keepel ha sido instalada exitosamente")
     }
 
     // Detectar si el service worker está registrado
@@ -55,7 +53,7 @@ export function usePWA() {
         try {
           const registration = await navigator.serviceWorker.getRegistration()
           if (registration) {
-            console.log("Service Worker está registrado")
+            // Service Worker is registered
           } else {
             console.warn("Service Worker no está registrado")
           }
@@ -88,12 +86,10 @@ export function usePWA() {
       const choiceResult = await deferredPrompt.userChoice
 
       if (choiceResult.outcome === "accepted") {
-        console.log("Usuario aceptó instalar la PWA")
         setIsInstallable(false)
         setDeferredPrompt(null)
         return true
       } else {
-        console.log("Usuario canceló la instalación")
         return false
       }
     } catch (error) {

@@ -30,8 +30,6 @@ export default function LoginPage() {
         const isLogout = urlParams.has("logout")
 
         if (isLogout) {
-          console.log("🧹 Login page: Logout detected, performing aggressive cleanup...")
-
           // Force sign out again to be absolutely sure
           await supabase.auth.signOut()
 
@@ -40,7 +38,6 @@ export default function LoginPage() {
             Object.keys(localStorage).forEach((key) => {
               if (key.includes("supabase") || key.includes("sb-")) {
                 localStorage.removeItem(key)
-                console.log(`  ✓ Cleared localStorage: ${key}`)
               }
             })
 
@@ -48,14 +45,12 @@ export default function LoginPage() {
             Object.keys(sessionStorage).forEach((key) => {
               if (key.includes("supabase") || key.includes("sb-")) {
                 sessionStorage.removeItem(key)
-                console.log(`  ✓ Cleared sessionStorage: ${key}`)
               }
             })
           }
 
           // Clean up the URL
           window.history.replaceState({}, document.title, "/auth/login")
-          console.log("✅ Aggressive cleanup complete")
         } else {
           // Regular check
           const {
@@ -63,7 +58,6 @@ export default function LoginPage() {
           } = await supabase.auth.getSession()
 
           if (session) {
-            console.log("🧹 Login page: Found existing session, clearing...")
             await supabase.auth.signOut()
           }
         }

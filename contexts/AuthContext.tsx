@@ -175,12 +175,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-      console.log("🔔 Auth state change:", event, "Session:", !!session)
-
       if (!isMounted) return
 
       if (event === "SIGNED_IN" && session?.user) {
-        console.log("✅ User signed in:", session.user.email)
         setUser({ id: session.user.id, email: session.user.email })
 
         const basicProfile = {
@@ -196,7 +193,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         await loadProfile(session.user.id)
       } else if (event === "SIGNED_OUT") {
-        console.log("🚪 User signed out event received")
         setUser(null)
         setProfile(null)
       }
@@ -209,11 +205,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [supabase, loadProfile])
 
   const signOut = async () => {
-    console.log("🚀 Starting signOut process...")
-
     // Prevent multiple simultaneous logout attempts
     if (isLoggingOut) {
-      console.log("⚠️ Logout already in progress")
       return
     }
 
@@ -221,12 +214,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoggingOut(true)
 
       // 1. Clear local state FIRST for immediate UI feedback
-      console.log("🧹 Clearing local state...")
       setUser(null)
       setProfile(null)
 
       // 2. Manual cookie cleanup FIRST (most aggressive approach)
-      console.log("🍪 Manually clearing ALL auth cookies...")
       if (typeof document !== "undefined") {
         const cookies = document.cookie.split(";")
         const cookiesToDelete = []
@@ -250,24 +241,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (rootDomain !== window.location.hostname) {
             document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${rootDomain};`
           }
-          console.log(`  ✓ Cleared cookie: ${cookieName}`)
         }
       }
 
       // 3. Call Supabase signOut API
-      console.log("🔐 Calling supabase.auth.signOut()...")
       try {
         await supabase.auth.signOut()
-        console.log("✅ SignOut API call successful")
       } catch (signOutError) {
         console.error("⚠️ SignOut error (continuing anyway):", signOutError)
       }
 
-      console.log("✅ Cookie cleanup complete")
-
       // 4. Force immediate redirect with cache busting
-      console.log("🔄 Forcing redirect to /auth/login...")
-
       if (typeof window !== "undefined") {
         // Add timestamp to prevent caching
         const timestamp = Date.now()
