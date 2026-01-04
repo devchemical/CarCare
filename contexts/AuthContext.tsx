@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
-import { useSupabase } from "./SupabaseContext"
+import { authManager } from "@/lib/auth/authManager"
 import type { User } from "@supabase/supabase-js"
 
 export interface AuthUser {
@@ -34,9 +34,9 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [isLoading, setIsLoading] = useState(true) // Start as true to prevent flash
-  const [isLoggingOut, setIsLoggingOut] = useState(false) // Loading state for logout
-  const supabase = useSupabase()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const supabase = authManager.getSupabase()
 
   const loadProfile = useCallback(
     async (userId: string) => {
@@ -62,214 +62,66 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user?.id, loadProfile])
 
   useEffect(() => {
-    let isMounted = true
+    // Suscribirse a cambios de estado del AuthManager
+    const unsubscribe = authManager.subscribe((state) => {
+      setIsLoading(state.isLoading)
 
-    const initAuth = async () => {
-      // Set a very short loading state to prevent flash
-      setTimeout(() => {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }, 100)
+      if (state.user) {
+        // Usuario autenticado
+        setUser({
+          id: state.user.id,
+          email: state.user.email,
+        })
 
-      try {
-        // Try to get session asynchronously after initial render
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession()
-
-        if (!isMounted) {
-          return
-        }
-
-        if (sessionError) {
-          // Only log error if it's not the expected "session missing" error
-          if (sessionError.name !== "AuthSessionMissingError") {
-            console.error("Session error:", sessionError)
-          }
-          setUser(null)
-          setProfile(null)
-          setIsLoading(false)
-          return
-        }
-
-        // If we have a session, use the user from it
-        if (session?.user) {
-          const authUser = session.user
-          setUser({ id: authUser.id, email: authUser.email })
-
-          // Create basic profile from auth metadata
-          const basicProfile = {
-            id: authUser.id,
-            email: authUser.email || "",
-            full_name:
-              authUser.user_metadata?.name ||
-              authUser.user_metadata?.full_name ||
-              authUser.email?.split("@")[0] ||
-              "Usuario",
-          }
-          setProfile(basicProfile)
-
-          // Try to load full profile from database
-          await loadProfile(authUser.id)
-        } else {
-          // Fallback to getUser() if no session
-          const {
-            data: { user: authUser },
-            error: authError,
-          } = await supabase.auth.getUser()
-
-          if (!isMounted) return
-
-          if (authError) {
-            // Only log error if it's not the expected "session missing" error
-            if (authError.name !== "AuthSessionMissingError") {
-              console.error("Auth error:", authError)
-            }
-            setUser(null)
-            setProfile(null)
-            setIsLoading(false)
-            return
-          }
-
-          if (authUser) {
-            setUser({ id: authUser.id, email: authUser.email })
-
-            // Create basic profile from auth metadata
-            const basicProfile = {
-              id: authUser.id,
-              email: authUser.email || "",
-              full_name:
-                authUser.user_metadata?.name ||
-                authUser.user_metadata?.full_name ||
-                authUser.email?.split("@")[0] ||
-                "Usuario",
-            }
-            setProfile(basicProfile)
-
-            // Try to load full profile from database
-            await loadProfile(authUser.id)
-          } else {
-            setUser(null)
-            setProfile(null)
-          }
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error)
-        setUser(null)
-        setProfile(null)
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    // No timeout needed - auth resolves immediately or shows content
-
-    // Initialize auth
-    initAuth()
-
-    // Set up auth state listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-      if (!isMounted) return
-
-      if (event === "SIGNED_IN" && session?.user) {
-        setUser({ id: session.user.id, email: session.user.email })
-
-        const basicProfile = {
-          id: session.user.id,
-          email: session.user.email || "",
+        // Crear perfil básico desde metadata
+        const basicProfile: Profile = {
+          id: state.user.id,
+          email: state.user.email || "",
           full_name:
-            session.user.user_metadata?.name ||
-            session.user.user_metadata?.full_name ||
-            session.user.email?.split("@")[0] ||
+            state.user.user_metadata?.name ||
+            state.user.user_metadata?.full_name ||
+            state.user.email?.split("@")[0] ||
             "Usuario",
         }
         setProfile(basicProfile)
 
-        await loadProfile(session.user.id)
-      } else if (event === "SIGNED_OUT") {
+        // Cargar perfil completo desde BD
+        loadProfile(state.user.id)
+      } else {
+        // Usuario no autenticado
         setUser(null)
         setProfile(null)
       }
     })
 
+    // Cleanup
     return () => {
-      isMounted = false
-      subscription.unsubscribe()
+      unsubscribe()
     }
-  }, [supabase, loadProfile])
+  }, [loadProfile])
 
   const signOut = async () => {
-    // Prevent multiple simultaneous logout attempts
-    if (isLoggingOut) {
-      return
-    }
+    // Prevenir múltiples intentos simultáneos
+    if (isLoggingOut) return
 
     try {
       setIsLoggingOut(true)
 
-      // 1. Clear local state FIRST for immediate UI feedback
-      setUser(null)
-      setProfile(null)
+      // Usar AuthManager para cerrar sesión
+      await authManager.signOut()
 
-      // 2. Manual cookie cleanup FIRST (most aggressive approach)
-      if (typeof document !== "undefined") {
-        const cookies = document.cookie.split(";")
-        const cookiesToDelete = []
-
-        for (let cookie of cookies) {
-          const cookieName = cookie.split("=")[0].trim()
-          // Clear all Supabase auth cookies
-          if (cookieName.includes("supabase") || cookieName.includes("sb-") || cookieName.startsWith("auth-")) {
-            cookiesToDelete.push(cookieName)
-          }
-        }
-
-        // Delete each cookie with multiple strategies
-        for (let cookieName of cookiesToDelete) {
-          // Strategy 1: Delete with path=/
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-          // Strategy 2: Delete with domain
-          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
-          // Strategy 3: Delete with root domain
-          const rootDomain = window.location.hostname.split(".").slice(-2).join(".")
-          if (rootDomain !== window.location.hostname) {
-            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${rootDomain};`
-          }
-        }
-      }
-
-      // 3. Call Supabase signOut API
-      try {
-        await supabase.auth.signOut()
-      } catch (signOutError) {
-        console.error("⚠️ SignOut error (continuing anyway):", signOutError)
-      }
-
-      // 4. Force immediate redirect with cache busting
+      // Redirigir al login
       if (typeof window !== "undefined") {
-        // Add timestamp to prevent caching
-        const timestamp = Date.now()
-        window.location.href = `/auth/login?logout=${timestamp}`
+        window.location.href = `/auth/login?logout=${Date.now()}`
       }
     } catch (error) {
-      console.error("❌ Critical error during sign out:", error)
+      console.error("Error durante sign out:", error)
 
-      // Emergency cleanup
-      setUser(null)
-      setProfile(null)
-
-      // Force redirect regardless of errors
+      // Forzar redirección incluso si hay error
       if (typeof window !== "undefined") {
         window.location.href = `/auth/login?logout=${Date.now()}`
       }
     }
-    // Note: No finally block to reset isLoggingOut because we're doing a hard redirect
   }
 
   const value: AuthContextType = {

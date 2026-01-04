@@ -86,10 +86,18 @@ export default function LoginPage() {
         throw new Error("No se pudo crear la sesión")
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      // Esperar a que AuthManager procese el evento SIGNED_IN
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
+      // Obtener URL de redirección si existe
+      const urlParams = new URLSearchParams(window.location.search)
+      const redirectTo = urlParams.get("redirect") || "/"
+
+      // Hacer refresh para actualizar estado del servidor
       router.refresh()
-      router.push("/")
+      
+      // Redirigir al dashboard o a la URL original
+      router.push(redirectTo)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {

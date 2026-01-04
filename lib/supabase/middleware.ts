@@ -1,6 +1,41 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+/**
+ * Caché en memoria para sesiones (evita múltiples validaciones)
+ * Expira después de 60 segundos
+ */
+const sessionCache = new Map<
+  string,
+  {
+    userId: string | null
+    timestamp: number
+  }
+>()
+
+const CACHE_TTL = 60 * 1000 // 60 segundos
+
+/**
+ * Limpiar entradas expiradas del caché
+ */
+function cleanExpiredCache() {
+  const now = Date.now()
+  for (const [key, value] of sessionCache.entries()) {
+    if (now - value.timestamp > CACHE_TTL) {
+      sessionCache.delete(key)
+    }
+  }
+}
+
+/**
+ * Generar key de caché basada en cookies de sesión
+ */
+function getCacheKey(cookies: any): string {
+  const authToken = cookies.get("sb-access-token")?.value || ""
+  const refreshToken = cookies.get("sb-refresh-token")?.value || ""
+  return `${authToken.slice(0, 20)}-${refreshToken.slice(0, 20)}`
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -25,45 +60,67 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Allow access to auth routes and public paths
+  // Rutas públicas y especiales
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth")
   const isPublicRoute = request.nextUrl.pathname === "/"
   const isNextRoute = request.nextUrl.pathname.startsWith("/_next")
   const isApiRoute = request.nextUrl.pathname.startsWith("/api")
-
-  // Check if this is a logout redirect (has logout query param)
   const isLogoutRedirect = request.nextUrl.searchParams.has("logout")
+  const isCallbackRoute = request.nextUrl.pathname === "/auth/callback"
 
-  // If user is logged in and trying to access auth routes, redirect to dashboard
-  // EXCEPT if it's a logout redirect or callback
-  if (user && isAuthRoute && !isLogoutRedirect && request.nextUrl.pathname !== "/auth/callback") {
+  // Permitir acceso sin validación a rutas especiales
+  if (isNextRoute || isApiRoute || isCallbackRoute) {
+    return supabaseResponse
+  }
+
+  // Intentar obtener usuario desde caché
+  const cacheKey = getCacheKey(request.cookies)
+  const cached = sessionCache.get(cacheKey)
+  const now = Date.now()
+
+  let user = null
+
+  // Si hay caché válido, usar ese valor
+  if (cached && now - cached.timestamp < CACHE_TTL) {
+    user = cached.userId ? { id: cached.userId } : null
+  } else {
+    // Si no hay caché, validar con Supabase
+    const {
+      data: { user: supabaseUser },
+    } = await supabase.auth.getUser()
+
+    user = supabaseUser
+
+    // Actualizar caché
+    sessionCache.set(cacheKey, {
+      userId: user?.id || null,
+      timestamp: now,
+    })
+
+    // Limpiar caché periódicamente
+    if (Math.random() < 0.1) {
+      // 10% de probabilidad
+      cleanExpiredCache()
+    }
+  }
+
+  // === LÓGICA DE REDIRECCIONES ===
+
+  // Si usuario autenticado intenta acceder a rutas de auth (excepto logout/callback)
+  if (user && isAuthRoute && !isLogoutRedirect && !isCallbackRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/"
     return NextResponse.redirect(url)
   }
 
-  // If no user and trying to access protected routes, redirect to login
-  if (!user && !isAuthRoute && !isPublicRoute && !isNextRoute && !isApiRoute) {
+  // Si usuario NO autenticado intenta acceder a rutas protegidas
+  if (!user && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"
+    // Preservar URL original para redirección después de login
+    url.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object instead of the supabaseResponse object
 
   return supabaseResponse
 }

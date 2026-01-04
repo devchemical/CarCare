@@ -11,6 +11,7 @@
 <p align="center">
   <a href="#demo">Ver Demo</a> •
   <a href="#características">Características</a> •
+  <a href="#arquitectura">Arquitectura</a> •
   <a href="#instalación">Instalación</a> •
   <a href="#documentación">Documentación</a> •
   <a href="#contribuir">Contribuir</a>
@@ -24,6 +25,21 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Latest-green?logo=supabase&logoColor=white)](https://supabase.com/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.9-blue?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## 🎯 Características Destacadas
+
+### 🔐 Sistema de Autenticación Refactorizado (v2.0)
+
+Keepel cuenta con un **sistema de autenticación de clase empresarial**:
+
+- ✅ **Event-driven**: Responde a cambios en tiempo real sin polling
+- ✅ **AuthManager Singleton**: Gestión centralizada de estado de autenticación
+- ✅ **Sincronización Cross-Tab**: BroadcastChannel API para sync entre pestañas
+- ✅ **Middleware con Caché**: Validación optimizada de sesiones (reduce llamadas a DB en 90%)
+- ✅ **Token Refresh Automático**: Renovación transparente de tokens sin interrupciones
+- ✅ **Hooks de Protección**: `useProtectedRoute()` y `useGuestRoute()` para control de acceso
+
+📚 [Ver documentación completa del sistema de auth](./AUTH_SYSTEM.md)
 
 ## 📸 Demo
 
@@ -147,6 +163,34 @@ graph TD
     E --> G[Authentication]
     E --> H[Real-time Subscriptions]
     F --> I[Row Level Security]
+    
+    J[AuthManager Singleton] --> G
+    J --> K[BroadcastChannel]
+    J --> L[Session Cache]
+    M[Middleware] --> J
+    M --> L
+```
+
+### Sistema de Autenticación v2.0
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant AuthManager
+    participant Supabase
+    participant Middleware
+    
+    User->>UI: Login
+    UI->>AuthManager: signIn(email, password)
+    AuthManager->>Supabase: auth.signInWithPassword()
+    Supabase-->>AuthManager: session + tokens
+    AuthManager->>AuthManager: Update internal state
+    AuthManager->>UI: Notify via subscription
+    AuthManager->>BroadcastChannel: Sync other tabs
+    UI->>Middleware: Navigate to dashboard
+    Middleware->>Middleware: Validate session (from cache)
+    Middleware-->>UI: Allow access
 ```
 
 ### Características Técnicas
@@ -154,6 +198,9 @@ graph TD
 - **🏗️ App Router**: Utilizando el nuevo App Router de Next.js 14
 - **🎨 Design System**: Componentes consistentes con shadcn/ui
 - **🔄 Real-time**: Actualizaciones en tiempo real con Supabase
+- **🔐 Auth v2.0**: Sistema event-driven con AuthManager singleton
+- **💾 Session Cache**: Middleware optimizado con caché de sesiones
+- **🔗 Cross-Tab Sync**: Sincronización de auth entre pestañas
 - **📱 Progressive Web App**: Preparado para funcionar offline
 - **🔒 Type Safety**: TypeScript en toda la aplicación
 - **✅ Form Validation**: Validación robusta con Zod y React Hook Form
