@@ -187,6 +187,8 @@ class AuthManager {
   private clearLocalState() {
     if (typeof window === "undefined") return
 
+    console.log("🧹 Limpiando estado local...")
+
     // Limpiar localStorage
     Object.keys(localStorage).forEach((key) => {
       if (key.includes("supabase") || key.includes("sb-")) {
@@ -201,15 +203,35 @@ class AuthManager {
       }
     })
 
-    // Limpiar cookies
+    // Limpiar cookies de forma más agresiva
     const cookies = document.cookie.split(";")
+    const cookiesToDelete: string[] = []
+    
     cookies.forEach((cookie) => {
       const cookieName = cookie.split("=")[0].trim()
       if (cookieName.includes("supabase") || cookieName.includes("sb-") || cookieName.startsWith("auth-")) {
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+        cookiesToDelete.push(cookieName)
       }
     })
+
+    // Eliminar cada cookie con múltiples estrategias
+    cookiesToDelete.forEach((cookieName) => {
+      // Estrategia 1: path=/
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0`
+      
+      // Estrategia 2: con domain
+      const hostname = window.location.hostname
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${hostname}; max-age=0`
+      
+      // Estrategia 3: domain raíz
+      const parts = hostname.split(".")
+      if (parts.length > 2) {
+        const rootDomain = `.${parts.slice(-2).join(".")}`
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${rootDomain}; max-age=0`
+      }
+    })
+
+    console.log(`🧹 Limpiadas ${cookiesToDelete.length} cookies`)
   }
 
   /**

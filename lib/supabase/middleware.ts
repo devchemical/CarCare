@@ -73,29 +73,35 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Intentar obtener usuario desde caché
+  // Si hay parámetro logout, limpiar caché inmediatamente
   const cacheKey = getCacheKey(request.cookies)
+  if (isLogoutRedirect) {
+    sessionCache.delete(cacheKey)
+  }
+
   const cached = sessionCache.get(cacheKey)
   const now = Date.now()
 
   let user = null
 
-  // Si hay caché válido, usar ese valor
-  if (cached && now - cached.timestamp < CACHE_TTL) {
+  // Si hay caché válido y NO es un logout, usar ese valor
+  if (cached && now - cached.timestamp < CACHE_TTL && !isLogoutRedirect) {
     user = cached.userId ? { id: cached.userId } : null
   } else {
-    // Si no hay caché, validar con Supabase
+    // Si no hay caché o es un logout, validar con Supabase
     const {
       data: { user: supabaseUser },
     } = await supabase.auth.getUser()
 
     user = supabaseUser
 
-    // Actualizar caché
-    sessionCache.set(cacheKey, {
-      userId: user?.id || null,
-      timestamp: now,
-    })
+    // Actualizar caché solo si NO es un logout
+    if (!isLogoutRedirect) {
+      sessionCache.set(cacheKey, {
+        userId: user?.id || null,
+        timestamp: now,
+      })
+    }
 
     // Limpiar caché periódicamente
     if (Math.random() < 0.1) {
@@ -106,8 +112,9 @@ export async function updateSession(request: NextRequest) {
 
   // === LÓGICA DE REDIRECCIONES ===
 
-  // Si usuario autenticado intenta acceder a rutas de auth (excepto logout/callback)
-  if (user && isAuthRoute && !isLogoutRedirect && !isCallbackRoute) {
+  // Si usuario autenticado intenta acceder a rutas de auth (excepto callback)
+  // IMPORTANTE: No redirigir si no hay usuario, permitir acceso al login
+  if (user && isAuthRoute && !isCallbackRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/"
     return NextResponse.redirect(url)
