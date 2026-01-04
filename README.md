@@ -163,7 +163,7 @@ graph TD
     E --> G[Authentication]
     E --> H[Real-time Subscriptions]
     F --> I[Row Level Security]
-    
+
     J[AuthManager Singleton] --> G
     J --> K[BroadcastChannel]
     J --> L[Session Cache]
@@ -180,7 +180,7 @@ sequenceDiagram
     participant AuthManager
     participant Supabase
     participant Middleware
-    
+
     User->>UI: Login
     UI->>AuthManager: signIn(email, password)
     AuthManager->>Supabase: auth.signInWithPassword()

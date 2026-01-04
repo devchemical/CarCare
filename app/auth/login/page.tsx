@@ -95,7 +95,7 @@ export default function LoginPage() {
 
       // Hacer refresh para actualizar estado del servidor
       router.refresh()
-      
+
       // Redirigir al dashboard o a la URL original
       router.push(redirectTo)
     } catch (error: unknown) {

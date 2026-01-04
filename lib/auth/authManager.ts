@@ -1,6 +1,6 @@
 /**
  * AuthManager - Singleton centralizado para gestión de autenticación
- * 
+ *
  * Sistema event-driven que:
  * - Mantiene estado de autenticación único en toda la app
  * - Responde a eventos de Supabase Auth
@@ -90,7 +90,7 @@ class AuthManager {
     // Setup BroadcastChannel para sincronización cross-tab
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       this.broadcastChannel = new BroadcastChannel("auth-state")
-      
+
       this.broadcastChannel.onmessage = (event) => {
         if (event.data.type === "AUTH_STATE_CHANGE") {
           this.updateState(event.data.state)
@@ -100,8 +100,11 @@ class AuthManager {
 
     // Obtener sesión inicial
     try {
-      const { data: { session }, error } = await this.supabase.auth.getSession()
-      
+      const {
+        data: { session },
+        error,
+      } = await this.supabase.auth.getSession()
+
       if (error) {
         console.error("Error al obtener sesión inicial:", error)
       }
@@ -117,39 +120,39 @@ class AuthManager {
     }
 
     // Setup listener de eventos de autenticación
-    const { data: { subscription } } = this.supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("🔐 Auth Event:", event, session?.user?.email)
+    const {
+      data: { subscription },
+    } = this.supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("🔐 Auth Event:", event, session?.user?.email)
 
-        const newState: AuthState = {
-          user: session?.user ?? null,
-          session: session ?? null,
-          isLoading: false,
-        }
-
-        this.updateState(newState)
-
-        // Broadcast a otras tabs
-        this.broadcastState(newState)
-
-        // Manejar eventos específicos
-        switch (event) {
-          case "SIGNED_IN":
-            console.log("✅ Usuario autenticado:", session?.user?.email)
-            break
-          case "SIGNED_OUT":
-            console.log("🚪 Usuario cerró sesión")
-            this.clearLocalState()
-            break
-          case "TOKEN_REFRESHED":
-            console.log("🔄 Token actualizado")
-            break
-          case "USER_UPDATED":
-            console.log("👤 Usuario actualizado")
-            break
-        }
+      const newState: AuthState = {
+        user: session?.user ?? null,
+        session: session ?? null,
+        isLoading: false,
       }
-    )
+
+      this.updateState(newState)
+
+      // Broadcast a otras tabs
+      this.broadcastState(newState)
+
+      // Manejar eventos específicos
+      switch (event) {
+        case "SIGNED_IN":
+          console.log("✅ Usuario autenticado:", session?.user?.email)
+          break
+        case "SIGNED_OUT":
+          console.log("🚪 Usuario cerró sesión")
+          this.clearLocalState()
+          break
+        case "TOKEN_REFRESHED":
+          console.log("🔄 Token actualizado")
+          break
+        case "USER_UPDATED":
+          console.log("👤 Usuario actualizado")
+          break
+      }
+    })
 
     this.authSubscription = subscription
   }
@@ -206,7 +209,7 @@ class AuthManager {
     // Limpiar cookies de forma más agresiva
     const cookies = document.cookie.split(";")
     const cookiesToDelete: string[] = []
-    
+
     cookies.forEach((cookie) => {
       const cookieName = cookie.split("=")[0].trim()
       if (cookieName.includes("supabase") || cookieName.includes("sb-") || cookieName.startsWith("auth-")) {
@@ -218,11 +221,11 @@ class AuthManager {
     cookiesToDelete.forEach((cookieName) => {
       // Estrategia 1: path=/
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0`
-      
+
       // Estrategia 2: con domain
       const hostname = window.location.hostname
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${hostname}; max-age=0`
-      
+
       // Estrategia 3: domain raíz
       const parts = hostname.split(".")
       if (parts.length > 2) {
