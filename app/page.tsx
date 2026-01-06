@@ -31,8 +31,6 @@ export default function HomePage() {
           vehicles={vehicles}
           maintenanceRecords={maintenanceRecords}
           upcomingMaintenance={upcomingMaintenance}
-          onSignOut={signOut}
-          onRefresh={refreshAll}
         />
       ) : (
         <LandingPage />

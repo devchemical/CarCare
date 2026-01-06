@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { useAuth, useData } from "@/contexts"
-import { InstallButton } from "@/components/pwa/install-prompt"
 
 interface Vehicle {
   id: string
@@ -175,10 +174,6 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-
-              {/* Botón de instalación PWA */}
-              <InstallButton />
-
               {/* Dropdown del usuario */}
               <div
                 className="group relative"
@@ -219,9 +214,6 @@ export function Header() {
 
             {/* Mobile Hamburger Menu */}
             <div className="flex items-center gap-2 lg:hidden">
-              {/* PWA Install Button (visible en mobile) */}
-              <InstallButton />
-
               {/* Hamburger Menu */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>

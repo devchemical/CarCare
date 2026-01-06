@@ -1,30 +1,24 @@
-"use client";
+"use client"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Car, Plus, Gauge } from "lucide-react";
-import Link from "next/link";
-import { formatMileage } from "@/lib/formatters";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Car, Plus, Gauge } from "lucide-react"
+import Link from "next/link"
+import { formatMileage } from "@/lib/formatters"
 
 interface Vehicle {
-  id: string;
-  make: string;
-  model: string;
-  year: number;
-  license_plate?: string;
-  color?: string;
-  mileage: number;
+  id: string
+  make: string
+  model: string
+  year: number
+  license_plate?: string
+  color?: string
+  mileage: number
 }
 
 interface VehicleOverviewProps {
-  vehicles: Vehicle[];
+  vehicles: Vehicle[]
 }
 
 export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
@@ -33,29 +27,27 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5 text-primary" />
+            <Car className="text-primary h-5 w-5" />
             Mis Vehículos
           </CardTitle>
           <CardDescription>No tienes vehículos registrados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <div className="p-4 bg-muted rounded-full w-fit mx-auto mb-4">
-              <Car className="h-8 w-8 text-muted-foreground" />
+          <div className="py-6 text-center">
+            <div className="bg-muted mx-auto mb-4 w-fit rounded-full p-4">
+              <Car className="text-muted-foreground h-8 w-8" />
             </div>
-            <p className="text-muted-foreground mb-4">
-              Comienza agregando tu primer vehículo
-            </p>
+            <p className="text-muted-foreground mb-4">Comienza agregando tu primer vehículo</p>
             <Button asChild className="bg-primary hover:bg-primary/90">
               <Link href="/vehicles">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Agregar Vehículo
               </Link>
             </Button>
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -64,15 +56,14 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Car className="h-5 w-5 text-primary" />
+              <Car className="text-primary h-5 w-5" />
               Mis Vehículos
             </CardTitle>
             <CardDescription>
-              {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""}{" "}
-              registrado{vehicles.length !== 1 ? "s" : ""}
+              {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""} registrado{vehicles.length !== 1 ? "s" : ""}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="default" size="sm" asChild>
             <Link href="/vehicles">Ver Todos</Link>
           </Button>
         </div>
@@ -82,27 +73,25 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
           {vehicles.slice(0, 3).map((vehicle) => (
             <div
               key={vehicle.id}
-              className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+              className="bg-background border-border flex items-center justify-between rounded-lg border p-3 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Car className="h-4 w-4 text-primary" />
+                <div className="bg-primary/10 rounded-lg p-2">
+                  <Car className="text-primary h-4 w-4" />
                 </div>
                 <div>
-                  <div className="font-medium text-foreground">
+                  <div className="text-foreground font-medium">
                     {vehicle.make} {vehicle.model}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     <Badge variant="secondary" className="text-xs">
                       {vehicle.year}
                     </Badge>
-                    {vehicle.license_plate && (
-                      <span>{vehicle.license_plate}</span>
-                    )}
+                    {vehicle.license_plate && <span>{vehicle.license_plate}</span>}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Gauge className="h-4 w-4" />
                 <span>{formatMileage(vehicle.mileage)}</span>
               </div>
@@ -110,7 +99,7 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
           ))}
 
           {vehicles.length > 3 && (
-            <div className="text-center pt-2">
+            <div className="pt-2 text-center">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/vehicles">
                   Ver {vehicles.length - 3} vehículo
@@ -122,5 +111,5 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

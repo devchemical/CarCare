@@ -59,15 +59,15 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
+            <Activity className="text-primary h-5 w-5" />
             Actividad Reciente
           </CardTitle>
           <CardDescription>No hay actividad reciente</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <div className="p-4 bg-muted rounded-full w-fit mx-auto mb-4">
-              <Activity className="h-8 w-8 text-muted-foreground" />
+          <div className="py-6 text-center">
+            <div className="bg-muted mx-auto mb-4 w-fit rounded-full p-4">
+              <Activity className="text-muted-foreground h-8 w-8" />
             </div>
             <p className="text-muted-foreground mb-4">Aún no has registrado ningún mantenimiento</p>
             <Button variant="outline" asChild>
@@ -85,12 +85,12 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
+              <Activity className="text-primary h-5 w-5" />
               Actividad Reciente
             </CardTitle>
             <CardDescription>Últimos {Math.min(maintenanceRecords.length, 5)} mantenimientos</CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="default" size="sm" asChild>
             <Link href="/vehicles">Ver Todos</Link>
           </Button>
         </div>
@@ -100,25 +100,25 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
           {maintenanceRecords.slice(0, 5).map((record) => (
             <div
               key={record.id}
-              className="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+              className="bg-background border-border flex items-center gap-3 rounded-lg border p-3 transition-colors"
             >
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Activity className="h-4 w-4 text-primary" />
+              <div className="bg-primary/10 rounded-lg p-2">
+                <Activity className="text-primary h-4 w-4" />
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-foreground text-sm">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-foreground text-sm font-medium">
                     {maintenanceTypes[record.type as keyof typeof maintenanceTypes] || record.type}
                   </span>
                   {record.cost && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="bg-secondary text-xs">
                       {formatCurrency(record.cost)}
                     </Badge>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   <Car className="h-3 w-3" />
                   <span>
                     {record.vehicles.make} {record.vehicles.model} {record.vehicles.year}

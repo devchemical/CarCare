@@ -7,7 +7,6 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { UpcomingMaintenance } from "@/components/dashboard/upcoming-maintenance"
 import { VehicleOverview } from "@/components/dashboard/vehicle-overview"
-import { InstallPrompt } from "@/components/pwa/install-prompt"
 import { OfflineIndicator } from "@/components/pwa/offline-indicator"
 
 interface Vehicle {
@@ -38,22 +37,9 @@ interface DashboardProps {
   vehicles: Vehicle[]
   maintenanceRecords: any[]
   upcomingMaintenance: any[]
-  onSignOut: () => void
 }
 
-interface ExtendedDashboardProps extends DashboardProps {
-  onRefresh?: () => void
-}
-
-export function Dashboard({
-  user,
-  profile,
-  vehicles,
-  maintenanceRecords,
-  upcomingMaintenance,
-  onSignOut,
-  onRefresh,
-}: ExtendedDashboardProps) {
+export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomingMaintenance }: DashboardProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
@@ -76,11 +62,6 @@ export function Dashboard({
             Agregar Vehículo
           </Link>
         </Button>
-        {onRefresh && (
-          <Button variant="secondary" onClick={onRefresh}>
-            Actualizar Datos
-          </Button>
-        )}
       </div>
 
       {/* Dashboard Stats */}
