@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useSupabase } from "@/hooks/useSupabase"
+import { signupAction } from "../actions"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -18,6 +19,11 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [fullName, setFullName] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    remaining: number
+    limit: number
+    reset: number
+  } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -28,6 +34,7 @@ export default function SignUpPage() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setRateLimitInfo(null)
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden")
@@ -42,20 +49,34 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/`,
-          data: {
-            full_name: fullName,
-          },
-        },
-      })
-      if (error) throw error
-      router.push("/auth/signup-success")
+      // Llamar al Server Action
+      const result = await signupAction(email, password, fullName)
+
+      if (!result.success) {
+        // Si hay información de rate limit, actualizarla
+        if (result.rateLimit) {
+          setRateLimitInfo(result.rateLimit)
+
+          if (result.rateLimit.remaining > 0) {
+            setError(`${result.error}. Te quedan ${result.rateLimit.remaining} de ${result.rateLimit.limit} intentos.`)
+          } else {
+            const hoursLeft = Math.ceil((result.rateLimit.reset - Date.now()) / 1000 / 60 / 60)
+            setError(`${result.error}. Podrás intentar de nuevo en ${hoursLeft} hora(s).`)
+          }
+        } else {
+          setError(result.error || "Error al crear la cuenta")
+        }
+        return
+      }
+
+      // Redirigir a la página de éxito
+      router.push(result.redirectTo || "/auth/signup-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("Ocurrió un error desconocido")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -147,7 +168,13 @@ export default function SignUpPage() {
                   </div>
                   {error && (
                     <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
-                      {error}
+                      <p>{error}</p>
+                      {rateLimitInfo && rateLimitInfo.remaining === 0 && (
+                        <p className="mt-2 text-xs">
+                          Has alcanzado el límite de intentos de registro. Podrás intentar de nuevo en{" "}
+                          {Math.ceil((rateLimitInfo.reset - Date.now()) / 1000 / 60 / 60)} hora(s).
+                        </p>
+                      )}
                     </div>
                   )}
                   <Button

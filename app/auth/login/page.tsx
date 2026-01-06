@@ -12,11 +12,17 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useSupabase } from "@/hooks/useSupabase"
+import { loginAction } from "../actions"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    remaining: number
+    limit: number
+    reset: number
+  } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = useSupabase()
@@ -73,17 +79,27 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setRateLimitInfo(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      // Llamar al Server Action
+      const result = await loginAction(email, password)
 
-      if (error) throw error
+      if (!result.success) {
+        // Si hay información de rate limit, actualizarla
+        if (result.rateLimit) {
+          setRateLimitInfo(result.rateLimit)
 
-      if (!data?.user || !data?.session) {
-        throw new Error("No se pudo crear la sesión")
+          if (result.rateLimit.remaining > 0) {
+            setError(`${result.error}. Te quedan ${result.rateLimit.remaining} de ${result.rateLimit.limit} intentos.`)
+          } else {
+            const minutesLeft = Math.ceil((result.rateLimit.reset - Date.now()) / 1000 / 60)
+            setError(`${result.error}. Podrás intentar de nuevo en ${minutesLeft} minuto(s).`)
+          }
+        } else {
+          setError(result.error || "Error al iniciar sesión")
+        }
+        return
       }
 
       // Esperar a que AuthManager procese el evento SIGNED_IN
@@ -91,7 +107,7 @@ export default function LoginPage() {
 
       // Obtener URL de redirección si existe
       const urlParams = new URLSearchParams(window.location.search)
-      const redirectTo = urlParams.get("redirect") || "/"
+      const redirectTo = urlParams.get("redirect") || result.redirectTo || "/"
 
       // Hacer refresh para actualizar estado del servidor
       router.refresh()
@@ -99,7 +115,11 @@ export default function LoginPage() {
       // Redirigir al dashboard o a la URL original
       router.push(redirectTo)
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("Ocurrió un error desconocido")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -148,7 +168,13 @@ export default function LoginPage() {
                   </div>
                   {error && (
                     <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
-                      {error}
+                      <p>{error}</p>
+                      {rateLimitInfo && rateLimitInfo.remaining === 0 && (
+                        <p className="mt-2 text-xs">
+                          Has alcanzado el límite de intentos. Podrás intentar de nuevo en{" "}
+                          {Math.ceil((rateLimitInfo.reset - Date.now()) / 1000 / 60)} minutos.
+                        </p>
+                      )}
                     </div>
                   )}
                   <Button
