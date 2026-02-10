@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Car, User, LogOut, Plus, ChevronDown, Menu } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -84,6 +85,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Car className="text-primary h-8 w-8" />
             <h1 className="text-foreground text-2xl font-bold">Keepel</h1>
+            <Badge className="border-primary/20 bg-primary/10 text-primary">Dokploy</Badge>
           </Link>
 
           {/* Skeleton para el área de navegación */}
@@ -104,6 +106,7 @@ export function Header() {
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <Car className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
           <h1 className="text-foreground text-xl font-bold sm:text-2xl">Keepel</h1>
+          <Badge className="border-primary/20 bg-primary/10 text-primary">Dokploy</Badge>
         </Link>
 
         {/* Navegación del usuario autenticado */}
