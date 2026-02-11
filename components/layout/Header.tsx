@@ -87,8 +87,8 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Car className="text-primary h-8 w-8" />
             <h1 className="text-foreground text-2xl font-bold">Keepel</h1>
-            <Badge className={DOKPLOY_BADGE_CLASSES} aria-label="Plataforma Dokploy V2">
-              Dokploy V2
+            <Badge className={DOKPLOY_BADGE_CLASSES} aria-label="Plataforma Dokploy v3">
+              Dokploy v3
             </Badge>
           </Link>
 
@@ -110,8 +110,8 @@ export function Header() {
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <Car className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
           <h1 className="text-foreground text-xl font-bold sm:text-2xl">Keepel</h1>
-          <Badge className={DOKPLOY_BADGE_CLASSES} aria-label="Plataforma Dokploy V2">
-            Dokploy V2
+          <Badge className={DOKPLOY_BADGE_CLASSES} aria-label="Plataforma Dokploy v3">
+            Dokploy v3
           </Badge>
         </Link>
 
