@@ -94,6 +94,13 @@ export async function loginAction(email: string, password: string): Promise<Auth
       }
     }
 
+    if (!data.session.access_token || !data.session.refresh_token) {
+      return {
+        success: false,
+        error: "No se pudo crear la sesión",
+      }
+    }
+
     return {
       success: true,
       redirectTo: "/",

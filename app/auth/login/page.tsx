@@ -103,15 +103,18 @@ export default function LoginPage() {
         return
       }
 
-      if (result.session) {
-        const { error: sessionError } = await authManager.getSupabase().auth.setSession({
-          access_token: result.session.accessToken,
-          refresh_token: result.session.refreshToken,
-        })
+      if (!result.session) {
+        throw new Error("No se pudo sincronizar la sesión. Intenta nuevamente.")
+      }
 
-        if (sessionError) {
-          throw sessionError
-        }
+      const { error: sessionError } = await authManager.getSupabase().auth.setSession({
+        access_token: result.session.accessToken,
+        refresh_token: result.session.refreshToken,
+      })
+
+      if (sessionError) {
+        console.error("Error sincronizando sesión:", sessionError)
+        throw new Error("No se pudo sincronizar la sesión. Intenta nuevamente.")
       }
 
       // Obtener URL de redirección si existe
