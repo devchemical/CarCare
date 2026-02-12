@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useSupabase } from "@/hooks/useSupabase"
 import { loginAction } from "../actions"
+import { authManager } from "@/lib/auth/authManager"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -102,8 +103,16 @@ export default function LoginPage() {
         return
       }
 
-      // Esperar a que AuthManager procese el evento SIGNED_IN
-      await new Promise((resolve) => setTimeout(resolve, 200))
+      if (result.session) {
+        const { error: sessionError } = await authManager.getSupabase().auth.setSession({
+          access_token: result.session.accessToken,
+          refresh_token: result.session.refreshToken,
+        })
+
+        if (sessionError) {
+          throw sessionError
+        }
+      }
 
       // Obtener URL de redirección si existe
       const urlParams = new URLSearchParams(window.location.search)

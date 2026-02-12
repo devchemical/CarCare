@@ -13,6 +13,10 @@ interface AuthResult {
     reset: number
   }
   redirectTo?: string
+  session?: {
+    accessToken: string
+    refreshToken: string
+  }
 }
 
 export async function loginAction(email: string, password: string): Promise<AuthResult> {
@@ -93,6 +97,10 @@ export async function loginAction(email: string, password: string): Promise<Auth
     return {
       success: true,
       redirectTo: "/",
+      session: {
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+      },
     }
   } catch (error) {
     console.error("Error en loginAction:", error)
