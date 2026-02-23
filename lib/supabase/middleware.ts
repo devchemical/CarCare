@@ -1,41 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
-/**
- * Caché en memoria para sesiones (evita múltiples validaciones)
- * Expira después de 60 segundos
- */
-const sessionCache = new Map<
-  string,
-  {
-    userId: string | null
-    timestamp: number
-  }
->()
-
-const CACHE_TTL = 60 * 1000 // 60 segundos
-
-/**
- * Limpiar entradas expiradas del caché
- */
-function cleanExpiredCache() {
-  const now = Date.now()
-  for (const [key, value] of sessionCache.entries()) {
-    if (now - value.timestamp > CACHE_TTL) {
-      sessionCache.delete(key)
-    }
-  }
-}
-
-/**
- * Generar key de caché basada en cookies de sesión
- */
-function getCacheKey(cookies: any): string {
-  const authToken = cookies.get("sb-access-token")?.value || ""
-  const refreshToken = cookies.get("sb-refresh-token")?.value || ""
-  return `${authToken.slice(0, 20)}-${refreshToken.slice(0, 20)}`
-}
-
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -65,7 +30,6 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute = request.nextUrl.pathname === "/"
   const isNextRoute = request.nextUrl.pathname.startsWith("/_next")
   const isApiRoute = request.nextUrl.pathname.startsWith("/api")
-  const isLogoutRedirect = request.nextUrl.searchParams.has("logout")
   const isCallbackRoute = request.nextUrl.pathname === "/auth/callback"
 
   // Permitir acceso sin validación a rutas especiales
@@ -73,42 +37,10 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Si hay parámetro logout, limpiar caché inmediatamente
-  const cacheKey = getCacheKey(request.cookies)
-  if (isLogoutRedirect) {
-    sessionCache.delete(cacheKey)
-  }
-
-  const cached = sessionCache.get(cacheKey)
-  const now = Date.now()
-
-  let user = null
-
-  // Si hay caché válido y NO es un logout, usar ese valor
-  if (cached && now - cached.timestamp < CACHE_TTL && !isLogoutRedirect) {
-    user = cached.userId ? { id: cached.userId } : null
-  } else {
-    // Si no hay caché o es un logout, validar con Supabase
-    const {
-      data: { user: supabaseUser },
-    } = await supabase.auth.getUser()
-
-    user = supabaseUser
-
-    // Actualizar caché solo si NO es un logout
-    if (!isLogoutRedirect) {
-      sessionCache.set(cacheKey, {
-        userId: user?.id || null,
-        timestamp: now,
-      })
-    }
-
-    // Limpiar caché periódicamente
-    if (Math.random() < 0.1) {
-      // 10% de probabilidad
-      cleanExpiredCache()
-    }
-  }
+  // Validar con Supabase. El cliente de Supabase SSR ya optimiza esto a nivel request.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // === LÓGICA DE REDIRECCIONES ===
 
