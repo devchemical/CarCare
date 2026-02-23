@@ -25,3 +25,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SSH keys (never commit private keys)
+*.pub
+id_rsa
+id_ed25519
+id_ecdsa

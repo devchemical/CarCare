@@ -1,174 +1,237 @@
 # AGENTS.md - Keepel (CarCare)
 
-**Sistema completo de gestión de mantenimiento automotriz**
+**Complete automotive maintenance management system**
 
-Este documento proporciona contexto completo para agentes de IA que trabajen en este proyecto.
+This document provides full context for AI agents working on this project.
 
 ---
 
-## 📋 Información General del Proyecto
+## Project Overview
 
-### Identidad
+### Identity
 
-- **Nombre del Proyecto**: Keepel (anteriormente CarCare)
-- **Propósito**: Sistema web para gestionar el mantenimiento de vehículos personales
-- **Stack Principal**: Next.js 14, React 18, TypeScript, Supabase, TailwindCSS
-- **Tipo**: Progressive Web App (PWA)
-- **Licencia**: MIT
-- **Repositorio**: https://github.com/devchemical/CarCare
+- **Project Name**: Keepel (formerly CarCare)
+- **Purpose**: Web application to manage vehicle maintenance
+- **Stack**: Next.js 16, React 19, TypeScript, Supabase, TailwindCSS v4
+- **Type**: Progressive Web App (PWA)
+- **License**: MIT
+- **Repository**: https://github.com/devchemical/CarCare
 - **Demo**: https://keepel.chemicaldev.com
 
-### Descripción
+### Description
 
-Keepel es una aplicación web moderna que permite a los usuarios:
+Keepel lets users:
 
-- Registrar y gestionar múltiples vehículos
-- Llevar un historial completo de mantenimientos
-- Programar servicios futuros y recibir recordatorios
-- Controlar gastos de mantenimiento
-- Visualizar estadísticas y reportes
-- Acceder desde cualquier dispositivo (responsive)
+- Register and manage multiple vehicles
+- Track complete maintenance history
+- Schedule future services
+- Monitor maintenance costs
+- View statistics and reports
+- Access from any device (responsive PWA with offline support)
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## Tech Stack
 
-### Stack Tecnológico
-
-#### Frontend
+### Frontend
 
 ```json
 {
-  "framework": "Next.js 14.2.16 (App Router)",
-  "ui_library": "React 18",
+  "framework": "Next.js 16.1.1 (App Router)",
+  "ui_library": "React 19.2.3",
   "language": "TypeScript 5",
-  "styling": "TailwindCSS 4.1.9",
-  "components": "shadcn/ui",
-  "icons": "lucide-react",
-  "forms": "react-hook-form + zod",
-  "charts": "recharts"
+  "styling": "TailwindCSS 4.1.9 (CSS-based config, no tailwind.config.js)",
+  "components": "shadcn/ui (Radix UI primitives)",
+  "icons": "lucide-react ^0.454.0",
+  "forms": "react-hook-form ^7.60.0 + zod 3.25.67",
+  "charts": "recharts 2.15.4",
+  "fonts": "next/font/google (Inter, JetBrains Mono)",
+  "toasts": "sonner ^1.7.4",
+  "themes": "next-themes ^0.4.6",
+  "dates": "date-fns 4.1.0"
 }
 ```
 
-#### Backend & Database
+### Backend & Database
 
 ```json
 {
   "backend": "Supabase (BaaS)",
   "database": "PostgreSQL (via Supabase)",
-  "auth": "Supabase Auth (JWT)",
+  "auth": "Supabase Auth (JWT + OAuth Google)",
   "storage": "Supabase Storage",
-  "realtime": "Supabase Realtime",
-  "security": "Row Level Security (RLS)"
+  "security": "Row Level Security (RLS)",
+  "rate_limiting": "@upstash/ratelimit + @upstash/redis",
+  "analytics": "@vercel/analytics 1.3.1"
 }
 ```
 
-#### Tools & Build
+### PWA
 
 ```json
 {
-  "package_manager": "pnpm",
-  "bundler": "Next.js built-in (Turbopack)",
-  "linting": "ESLint",
-  "formatting": "Prettier",
+  "pwa_library": "@ducanh2912/next-pwa ^10.2.9",
+  "service_worker": "Workbox (auto-generated to public/)",
+  "manifest": "public/manifest.json",
+  "offline": "NetworkFirst for Supabase API, CacheFirst for assets",
+  "disabled_in_dev": true
+}
+```
+
+### Tools & Build
+
+```json
+{
+  "package_manager": "pnpm 9.0.0",
+  "bundler": "Turbopack (Next.js built-in)",
+  "linting": "ESLint (eslint-config-next)",
+  "formatting": "Prettier + prettier-plugin-tailwindcss",
   "runtime": "Node.js 18+"
 }
 ```
 
-### Estructura de Directorios
+---
+
+## Directory Structure
 
 ```
 CarCare/
-├── app/                          # Next.js App Router
-│   ├── (routes)/
-│   │   ├── auth/                 # Rutas de autenticación
-│   │   │   ├── login/            # Página de inicio de sesión
-│   │   │   ├── signup/           # Página de registro
-│   │   │   ├── signup-success/   # Confirmación de registro
-│   │   │   ├── callback/         # Callback de email verification
-│   │   │   └── error/            # Manejo de errores de auth
-│   │   ├── dashboard/            # Dashboard principal (protegido)
-│   │   ├── vehicles/             # Gestión de vehículos (protegido)
-│   │   │   └── [id]/
-│   │   │       └── maintenance/  # Mantenimiento por vehículo
-│   │   └── page.tsx              # Landing page (ruta raíz)
-│   ├── layout.tsx                # Layout raíz con providers
-│   └── globals.css               # Estilos globales
+├── app/                              # Next.js App Router
+│   ├── api/
+│   │   └── auth/
+│   │       └── signout/
+│   │           └── route.ts          # Server-side logout (clears HTTP-only cookies)
+│   ├── auth/
+│   │   ├── actions.ts                # Server Actions: loginAction, signupAction (with rate limiting)
+│   │   ├── callback/
+│   │   │   └── route.ts              # OAuth + email verification callback
+│   │   ├── error/
+│   │   │   └── page.tsx              # Auth error page
+│   │   ├── login/
+│   │   │   └── page.tsx              # Login page
+│   │   ├── signup/
+│   │   │   └── page.tsx              # Signup page
+│   │   └── signup-success/
+│   │       └── page.tsx              # Email confirmation sent
+│   ├── vehicles/
+│   │   ├── page.tsx                  # Vehicle list (protected)
+│   │   └── [id]/
+│   │       └── maintenance/
+│   │           └── page.tsx          # Maintenance records per vehicle (protected)
+│   ├── globals.css                   # Global styles + Tailwind v4 theme config (@theme inline)
+│   ├── layout.tsx                    # Root layout (fonts, metadata, PWA meta tags, AppProviders)
+│   └── page.tsx                      # Landing page / root (also serves as dashboard when authenticated)
 │
-├── components/                   # Componentes React reutilizables
-│   ├── dashboard/                # Componentes específicos del dashboard
+├── components/
+│   ├── auth/
+│   │   └── google-signin-button.tsx  # Google OAuth sign-in button
+│   ├── dashboard/
+│   │   ├── Dashboard.tsx             # Main dashboard component (renders for authenticated users)
 │   │   ├── dashboard-stats.tsx
 │   │   ├── recent-activity.tsx
 │   │   ├── upcoming-maintenance.tsx
 │   │   └── vehicle-overview.tsx
-│   ├── vehicles/                 # Componentes de gestión de vehículos
-│   │   ├── add-vehicle-dialog.tsx
-│   │   ├── edit-vehicle-dialog.tsx
-│   │   ├── delete-vehicle-dialog.tsx
-│   │   └── vehicles-list.tsx
-│   ├── maintenance/              # Componentes de mantenimiento
+│   ├── home/
+│   │   └── LandingPage.tsx           # Landing page for unauthenticated users
+│   ├── layout/
+│   │   ├── Header.tsx
+│   │   └── Layout.tsx
+│   ├── maintenance/
 │   │   ├── add-maintenance-dialog.tsx
 │   │   ├── edit-maintenance-dialog.tsx
 │   │   ├── delete-maintenance-dialog.tsx
 │   │   └── maintenance-list.tsx
-│   ├── ui/                       # Componentes UI de shadcn/ui
+│   ├── pwa/
+│   │   ├── index.ts
+│   │   ├── notification-manager.tsx  # Push notification management
+│   │   ├── offline-indicator.tsx     # Offline status indicator
+│   │   └── pwa-debug.tsx             # PWA debug utilities
+│   ├── ui/                           # shadcn/ui components
+│   │   ├── badge.tsx
 │   │   ├── button.tsx
-│   │   ├── dialog.tsx
-│   │   ├── input.tsx
 │   │   ├── card.tsx
-│   │   ├── form.tsx
-│   │   └── ...                   # Más componentes UI
-│   └── theme-provider.tsx        # Provider de temas (dark/light)
+│   │   ├── context-error-boundary.tsx
+│   │   ├── dialog.tsx
+│   │   ├── dropdown-menu.tsx
+│   │   ├── icons.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── loading-screen.tsx
+│   │   ├── responsive-dialog.tsx
+│   │   ├── select.tsx
+│   │   ├── sheet.tsx
+│   │   └── textarea.tsx
+│   ├── vehicles/
+│   │   ├── add-vehicle-dialog.tsx
+│   │   ├── add-vehicle-dialog-context.tsx
+│   │   ├── edit-vehicle-dialog.tsx
+│   │   ├── delete-vehicle-dialog.tsx
+│   │   └── vehicles-list.tsx
+│   └── theme-provider.tsx            # Dark/light mode provider
 │
-├── contexts/                     # React Contexts
-│   └── auth-context.tsx          # Contexto de autenticación (NUEVO)
+├── contexts/                         # React Contexts (all Client Components)
+│   ├── AppProviders.tsx              # Root provider tree: SupabaseProvider > AuthProvider > DataProvider
+│   ├── AuthContext.tsx               # Auth state (user, profile, signOut, refreshProfile)
+│   ├── DataContext.tsx               # App data (vehicles, maintenance, optimistic updates)
+│   ├── SupabaseContext.tsx           # Supabase client singleton via context
+│   └── index.ts                      # Re-exports all contexts
 │
-├── hooks/                        # Custom React Hooks
-│   └── use-auth-redirect.ts     # Hooks para protección de rutas (NUEVO)
+├── hooks/                            # Custom React Hooks
+│   ├── index.ts                      # Re-exports all hooks
+│   ├── use-media-query.ts            # Responsive media query hook
+│   ├── useAuth.ts                    # Standalone auth hook (used outside AuthContext tree)
+│   ├── useDashboardData.tsx          # Dashboard-specific data aggregation
+│   ├── useGuestRoute.ts              # Redirect authenticated users away from guest-only pages
+│   ├── useProtectedRoute.ts          # Redirect unauthenticated users to login
+│   ├── usePWA.ts                     # PWA install prompt and status
+│   └── useSupabase.ts                # Access Supabase client from SupabaseContext
 │
-├── lib/                          # Utilidades y configuración
-│   ├── auth/                     # Sistema de autenticación (NUEVO)
-│   │   └── auth-manager.ts       # AuthManager centralizado
-│   ├── supabase/                 # Configuración de Supabase
-│   │   ├── client.ts             # Cliente para browser
-│   │   ├── server.ts             # Cliente para server components
-│   │   ├── route-handler.ts     # Cliente para API routes (NUEVO)
-│   │   ├── admin.ts              # Cliente admin (NUEVO)
-│   │   └── types.ts              # Tipos de TypeScript (NUEVO)
-│   └── utils.ts                  # Funciones de utilidad (cn, etc.)
+├── lib/
+│   ├── auth/
+│   │   └── authManager.ts            # AuthManager singleton (event-driven, BroadcastChannel)
+│   ├── supabase/
+│   │   ├── client.ts                 # Browser Supabase client (singleton, cookie-based)
+│   │   ├── server.ts                 # Server Component Supabase client (async cookies())
+│   │   └── middleware.ts             # Middleware Supabase client + route protection logic
+│   ├── utils/
+│   │   └── pwa.ts                    # PWA utility functions
+│   ├── formatters.ts                 # Date/currency/text formatters
+│   ├── ratelimit.ts                  # Upstash rate limiters (login: 5/min, signup: 3/hour)
+│   └── utils.ts                      # General utilities (cn, etc.)
 │
-├── scripts/                      # Scripts SQL de base de datos
-│   ├── 001_create_tables.sql     # Creación de tablas principales
-│   └── 002_create_profile_trigger.sql  # Trigger de perfiles
+├── scripts/                          # SQL migration scripts
+│   ├── 001_create_tables.sql         # profiles, vehicles, maintenance_records tables
+│   └── 002_create_profile_trigger.sql # Auto-create profile on user signup
 │
-├── public/                       # Archivos estáticos
-│   ├── placeholder-logo.svg
-│   └── ...
+├── styles/
+│   ├── pwa.css                       # PWA-specific styles (install banners, offline states)
+│   └── responsive.css                # Additional responsive utilities
 │
-├── styles/                       # Estilos adicionales (si aplica)
+├── public/
+│   ├── manifest.json                 # PWA manifest
+│   ├── sw.js                         # Service worker (generated by next-pwa)
+│   ├── icons/                        # App icons (various sizes)
+│   ├── screenshots/                  # PWA install screenshots
+│   ├── splash/                       # iOS splash screen images
+│   └── robots.txt
 │
-├── middleware.ts                 # Middleware de Next.js (auth)
-├── next.config.mjs               # Configuración de Next.js
-├── tailwind.config.js            # Configuración de TailwindCSS
-├── tsconfig.json                 # Configuración de TypeScript
-├── components.json               # Configuración de shadcn/ui
-├── .prettierrc                   # Configuración de Prettier
-├── .prettierignore               # Archivos ignorados por Prettier
-├── package.json                  # Dependencias del proyecto
-├── pnpm-lock.yaml                # Lockfile de pnpm
-│
-└── README.md                     # Documentación principal
+├── middleware.ts                     # Next.js middleware (delegates to lib/supabase/middleware.ts)
+├── next.config.mjs                   # Next.js config + PWA wrapper
+├── postcss.config.mjs                # PostCSS config (@tailwindcss/postcss)
+├── tsconfig.json
+├── components.json                   # shadcn/ui config
+├── .prettierrc
+├── package.json
+└── pnpm-lock.yaml
 ```
 
 ---
 
-## 🗄️ Esquema de Base de Datos
+## Database Schema
 
-### Tablas Principales
+### Tables
 
 #### `profiles`
-
-Perfil de usuario vinculado a `auth.users` de Supabase.
 
 ```sql
 CREATE TABLE profiles (
@@ -180,17 +243,7 @@ CREATE TABLE profiles (
 );
 ```
 
-**Relaciones:**
-
-- `id` → `auth.users.id` (ONE-TO-ONE)
-
-**RLS Policies:**
-
-- Users can view/update only their own profile
-
 #### `vehicles`
-
-Información de vehículos de cada usuario.
 
 ```sql
 CREATE TABLE vehicles (
@@ -208,47 +261,29 @@ CREATE TABLE vehicles (
 );
 ```
 
-**Relaciones:**
-
-- `user_id` → `profiles.id` (MANY-TO-ONE)
-
-**RLS Policies:**
-
-- Users can only view/edit their own vehicles
-
 #### `maintenance_records`
-
-Registros de mantenimiento para cada vehículo.
 
 ```sql
 CREATE TABLE maintenance_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   vehicle_id UUID REFERENCES vehicles(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID NOT NULL,
   type TEXT NOT NULL,
   description TEXT,
   cost DECIMAL(10,2),
   mileage INTEGER,
   service_date DATE NOT NULL,
-  next_service_date DATE,
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
-**Relaciones:**
-
-- `vehicle_id` → `vehicles.id` (MANY-TO-ONE)
-
-**RLS Policies:**
-
-- Users can only view/edit maintenance records for their own vehicles
-
-### Relaciones
+### Relationships
 
 ```
 auth.users (Supabase Auth)
-    ↓ (1:1)
+    ↓ (1:1, trigger auto-creates on signup)
 profiles
     ↓ (1:N)
 vehicles
@@ -256,1039 +291,722 @@ vehicles
 maintenance_records
 ```
 
-### Triggers Importantes
+### Key Trigger
 
-#### `handle_new_user()`
+`handle_new_user()` — automatically creates a `profiles` row when a user registers via Supabase Auth.
 
-Se ejecuta automáticamente cuando un usuario se registra en Supabase Auth.
+### RLS Policies
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, full_name)
-  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-```
+All tables have RLS enabled. Every policy validates `auth.uid()`:
 
-**Propósito:** Crear automáticamente un perfil en `profiles` cuando se crea un usuario en `auth.users`.
+- `profiles`: users can only read/update their own row
+- `vehicles`: users can only CRUD their own vehicles (`user_id = auth.uid()`)
+- `maintenance_records`: users can only CRUD records for their own vehicles
 
 ---
 
-## 🔐 Sistema de Autenticación
+## Authentication System
 
-### Arquitectura (REFACTORIZADO)
+### Architecture
 
-El sistema de autenticación ha sido completamente refactorizado para ser **event-driven** y **libre de timeouts**.
+The auth system is event-driven with three layers:
 
-#### Componentes Principales
+1. **`AuthManager`** (`lib/auth/authManager.ts`)
+   - Singleton instantiated at module level: `export const authManager = AuthManager.getInstance()`
+   - Manages a single Supabase browser client
+   - Subscribes to `onAuthStateChange` events
+   - Broadcasts state changes to other tabs via `BroadcastChannel("auth-state")`
+   - Provides `subscribe(listener)` for React contexts to react to auth events
+   - Clears all Supabase cookies/localStorage on sign-out
 
-1. **AuthManager** (`lib/auth/auth-manager.ts`)
-   - Singleton que gestiona todo el estado de autenticación
-   - Event-driven: responde a eventos de Supabase
-   - Sincronización cross-tab con BroadcastChannel
-   - Single source of truth para toda la app
+2. **`AuthProvider`** (`contexts/AuthContext.tsx`)
+   - Wraps the app and subscribes to `authManager`
+   - Exposes: `user`, `profile`, `isLoading`, `isLoggingOut`, `isAuthenticated`, `signOut()`, `refreshProfile()`
+   - Also loads the user's `profiles` row from Supabase DB
 
-2. **AuthProvider** (`contexts/auth-context.tsx`)
-   - React Context que envuelve la aplicación
-   - Expone estado y métodos de autenticación
-   - Maneja subscripciones y actualizaciones
+3. **`DataProvider`** (`contexts/DataContext.tsx`)
+   - Sits inside `AuthProvider` in the tree
+   - Loads and caches vehicles + maintenance records when user is authenticated
+   - Implements **optimistic updates** for all CRUD operations
 
-3. **Middleware** (`middleware.ts`)
-   - Intercepta todas las requests
-   - Valida sesiones antes de renderizar
-   - Maneja redirecciones automáticas
-   - Caché de sesiones para performance
+4. **Middleware** (`middleware.ts` → `lib/supabase/middleware.ts`)
+   - Refreshes session tokens on every request
+   - Redirects unauthenticated users trying to access protected routes to `/auth/login`
+   - Redirects authenticated users trying to access auth pages to `/`
 
-4. **Custom Hooks**
-   - `useAuth()`: Acceder a estado de autenticación
-   - `useProtectedRoute()`: Proteger páginas
-   - `useGuestRoute()`: Páginas solo para no autenticados
-
-### Flujo de Autenticación
-
-#### Registro (Sign Up)
+### Provider Tree
 
 ```
-Usuario → /auth/signup
-  ↓ Formulario
-  ↓ authManager.signUp()
-  ↓ Supabase Auth API
-  ↓ Trigger: handle_new_user()
-  ↓ Email de confirmación enviado
+// app/layout.tsx
+<AppProviders>           // contexts/AppProviders.tsx
+  <SupabaseProvider>     // provides Supabase client via context
+    <AuthProvider>       // manages auth state
+      <DataProvider>     // manages vehicles + maintenance data
+        {children}
+      </DataProvider>
+    </AuthProvider>
+  </SupabaseProvider>
+</AppProviders>
+```
+
+### Auth Flows
+
+#### Sign Up
+
+```
+User → /auth/signup
+  ↓ signupAction() Server Action (app/auth/actions.ts)
+  ↓ Rate limit check (Upstash: 3 signups/hour per IP + email)
+  ↓ supabase.auth.signUp()
+  ↓ Trigger: handle_new_user() → creates profiles row
+  ↓ Confirmation email sent
   → /auth/signup-success
 ```
 
-#### Login
+#### Login (email/password)
 
 ```
-Usuario → /auth/login
-  ↓ Formulario
-  ↓ authManager.signIn()
-  ↓ Supabase Auth API
-  ↓ Cookies establecidas (httpOnly)
-  ↓ onAuthStateChange: SIGNED_IN
-  ↓ AuthManager actualiza estado
-  ↓ BroadcastChannel a otras tabs
-  → Middleware redirige a /dashboard
+User → /auth/login
+  ↓ loginAction() Server Action (app/auth/actions.ts)
+  ↓ Rate limit check (Upstash: 5 attempts/min per IP + email)
+  ↓ supabase.auth.signInWithPassword()
+  ↓ Session cookies set
+  ↓ authManager: onAuthStateChange SIGNED_IN
+  ↓ AuthContext updates state
+  ↓ BroadcastChannel notifies other tabs
+  → Redirect to /
 ```
 
-#### Token Refresh (Automático)
+#### Login (Google OAuth)
 
 ```
-Token próximo a expirar
-  ↓ Supabase detecta (< 60s antes)
-  ↓ Auto-refresh con refresh_token
+User → clicks Google Sign-In button
+  ↓ authManager.signInWithOAuth('google')
+  ↓ Redirect to Google
+  ↓ /auth/callback route handler
+  ↓ Session established
+  → Redirect to /
+```
+
+#### Sign Out
+
+```
+User triggers signOut()
+  ↓ AuthContext.signOut()
+  ↓ POST /api/auth/signout (clears server-side HTTP-only cookies)
+  ↓ supabase.auth.signOut()
+  ↓ authManager.clearLocalState() (clears localStorage, sessionStorage, cookies)
+  → window.location.href = "/"
+```
+
+#### Token Refresh (automatic)
+
+```
+Token near expiry
+  ↓ Supabase auto-refresh
   ↓ onAuthStateChange: TOKEN_REFRESHED
-  ↓ AuthManager actualiza cookies
-  ↓ BroadcastChannel a otras tabs
-  → Sesión continúa sin interrupción
+  ↓ authManager updates state
+  ↓ BroadcastChannel notifies other tabs
+  → Session continues uninterrupted
 ```
 
-#### Protección de Rutas
+### Route Protection
 
-```
-Request a /dashboard
-  ↓ Middleware intercepta
-  ↓ Lee cookies de auth
-  ↓ Verifica con Supabase
-  ↓ ¿Token válido?
-    ├─ SÍ → Renderiza /dashboard
-    └─ NO → Redirect a /auth/login
-```
+| Route | Protection |
+|---|---|
+| `/` | Public (shows `LandingPage` if unauthenticated, `Dashboard` if authenticated) |
+| `/auth/*` | Guest-only via `useGuestRoute()` + middleware redirects authenticated users to `/` |
+| `/vehicles/*` | Protected via `useProtectedRoute()` + middleware redirects unauthenticated to `/auth/login` |
 
-### Variables de Entorno Requeridas
+### Environment Variables
 
 ```bash
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+# Supabase (required)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
-# Redirect URLs (Opcional)
-NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/dashboard
-NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://tu-dominio.com/dashboard
+# Upstash Redis for rate limiting (required in production)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# Email redirect after signup confirmation
+NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/
+NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://keepel.chemicaldev.com/
 ```
 
 ---
 
-## 🎨 Sistema de Diseño
+## PWA Configuration
 
-### Temas
+The app is a full PWA using `@ducanh2912/next-pwa` (Workbox-based).
 
-- **Light Mode**: Tema claro por defecto
-- **Dark Mode**: Tema oscuro (toggle en UI)
-- **System**: Respeta preferencias del sistema operativo
+**Service worker is disabled in development** (`disable: process.env.NODE_ENV === 'development'`).
 
-### Paleta de Colores (TailwindCSS)
+### Caching Strategy
 
-```javascript
-// tailwind.config.js
-colors: {
-  primary: 'hsl(var(--primary))',
-  secondary: 'hsl(var(--secondary))',
-  accent: 'hsl(var(--accent))',
-  background: 'hsl(var(--background))',
-  foreground: 'hsl(var(--foreground))',
-  muted: 'hsl(var(--muted))',
-  // ... más colores
-}
-```
+| Resource | Strategy | TTL |
+|---|---|---|
+| Supabase API (`*.supabase.co/*`) | NetworkFirst | 24h |
+| Google Fonts stylesheets | StaleWhileRevalidate | — |
+| Google Fonts webfonts | CacheFirst | 365d |
+| Images (png/jpg/svg/gif/webp) | CacheFirst | 7d |
 
-### Componentes UI (shadcn/ui)
+### PWA Files
 
-Todos los componentes UI están en `components/ui/` y siguen el sistema de shadcn/ui:
-
-- **Button**: Botones con variantes (default, destructive, outline, ghost)
-- **Dialog**: Modales y diálogos
-- **Input**: Campos de entrada de texto
-- **Card**: Contenedores de contenido
-- **Form**: Manejo de formularios con react-hook-form
-- **Alert**: Mensajes de alerta
-- **Badge**: Etiquetas y badges
-- **Dropdown**: Menús desplegables
-- **Table**: Tablas de datos
-
-### Convenciones de Estilo
-
-1. **Usar Tailwind utilities** en lugar de CSS custom
-2. **Usar componentes shadcn/ui** para consistencia
-3. **Responsive first**: Mobile → Tablet → Desktop
-4. **Dark mode compatible**: Siempre testear en ambos temas
-5. **Accesibilidad**: ARIA labels, keyboard navigation
+- `public/manifest.json` — web app manifest
+- `public/sw.js` — service worker (auto-generated, do not edit)
+- `public/icons/` — icon set (various sizes)
+- `public/splash/` — iOS launch screens
+- `components/pwa/` — PWA UI components (install prompt, offline indicator)
+- `lib/utils/pwa.ts` — utility functions
+- `styles/pwa.css` — PWA-specific styles
 
 ---
 
-## 📝 Patrones de Código
+## Design System
 
-### Componentes React
+### Themes
 
-#### Estructura de un Componente
+- **Light Mode** / **Dark Mode** / **System** — managed by `next-themes`
+- Theme toggle is available in the UI header
+
+### Tailwind v4 Configuration
+
+Tailwind v4 does **not** use a `tailwind.config.js` file. Configuration lives in:
+
+- `postcss.config.mjs` — uses `@tailwindcss/postcss` plugin
+- `app/globals.css` — uses `@import "tailwindcss"` + `@theme inline { ... }` block with CSS custom properties for all design tokens (colors, radii, shadows, fonts)
+
+### Fonts
 
 ```typescript
-// components/ejemplo/mi-componente.tsx
-'use client'; // Solo si usa hooks de React o interactividad
+// app/layout.tsx
+import { Inter, JetBrains_Mono } from "next/font/google"
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] })
+const jetbrainsMono = JetBrains_Mono({ variable: "--font-jetbrains-mono", subsets: ["latin"] })
+```
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/auth-context';
+### Toasts
 
-interface MiComponenteProps {
-  titulo: string;
-  onAction?: () => void;
+The project uses **`sonner`**, not `@/components/ui/use-toast`.
+
+```typescript
+import { toast } from "sonner"
+
+toast.success("Vehicle added successfully")
+toast.error("Failed to save changes")
+toast("Neutral message")
+```
+
+### shadcn/ui Components
+
+Components live in `components/ui/`. See `components.json` for the shadcn/ui configuration.
+Actual components available: `badge`, `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `sheet`, `textarea`, `responsive-dialog`, `loading-screen`.
+
+---
+
+## Code Patterns
+
+### React Contexts — How to Use
+
+Always import from `@/contexts` (uses `index.ts` re-exports):
+
+```typescript
+import { useAuth } from "@/contexts"           // auth state
+import { useData } from "@/contexts"            // vehicles + maintenance data
+import { useSupabase } from "@/contexts"        // raw Supabase client
+```
+
+**Do not import directly from context files** — use the barrel export.
+
+### `useAuth()` — Auth State
+
+```typescript
+'use client'
+import { useAuth } from "@/contexts"
+
+export function MyComponent() {
+  const { user, profile, isLoading, isAuthenticated, signOut, refreshProfile } = useAuth()
+
+  if (isLoading) return <LoadingScreen />
+  if (!isAuthenticated) return null
+
+  return <div>Hello, {profile?.full_name ?? user?.email}</div>
+}
+```
+
+### `useData()` — Vehicles & Maintenance
+
+```typescript
+'use client'
+import { useData } from "@/contexts"
+
+export function VehiclesList() {
+  const {
+    vehicles,
+    maintenanceRecords,
+    isLoading,
+    addVehicleOptimistic,
+    updateVehicleOptimistic,
+    deleteVehicleOptimistic,
+    refreshVehicles,
+  } = useData()
+
+  // All mutations are optimistic — they update local state immediately
+  // and roll back on error
+  const handleAdd = async (data) => {
+    try {
+      await addVehicleOptimistic(data)
+      toast.success("Vehicle added")
+    } catch {
+      toast.error("Failed to add vehicle")
+    }
+  }
+}
+```
+
+### Route Protection Hooks
+
+```typescript
+// Protected page (requires authentication)
+'use client'
+import { useProtectedRoute } from "@/hooks"
+
+export function VehiclesPage() {
+  const { isLoading } = useProtectedRoute() // auto-redirects to /auth/login if not authenticated
+
+  if (isLoading) return <LoadingScreen />
+  return <VehiclesList />
 }
 
-export function MiComponente({ titulo, onAction }: MiComponenteProps) {
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+// Guest-only page (no access if authenticated)
+'use client'
+import { useGuestRoute } from "@/hooks"
 
-  const handleClick = async () => {
-    setLoading(true);
-    try {
-      // Lógica...
-      await onAction?.();
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+export function LoginPage() {
+  const { isLoading } = useGuestRoute() // auto-redirects to / if already authenticated
 
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold">{titulo}</h2>
-      <p>Usuario: {user?.email}</p>
-      <Button onClick={handleClick} disabled={loading}>
-        {loading ? 'Cargando...' : 'Acción'}
-      </Button>
-    </div>
-  );
+  if (isLoading) return <LoadingScreen />
+  return <LoginForm />
 }
 ```
 
 ### Server Components vs Client Components
 
-#### Server Component (Por defecto en Next.js 14)
-
-```typescript
-// app/dashboard/page.tsx
-import { createServerClient } from '@/lib/supabase/server';
-import { VehiclesList } from '@/components/vehicles/vehicles-list';
-
-// ✅ NO necesita 'use client'
-// ✅ Puede hacer fetch de datos directamente
-// ✅ Mejor para SEO y performance
-
-export default async function DashboardPage() {
-  const supabase = await createServerClient();
-
-  const { data: vehicles } = await supabase
-    .from('vehicles')
-    .select('*');
-
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <VehiclesList vehicles={vehicles} />
-    </div>
-  );
-}
-```
-
-#### Client Component
-
-```typescript
-// components/vehicles/add-vehicle-dialog.tsx
-'use client'; // ⚠️ Necesario porque usa useState, useAuth, etc.
-
-import { useState } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { Dialog } from '@/components/ui/dialog';
-
-export function AddVehicleDialog() {
-  const [open, setOpen] = useState(false);
-  const { user } = useAuth();
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {/* Contenido del modal */}
-    </Dialog>
-  );
-}
-```
-
-### Manejo de Formularios
-
-```typescript
-'use client';
-
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
-
-// 1. Definir schema de validación con Zod
-const vehicleSchema = z.object({
-  make: z.string().min(1, 'Marca es requerida'),
-  model: z.string().min(1, 'Modelo es requerido'),
-  year: z.number().min(1900).max(new Date().getFullYear() + 1),
-  mileage: z.number().min(0).optional(),
-});
-
-type VehicleFormData = z.infer<typeof vehicleSchema>;
-
-export function VehicleForm() {
-  // 2. Setup react-hook-form con Zod
-  const form = useForm<VehicleFormData>({
-    resolver: zodResolver(vehicleSchema),
-    defaultValues: {
-      make: '',
-      model: '',
-      year: new Date().getFullYear(),
-      mileage: 0,
-    },
-  });
-
-  // 3. Handler de submit
-  const onSubmit = async (data: VehicleFormData) => {
-    try {
-      // Lógica de guardado...
-      console.log('Datos:', data);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="make"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Marca</FormLabel>
-              <Input {...field} placeholder="Toyota" />
-            </FormItem>
-          )}
-        />
-        {/* Más campos... */}
-        <Button type="submit">Guardar</Button>
-      </form>
-    </Form>
-  );
-}
-```
-
-### Queries a Supabase
-
-#### En Client Components
-
-```typescript
-'use client';
-
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-
-export function MiComponente() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { data, error } = await supabase
-          .from('vehicles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setData(data);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
-
-  if (loading) return <div>Cargando...</div>;
-  return <div>{/* Renderizar data */}</div>;
-}
-```
-
-#### En Server Components
+**Server Component** (default in Next.js — no directive needed):
 
 ```typescript
 // app/vehicles/page.tsx
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server"
 
 export default async function VehiclesPage() {
-  const supabase = await createServerClient();
+  // Next.js 16: cookies() is async — always await
+  const supabase = await createClient()
 
-  // ✅ Directamente en el componente, sin useEffect
-  const { data: vehicles, error } = await supabase
-    .from('vehicles')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const { data: vehicles } = await supabase
+    .from("vehicles")
+    .select("*")
+    .order("created_at", { ascending: false })
 
-  if (error) {
-    return <div>Error al cargar vehículos</div>;
-  }
-
-  return <VehiclesList vehicles={vehicles} />;
+  return <VehiclesList initialVehicles={vehicles} />
 }
 ```
 
-### Manejo de Errores
+**Client Component** (add `'use client'` when using hooks, state, or browser APIs):
 
 ```typescript
-import { toast } from "@/components/ui/use-toast"
+'use client'
+import { useState } from "react"
+import { useAuth } from "@/contexts"
+import { useData } from "@/contexts"
 
-async function handleAction() {
-  try {
-    // Acción...
-    const { error } = await supabase.from("vehicles").insert(data)
-
-    if (error) throw error
-
-    toast({
-      title: "¡Éxito!",
-      description: "Vehículo agregado correctamente",
-    })
-  } catch (error) {
-    console.error("Error:", error)
-
-    toast({
-      title: "Error",
-      description: error instanceof Error ? error.message : "Ocurrió un error",
-      variant: "destructive",
-    })
-  }
+export function AddVehicleDialog() {
+  const [open, setOpen] = useState(false)
+  const { user } = useAuth()
+  const { addVehicleOptimistic } = useData()
+  // ...
 }
 ```
 
----
+### Server Actions
 
-## 🧪 Testing
-
-### Setup de Testing (Pendiente de implementar)
-
-```bash
-# Instalar dependencias de testing
-pnpm add -D @testing-library/react @testing-library/jest-dom jest
-```
-
-### Ejemplo de Test
+Auth operations use Server Actions in `app/auth/actions.ts`:
 
 ```typescript
-// __tests__/components/vehicle-form.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import { VehicleForm } from '@/components/vehicles/vehicle-form';
+// IMPORTANT: Server Actions validate rate limits — do not call them in loops
+import { loginAction, signupAction } from "@/app/auth/actions"
 
-describe('VehicleForm', () => {
-  it('should render form fields', () => {
-    render(<VehicleForm />);
-
-    expect(screen.getByLabelText(/marca/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/modelo/i)).toBeInTheDocument();
-  });
-
-  it('should show validation errors', async () => {
-    render(<VehicleForm />);
-
-    const submitButton = screen.getByRole('button', { name: /guardar/i });
-    fireEvent.click(submitButton);
-
-    expect(await screen.findByText(/marca es requerida/i)).toBeInTheDocument();
-  });
-});
-```
-
----
-
-## 🚀 Comandos Importantes
-
-### Desarrollo
-
-```bash
-# Instalar dependencias
-pnpm install
-
-# Ejecutar en modo desarrollo
-pnpm dev
-
-# Ejecutar en puerto específico
-pnpm dev -p 3001
-```
-
-### Build y Producción
-
-```bash
-# Construir para producción
-pnpm build
-
-# Ejecutar build de producción
-pnpm start
-
-# Analizar bundle
-pnpm build --analyze
-```
-
-### Linting y Formatting
-
-```bash
-# Lint del código
-pnpm lint
-
-# Fix automático de lint
-pnpm lint --fix
-
-# Formatear código con Prettier
-pnpm format
-```
-
-### Base de Datos
-
-```bash
-# Ejecutar migraciones (desde Supabase Dashboard)
-# SQL Editor → Ejecutar scripts en orden:
-# 1. scripts/001_create_tables.sql
-# 2. scripts/002_create_profile_trigger.sql
-```
-
----
-
-## 📦 Dependencias Principales
-
-### Core
-
-```json
-{
-  "next": "14.2.16",
-  "react": "^18",
-  "react-dom": "^18",
-  "typescript": "^5"
+// Always check result.success
+const result = await loginAction(email, password)
+if (!result.success) {
+  toast.error(result.error)
+  // result.rateLimit contains remaining/limit/reset info
 }
 ```
 
-### UI & Styling
+When writing new Server Actions, always authenticate inside the action:
 
-```json
-{
-  "tailwindcss": "^4.1.9",
-  "@radix-ui/react-*": "^1.x", // Componentes de shadcn/ui
-  "lucide-react": "^0.460.0",
-  "class-variance-authority": "^0.7.1",
-  "clsx": "^2.1.1",
-  "tailwind-merge": "^2.6.0"
+```typescript
+'use server'
+import { createClient } from "@/lib/supabase/server"
+
+export async function myAction(data: unknown) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error("Unauthorized")
+
+  // ... perform mutation
 }
 ```
 
-### Forms & Validation
+### Forms (react-hook-form + zod)
 
-```json
-{
-  "react-hook-form": "^7.54.2",
-  "zod": "^3.24.1",
-  "@hookform/resolvers": "^3.9.1"
-}
-```
+```typescript
+'use client'
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
 
-### Backend & Auth
+const vehicleSchema = z.object({
+  make: z.string().min(1, "Make is required"),
+  model: z.string().min(1, "Model is required"),
+  year: z.number().int().min(1900).max(new Date().getFullYear() + 1),
+  mileage: z.number().int().min(0).optional(),
+})
 
-```json
-{
-  "@supabase/supabase-js": "^2.48.1",
-  "@supabase/ssr": "^0.5.2"
-}
-```
+type VehicleFormData = z.infer<typeof vehicleSchema>
 
-### Charts & Data Viz
+export function VehicleForm() {
+  const form = useForm<VehicleFormData>({
+    resolver: zodResolver(vehicleSchema),
+    defaultValues: { make: "", model: "", year: new Date().getFullYear(), mileage: 0 },
+  })
 
-```json
-{
-  "recharts": "^2.15.0"
-}
-```
-
----
-
-## 🔧 Configuraciones Importantes
-
-### TypeScript (tsconfig.json)
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "jsx": "preserve",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "paths": {
-      "@/*": ["./*"]
+  const onSubmit = async (data: VehicleFormData) => {
+    try {
+      await addVehicleOptimistic(data)
+      toast.success("Vehicle saved")
+      form.reset()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save")
     }
   }
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* fields */}
+    </form>
+  )
 }
 ```
 
-### Next.js (next.config.mjs)
-
-```javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    domains: ["your-supabase-project.supabase.co"],
-  },
-  experimental: {
-    serverActions: true,
-  },
-}
-
-export default nextConfig
-```
-
-### TailwindCSS (tailwind.config.js)
-
-```javascript
-module.exports = {
-  darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}"],
-  theme: {
-    extend: {
-      colors: {
-        // Variables CSS para temas
-      },
-    },
-  },
-  plugins: [require("tailwindcss-animate")],
-}
-```
-
----
-
-## 🎯 Convenciones y Mejores Prácticas
-
-### Nomenclatura
-
-#### Archivos y Carpetas
-
-- **Componentes**: `kebab-case.tsx` (ej: `vehicle-form.tsx`)
-- **Páginas**: `page.tsx` (Next.js App Router)
-- **Layouts**: `layout.tsx`
-- **Carpetas**: `kebab-case` (ej: `auth-context`)
-
-#### Código
-
-- **Componentes**: `PascalCase` (ej: `VehicleForm`)
-- **Funciones**: `camelCase` (ej: `handleSubmit`)
-- **Constantes**: `UPPER_SNAKE_CASE` (ej: `MAX_VEHICLES`)
-- **Variables**: `camelCase` (ej: `vehicleData`)
-- **Interfaces/Types**: `PascalCase` con sufijo opcional (ej: `VehicleFormProps`)
-
-### Organización de Imports
+### Import Organization
 
 ```typescript
-// 1. Imports de React y frameworks
-import { useState, useEffect } from "react"
+// 1. React and Next.js
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 
-// 2. Imports de librerías externas
+// 2. External libraries
+import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { toast } from "sonner"
 
-// 3. Imports internos (@ alias)
+// 3. Internal — contexts and hooks
+import { useAuth, useData } from "@/contexts"
+import { useProtectedRoute } from "@/hooks"
+
+// 4. Internal — UI components
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/auth-context"
-import { createClient } from "@/lib/supabase/client"
+import { Input } from "@/components/ui/input"
 
-// 4. Imports de tipos
-import type { Vehicle } from "@/lib/supabase/types"
+// 5. Internal — lib utilities
+import { createClient } from "@/lib/supabase/server"
 
-// 5. Imports relativos (evitar si es posible)
-import { helperFunction } from "./utils"
-```
-
-### Comentarios
-
-```typescript
-/**
- * Componente para agregar un nuevo vehículo
- *
- * @param onSuccess - Callback cuando se agrega exitosamente
- * @param initialData - Datos iniciales del formulario (opcional)
- */
-export function AddVehicleDialog({ onSuccess, initialData }: Props) {
-  // Lógica...
-}
-
-// ✅ BIEN: Comentarios para código complejo
-// Verificamos si el token está próximo a expirar (menos de 5 minutos)
-const isExpiringSoon = expiresAt - Date.now() < 5 * 60 * 1000
-
-// ❌ MAL: Comentarios obvios
-// Asigna el valor a la variable
-const value = getValue()
-```
-
-### Manejo de Estado
-
-```typescript
-// ✅ BIEN: Estado local simple
-const [isOpen, setIsOpen] = useState(false)
-
-// ✅ BIEN: Estado global con Context
-const { user, loading } = useAuth()
-
-// ✅ BIEN: Estado de servidor con Server Components
-const vehicles = await fetchVehicles()
-
-// ❌ MAL: Estado global sin Context
-// (compartir estado pasándolo como props por muchos niveles)
-```
-
-### Async/Await
-
-```typescript
-// ✅ BIEN: Usar async/await con try/catch
-async function handleSubmit() {
-  try {
-    const result = await saveData()
-    toast.success("Guardado exitosamente")
-  } catch (error) {
-    console.error("Error:", error)
-    toast.error("Error al guardar")
-  }
-}
-
-// ❌ MAL: Promesas sin manejo de errores
-function handleSubmit() {
-  saveData().then(() => {
-    toast.success("Guardado")
-  }) // ⚠️ No captura errores
-}
+// 6. Types
+import type { Vehicle } from "@/contexts/DataContext"
 ```
 
 ---
 
-## 🐛 Debugging y Troubleshooting
+## Rate Limiting
+
+`lib/ratelimit.ts` exports two Upstash rate limiters used in `app/auth/actions.ts`:
+
+| Limiter | Limit | Window | Key |
+|---|---|---|---|
+| `loginRateLimiter` | 5 attempts | 60 seconds | per email + per IP |
+| `signupRateLimiter` | 3 attempts | 1 hour | per email + per IP |
+
+Requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in env. The module **throws at import time** if these variables are missing.
+
+---
+
+## Key Commands
+
+```bash
+pnpm dev              # Development server (PWA disabled)
+pnpm build            # Production build
+pnpm start            # Start production build
+pnpm lint             # ESLint
+pnpm type-check       # TypeScript check without emitting
+pnpm format           # Prettier format
+pnpm format:check     # Check formatting without writing
+pnpm clean            # Remove .next cache
+pnpm clean:install    # Clean + reinstall dependencies
+```
+
+---
+
+## Naming Conventions
+
+### Files & Folders
+
+- **Component files**: `kebab-case.tsx` (e.g., `add-vehicle-dialog.tsx`)
+  - Exception: context files and some component files use `PascalCase.tsx` (e.g., `AuthContext.tsx`, `Dashboard.tsx`) — match the existing style in the same directory
+- **Pages**: `page.tsx` (Next.js App Router convention)
+- **Hooks**: `use-kebab-case.ts` or `useCamelCase.ts` — match existing style in `hooks/`
+- **Folders**: `kebab-case`
+
+### Code
+
+- **Components**: `PascalCase` (e.g., `VehicleForm`)
+- **Functions**: `camelCase` (e.g., `handleSubmit`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `MAX_VEHICLES`)
+- **Variables**: `camelCase`
+- **Interfaces/Types**: `PascalCase` (e.g., `VehicleFormProps`)
+- Use `type` for component props and simple shapes; `interface` for complex objects or when extension is expected
+
+---
+
+## Debugging & Troubleshooting
 
 ### Common Issues
 
-#### 1. "Hydration Error" en Next.js
+#### 1. Hydration Error
 
-**Causa**: Diferencia entre HTML del servidor y cliente
-**Solución**:
+**Cause**: Server/client HTML mismatch.
+`app/layout.tsx` uses `suppressHydrationWarning={true}` on `<body>` for this reason.
 
 ```typescript
-// Usar useEffect para código que solo debe correr en cliente
+// Move browser-only code into useEffect
 useEffect(() => {
-  // Código que depende del browser
+  // browser-only logic
 }, [])
-
-// O usar 'use client' si el componente es completamente cliente
-;("use client")
 ```
 
-#### 2. "Cannot read properties of undefined (reading 'user')"
+See the `next-best-practices` skill (`hydration-error.md`) for detailed fixes.
 
-**Causa**: Acceder a `user` antes de que AuthContext esté listo
-**Solución**:
+#### 2. `useAuth must be used within an AuthProvider`
+
+**Cause**: Component is rendered outside `AppProviders`.
+**Fix**: Ensure the component tree includes `AppProviders` from `app/layout.tsx`.
+
+#### 3. Wrong Supabase client in Server Component
 
 ```typescript
-const { user, loading } = useAuth();
+// Server Component → use server client
+import { createClient } from "@/lib/supabase/server"
+const supabase = await createClient()  // ← always await in Next.js 16
 
-if (loading) {
-  return <Spinner />;
-}
-
-// Ahora es seguro usar user
-return <div>{user.email}</div>;
+// Client Component → use context
+import { useSupabase } from "@/contexts"
+const supabase = useSupabase()
 ```
 
-#### 3. "Supabase client must be created in Client Component"
+#### 4. Rate limit errors on login/signup
 
-**Causa**: Usar `createClient()` (browser) en Server Component
-**Solución**:
+Check `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in your environment. If variables are missing, `lib/ratelimit.ts` throws at module load time and the app will not start.
 
-```typescript
-// En Server Component
-import { createServerClient } from "@/lib/supabase/server"
-const supabase = await createServerClient()
+#### 5. Service worker stale in production
 
-// En Client Component
-import { createClient } from "@/lib/supabase/client"
-const supabase = createClient()
-```
+PWA is disabled in development. In production, after deploying, instruct users to refresh or clear cache. The service worker versioning is handled automatically by Workbox.
 
-#### 4. Session no persiste después de refresh
-
-**Causa**: Cookies no configuradas correctamente
-**Solución**:
-
-1. Verificar URLs en Supabase Dashboard
-2. Verificar que middleware tenga acceso a cookies
-3. Verificar que `autoRefreshToken: true` en client
-
-### Logs Útiles
+### Useful Debug Logs
 
 ```typescript
-// Verificar estado de autenticación
-console.log("Auth State:", {
-  user: authManager.getUser(),
-  session: authManager.getSession(),
+// Check auth state
+import { authManager } from "@/lib/auth/authManager"
+console.log("Auth:", {
+  user: authManager.getUser()?.email,
   isAuthenticated: authManager.isAuthenticated(),
+  session: authManager.getSession()?.expires_at,
 })
 
-// Verificar eventos de auth
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log("🔐 Auth Event:", event, {
-    user: session?.user?.email,
-    expiresAt: new Date(session?.expires_at * 1000).toISOString(),
-  })
-})
-
-// Verificar queries de Supabase
+// Check Supabase query
 const { data, error } = await supabase.from("vehicles").select("*")
-console.log("Query result:", { data, error })
+if (error) console.error("Query error:", error)
 ```
 
 ---
 
-## 📚 Recursos de Referencia
+## Security
 
-### Documentación Oficial
+### Policies
 
-- [Next.js 14 Docs](https://nextjs.org/docs)
-- [React Docs](https://react.dev)
-- [Supabase Docs](https://supabase.com/docs)
-- [TailwindCSS Docs](https://tailwindcss.com/docs)
-- [shadcn/ui Docs](https://ui.shadcn.com)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+1. **Never commit**: `.env.local`, API keys, real user data
+2. **RLS**: Always enable RLS on new tables; all policies must validate `auth.uid()`
+3. **Server Actions**: Always authenticate inside each action — do not rely only on middleware
+4. **Rate limiting**: Auth actions (login/signup) use Upstash sliding window rate limiters
+5. **Input validation**: Zod in client forms + RLS + DB constraints on server
 
-### Herramientas
+### Vulnerability Reports
 
-- [TypeScript Playground](https://www.typescriptlang.org/play)
-- [TailwindCSS Playground](https://play.tailwindcss.com)
-- [Supabase Dashboard](https://supabase.com/dashboard)
-- [Vercel Dashboard](https://vercel.com/dashboard)
+Do not open a public issue. Email: security@keepel.dev
 
 ---
 
-## 🎯 Roadmap y Features Futuras
+## AI Agent Skills
 
-### v1.1 (En Desarrollo)
+This project has skills installed that agents should load when working on relevant tasks.
 
-- [ ] API REST completa para integraciones
-- [ ] Notificaciones push para recordatorios
-- [ ] Reportes avanzados con gráficos mejorados
-- [ ] Internacionalización (i18n) español/inglés
-- [ ] Búsqueda avanzada con filtros múltiples
+> Skills are located at: `.agents\skills\`
 
-### v1.2 (Planificado)
+### `next-best-practices`
 
-- [ ] App móvil nativa (React Native)
-- [ ] OCR para facturas automático
-- [ ] Integración con talleres mecánicos
-- [ ] Gestión de presupuestos
-- [ ] Comparador de costos entre vehículos
+**Load when**: writing or reviewing any Next.js-specific code — pages, layouts, Route Handlers, Server Actions, metadata, fonts, images, RSC boundaries.
 
-### v2.0 (Futuro)
+**Key areas covered**:
+- File conventions and special files (`page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`)
+- RSC boundaries — detecting invalid async Client Components, non-serializable props
+- Next.js 16 async APIs: `params`, `searchParams`, `cookies()`, `headers()` must all be awaited
+- Error handling with `error.tsx`, `not-found.tsx`, `unauthorized()`, `forbidden()`
+- Data patterns: Server Components vs Server Actions vs Route Handlers
+- Image optimization with `next/image`
+- Font optimization with `next/font`
+- Avoiding data waterfalls (`Promise.all`, Suspense, preload pattern)
+- Hydration error fixes
+- Bundling and barrel import optimization
 
-- [ ] IA para predicción de mantenimientos
-- [ ] Analytics avanzados de rendimiento
-- [ ] Integración con APIs de fabricantes
-- [ ] Marketplace de servicios
-- [ ] Sistema de recomendaciones
+**Example triggers**:
+- Adding a new page or layout
+- Implementing a new Server Action
+- Fetching data in a Server Component
+- Reviewing RSC/Client Component boundaries
 
----
+### `vercel-react-best-practices`
 
-## 🤝 Contribuciones
+**Load when**: writing, reviewing, or refactoring React components — especially for performance, data fetching patterns, bundle size, or re-render issues.
 
-### Flujo de Trabajo
+**57 rules across 8 priority categories**:
 
-1. **Fork del repositorio**
-2. **Crear rama**: `git checkout -b feature/nueva-caracteristica`
-3. **Desarrollar y commit**: `git commit -m "feat: agrega nueva característica"`
-4. **Push**: `git push origin feature/nueva-caracteristica`
-5. **Pull Request** a `main`
+| Priority | Category | Example rules |
+|---|---|---|
+| CRITICAL | Eliminating Waterfalls | `Promise.all` for independent fetches, strategic `Suspense` boundaries |
+| CRITICAL | Bundle Size | Avoid barrel imports from `lucide-react`, use `next/dynamic` for heavy components |
+| HIGH | Server-Side Performance | Authenticate Server Actions, `React.cache()` for deduplication, minimize RSC props |
+| MEDIUM-HIGH | Client Data Fetching | Passive event listeners, `localStorage` versioning |
+| MEDIUM | Re-render Optimization | `memo`, `useCallback`, functional `setState`, lazy state init |
+| MEDIUM | Rendering Performance | Conditional rendering (`ternary` not `&&`), `useTransition` for loading states |
+| LOW-MEDIUM | JavaScript Performance | `Set`/`Map` for O(1) lookups, early returns, hoisted RegExp |
+| LOW | Advanced Patterns | `useRef` for transient values, event handler refs |
 
-### Conventional Commits
+**Example triggers**:
+- Adding a new React component
+- Implementing data fetching in a Client Component
+- Optimizing a slow page or component
+- Reviewing imports and bundle size
+- Refactoring effects or state management
 
-Usar formato: `tipo(scope): descripción`
+### `supabase-postgres-best-practices`
 
-**Tipos:**
+**Load when**: writing, reviewing, or optimizing any SQL, database schema, RLS policies, indexes, or Supabase/Postgres configuration.
 
-- `feat`: Nueva característica
-- `fix`: Corrección de bug
-- `docs`: Cambios en documentación
-- `style`: Cambios de formato (no afectan lógica)
-- `refactor`: Refactorización de código
-- `test`: Agregar o modificar tests
-- `chore`: Mantenimiento y tareas auxiliares
+**Rules across 8 priority categories**:
 
-**Ejemplos:**
+| Priority | Category | Impact | Examples |
+|---|---|---|---|
+| CRITICAL | Query Performance | Indexes, query plans, covering indexes, partial indexes | `query-missing-indexes`, `query-composite-indexes` |
+| CRITICAL | Connection Management | Pooling, idle timeouts, connection limits, prepared statements | `conn-pooling`, `conn-limits` |
+| CRITICAL | Security & RLS | RLS basics, policy performance, privilege management | `security-rls-basics`, `security-rls-performance` |
+| HIGH | Schema Design | Data types, primary keys, foreign key indexes, constraints | `schema-data-types`, `schema-foreign-key-indexes` |
+| MEDIUM-HIGH | Concurrency & Locking | Deadlock prevention, advisory locks, short transactions | `lock-deadlock-prevention`, `lock-skip-locked` |
+| MEDIUM | Data Access Patterns | N+1 queries, pagination, batch inserts, upserts | `data-n-plus-one`, `data-pagination` |
+| LOW-MEDIUM | Monitoring & Diagnostics | EXPLAIN ANALYZE, pg_stat_statements, VACUUM/ANALYZE | `monitor-explain-analyze`, `monitor-vacuum-analyze` |
+| LOW | Advanced Features | JSONB indexing, full-text search | `advanced-jsonb-indexing`, `advanced-full-text-search` |
 
-```bash
-feat(vehicles): agrega filtro por marca
-fix(auth): corrige redirección después del login
-docs(readme): actualiza guía de instalación
-refactor(dashboard): simplifica lógica de estadísticas
-```
-
-### Code Review Checklist
-
-- [ ] Código sigue convenciones del proyecto
-- [ ] TypeScript sin errores (`pnpm build`)
-- [ ] Linting pasa (`pnpm lint`)
-- [ ] Componentes funcionan en light/dark mode
-- [ ] Responsive en móvil, tablet, desktop
-- [ ] Tests agregados/actualizados (si aplica)
-- [ ] Sin console.logs en producción
-- [ ] Documentación actualizada (si aplica)
-
----
-
-## 🔒 Seguridad
-
-### Políticas de Seguridad
-
-1. **Nunca commitear**:
-   - `.env.local` (ya está en `.gitignore`)
-   - API keys o secrets
-   - Datos de usuarios reales
-
-2. **Row Level Security (RLS)**:
-   - SIEMPRE habilitar RLS en nuevas tablas
-   - Políticas deben validar `auth.uid()`
-
-3. **Validación**:
-   - Validar en cliente (Zod)
-   - Validar en servidor (RLS + constraints)
-
-4. **Headers de Seguridad**:
-   - Configurados en middleware
-   - CSP, XSS Protection, etc.
-
-### Reporte de Vulnerabilidades
-
-Si encuentras una vulnerabilidad de seguridad:
-
-1. NO crear issue público
-2. Enviar email a: security@keepel.dev
-3. Incluir descripción detallada y pasos para reproducir
+**Example triggers**:
+- Writing or modifying SQL migration scripts (`scripts/`)
+- Adding new tables or columns to the schema
+- Designing or reviewing RLS policies
+- Optimizing Supabase queries in Server Components or Server Actions
+- Configuring connection pooling or scaling
 
 ---
 
-## 🎓 Guías para Agentes de IA
+## Roadmap
 
-### Cuando Generes Código
+### v1.1 (In Development)
 
-1. **Siempre usar TypeScript** con tipos explícitos
-2. **Preferir Server Components** cuando sea posible
-3. **Usar `useAuth()` hook** para acceder a usuario
-4. **Validar formularios** con Zod + react-hook-form
-5. **Manejar errores** con try/catch y toast notifications
-6. **Responsive design** con TailwindCSS
-7. **Accesibilidad**: ARIA labels, keyboard navigation
-8. **Comentar código complejo** pero evitar comentarios obvios
+- [ ] Full REST API for integrations
+- [ ] Push notifications for maintenance reminders
+- [ ] Advanced reports with improved charts
+- [ ] Internationalization (i18n) Spanish/English
+- [ ] Advanced search with multiple filters
 
-### Cuando Modifiques Código Existente
+### v1.2 (Planned)
 
-1. **Mantener convenciones** del archivo existente
-2. **No romper funcionalidad** existente
-3. **Agregar tests** si modificas lógica crítica
-4. **Actualizar documentación** si cambias API pública
-5. **Verificar que compile** con `pnpm build`
+- [ ] Native mobile app (React Native)
+- [ ] OCR for automatic invoice scanning
+- [ ] Integration with repair shops
+- [ ] Budget management
+- [ ] Cost comparison between vehicles
 
-### Cuando Respondas Preguntas
+### v2.0 (Future)
 
-1. **Referenciar este documento** (AGENTS.md) cuando sea relevante
-2. **Dar ejemplos de código** del proyecto real
-3. **Explicar el "por qué"**, no solo el "cómo"
-4. **Sugerir mejoras** si ves oportunidades
-5. **Ser específico** sobre archivos y líneas de código
-
-### Cuando Debuggees
-
-1. **Verificar logs** en consola y terminal
-2. **Revisar Network tab** en DevTools
-3. **Verificar cookies** en Application tab
-4. **Probar en incógnito** para descartar caché
-5. **Verificar variables de entorno**
-6. **Consultar Supabase Dashboard** para errores de DB
+- [ ] AI-based maintenance prediction
+- [ ] Advanced performance analytics
+- [ ] Manufacturer API integrations
+- [ ] Services marketplace
+- [ ] Recommendation engine
 
 ---
 
-## 📞 Contacto y Soporte
+## Quick Reference
 
-- **Repository**: https://github.com/devchemical/CarCare
-- **Issues**: https://github.com/devchemical/CarCare/issues
-- **Discussions**: https://github.com/devchemical/CarCare/discussions
-- **Email**: soporte@keepel.dev
-- **Demo**: https://keepel.chemicaldev.com
+### Key Files
 
----
+| File | Purpose |
+|---|---|
+| `middleware.ts` | Delegates session refresh + route protection |
+| `lib/supabase/middleware.ts` | Route protection logic |
+| `lib/auth/authManager.ts` | Auth singleton (event-driven, BroadcastChannel) |
+| `lib/supabase/client.ts` | Browser Supabase client |
+| `lib/supabase/server.ts` | Server Component Supabase client |
+| `lib/ratelimit.ts` | Upstash rate limiters |
+| `contexts/AppProviders.tsx` | Root provider tree |
+| `contexts/AuthContext.tsx` | Auth state and `useAuth()` |
+| `contexts/DataContext.tsx` | App data and optimistic updates |
+| `app/auth/actions.ts` | Login and signup Server Actions |
+| `app/api/auth/signout/route.ts` | Server-side logout endpoint |
+| `app/globals.css` | Global styles + Tailwind v4 theme |
+| `next.config.mjs` | Next.js + PWA configuration |
 
-## 📄 Licencia
+### Hooks Reference
 
-Este proyecto está bajo la **Licencia MIT**.
+| Hook | Import | Usage |
+|---|---|---|
+| `useAuth()` | `@/contexts` | Auth state (user, profile, signOut) |
+| `useData()` | `@/contexts` | Vehicles + maintenance + optimistic mutations |
+| `useSupabase()` | `@/contexts` | Raw Supabase client |
+| `useProtectedRoute()` | `@/hooks` | Redirect to login if unauthenticated |
+| `useGuestRoute()` | `@/hooks` | Redirect to `/` if authenticated |
+| `useDashboardData()` | `@/hooks` | Aggregated dashboard statistics |
+| `usePWA()` | `@/hooks` | PWA install prompt and status |
+| `use-media-query` | `@/hooks` | Responsive breakpoint detection |
 
-Ver el archivo [LICENSE](LICENSE) para más detalles.
+### Contexts Reference
 
----
-
-**Última actualización**: Enero 2026
-**Versión del documento**: 1.0.0
-**Mantenido por**: DevChemical
-
----
-
-## 🎯 Quick Reference para IA
-
-### Comandos Más Usados
-
-```bash
-pnpm dev              # Desarrollo
-pnpm build            # Build producción
-pnpm lint             # Linting
-```
-
-### Archivos Clave
-
-- `middleware.ts` - Autenticación y protección de rutas
-- `contexts/auth-context.tsx` - Estado global de auth
-- `lib/auth/auth-manager.ts` - Lógica centralizada de auth
-- `lib/supabase/client.ts` - Cliente Supabase browser
-- `lib/supabase/server.ts` - Cliente Supabase server
-
-### Hooks Principales
-
-- `useAuth()` - Estado de autenticación
-- `useProtectedRoute()` - Proteger páginas
-- `useGuestRoute()` - Páginas solo no autenticados
-
-### Componentes UI
-
-- Ubicación: `components/ui/*`
-- Basados en: shadcn/ui + Radix UI
-- Uso: `import { Button } from '@/components/ui/button'`
-
-### Tipos TypeScript
-
-- Database types: `lib/supabase/types.ts`
-- Component props: Definir inline o en archivo separado
-- Usar `type` para props, `interface` para objetos complejos
+| Context/Provider | File | Exposes |
+|---|---|---|
+| `AuthProvider` + `useAuth()` | `contexts/AuthContext.tsx` | `user`, `profile`, `isLoading`, `isAuthenticated`, `signOut`, `refreshProfile` |
+| `DataProvider` + `useData()` | `contexts/DataContext.tsx` | `vehicles`, `maintenanceRecords`, loading states, optimistic CRUD methods |
+| `SupabaseProvider` + `useSupabase()` | `contexts/SupabaseContext.tsx` | Supabase browser client |
 
 ---
 
-**Este documento está en constante evolución. Si encuentras algo desactualizado o faltante, por favor abre un issue o PR.**
+**Last updated**: February 2026
+**Document version**: 2.1.0
+**Maintained by**: DevChemical
