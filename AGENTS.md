@@ -934,6 +934,23 @@ This project has skills installed that agents should load when working on releva
 - Optimizing Supabase queries in Server Components or Server Actions
 - Configuring connection pooling or scaling
 
+### `web-design-guidelines`
+
+**Load when**: reviewing UI code, checking accessibility, auditing design, reviewing UX, or checking the site against best practices.
+
+**Key areas covered**:
+- Real-time fetching of Vercel's Web Interface Guidelines
+- UI/UX compliance and accessibility auditing
+- Design structure and layout best practices
+- Standardized `file:line` reporting for quick action
+
+**Example triggers**:
+- "Review my UI"
+- "Check accessibility"
+- "Audit design"
+- "Review UX"
+- "Check my site against best practices"
+
 ---
 
 ## Roadmap
