@@ -81,7 +81,7 @@ export function Header() {
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
   if (authLoading) {
     return (
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           {/* Logo y nombre */}
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
@@ -101,7 +101,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-white/80 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo y nombre */}
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
