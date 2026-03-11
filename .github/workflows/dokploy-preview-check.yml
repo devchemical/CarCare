@@ -1,0 +1,65 @@
+name: Dokploy Preview Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Damos permisos de lectura para poder leer los comentarios de la PR
+permissions:
+  pull-requests: read
+
+jobs:
+  check-preview-ready:
+    name: Validate Preview URL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Dokploy comment and verify URL
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Buscando la URL de Dokploy en los comentarios de la PR #$PR_NUMBER..."
+
+          PREVIEW_URL=""
+
+          # Paso 1: Esperar a que Dokploy comente la URL (hasta 3 minutos)
+          for i in {1..12}; do
+            # Llamada a la API de GitHub para obtener los comentarios de la PR
+            COMMENTS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments")
+            
+            # Buscar mediante Regex el patrón exacto de tu dominio en los comentarios. 
+            # tail -n 1 asegura que cogemos la URL del último comentario si hay varios (ej: tras un nuevo commit)
+            EXTRACTED_URL=$(echo "$COMMENTS" | grep -oE 'https://preview-[a-zA-Z0-9-]+\.dev-env\.chemicaldev\.com' | tail -n 1)
+            
+            if [ -n "$EXTRACTED_URL" ]; then
+              PREVIEW_URL=$EXTRACTED_URL
+              echo "¡URL encontrada en el comentario!: $PREVIEW_URL"
+              break
+            fi
+            
+            echo "Comentario de Dokploy no encontrado aún. Intento $i de 12. Esperando 15s..."
+            sleep 15
+          done
+
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "Error: No se encontró el comentario de Dokploy con la URL tras 3 minutos."
+            exit 1
+          fi
+
+          echo "Comprobando disponibilidad de: $PREVIEW_URL"
+
+          # Paso 2: Esperar a que la URL responda correctamente (hasta 5 minutos)
+          for i in {1..20}; do
+            STATUS=$(curl -sk -o /dev/null -w "%{http_code}" "$PREVIEW_URL")
+            echo "Intento $i: HTTP $STATUS"
+            
+            if [[ "$STATUS" =~ ^(200|301|302)$ ]]; then
+              echo "¡La preview está desplegada y respondiendo correctamente!"
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "Error: Tiempo de espera agotado. La preview no respondió a tiempo."
+          exit 1
