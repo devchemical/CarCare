@@ -167,7 +167,7 @@ export function EditMaintenanceDialog({ record, vehicleId, open, onOpenChange }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wrench className="text-primary h-5 w-5" />
