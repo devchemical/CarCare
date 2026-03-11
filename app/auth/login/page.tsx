@@ -179,7 +179,7 @@ export default function LoginPage() {
                     />
                   </div>
                   {error && (
-                    <div className="text-destructive-foreground bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
+                    <div className="text-destructive bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm">
                       <p>{error}</p>
                       {rateLimitInfo && rateLimitInfo.remaining === 0 && (
                         <p className="mt-2 text-xs">
