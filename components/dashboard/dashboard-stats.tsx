@@ -80,12 +80,12 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       {stats.map((stat) => (
         <Card key={stat.title} className="hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-medium text-slate-500">{stat.title}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
             <stat.icon className={`h-5 w-5 ${stat.color}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900 tracking-tight">{stat.value}</div>
-            <p className="text-xs text-slate-500 mt-1.5">{stat.description}</p>
+            <div className="text-2xl font-semibold text-foreground tracking-tight">{stat.value}</div>
+            <p className="text-xs text-muted-foreground mt-1.5">{stat.description}</p>
           </CardContent>
         </Card>
       ))}
