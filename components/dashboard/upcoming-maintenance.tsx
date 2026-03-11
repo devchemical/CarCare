@@ -63,14 +63,14 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-green-600" />
+            <Calendar className="h-5 w-5 text-green-700" />
             Próximos Mantenimientos
           </CardTitle>
           <CardDescription>No hay servicios programados</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <CheckCircle className="h-12 w-12 text-green-700 mx-auto mb-4" />
             <p className="text-slate-500 leading-relaxed">
               ¡Perfecto! No tienes mantenimientos pendientes en los próximos 30 días.
             </p>
@@ -84,7 +84,7 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-green-600" />
+          <Calendar className="h-5 w-5 text-green-700" />
           Próximos Mantenimientos
         </CardTitle>
         <CardDescription>

@@ -50,7 +50,7 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       value: totalVehicles.toString(),
       icon: Car,
       description: "Vehículos registrados",
-      color: "text-green-600",
+      color: "text-green-700",
     },
     {
       title: "Mantenimientos",
@@ -64,7 +64,7 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       value: formatCurrency(totalCost),
       icon: DollarSign,
       description: "En mantenimientos",
-      color: "text-emerald-600",
+      color: "text-green-700",
     },
     {
       title: "Próximos Servicios",

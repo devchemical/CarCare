@@ -82,7 +82,11 @@ export function ResponsiveDialogContent({ children, className, title, descriptio
 
   // Mobile: Full-screen Bottom Sheet
   return (
-    <SheetContent side="bottom" className={cn("flex h-[95dvh] max-h-[95dvh] flex-col rounded-t-[20px] p-0", className)}>
+    <SheetContent 
+      side="bottom" 
+      className={cn("flex h-auto max-h-[100dvh] flex-col rounded-t-[20px] p-0", className)}
+      onOpenAutoFocus={(e) => e.preventDefault()}
+    >
       <div className="bg-muted mx-auto mb-4 mt-4 h-1.5 w-12 flex-shrink-0 rounded-full" />
 
       {(title || description) && (

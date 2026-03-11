@@ -50,7 +50,7 @@ export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomin
 
       {/* Quick Actions */}
       <div className="mb-10 flex flex-wrap gap-3">
-        <Button asChild className="bg-green-600 hover:bg-green-700">
+        <Button asChild className="bg-green-700 hover:bg-green-800">
           <Link href="/vehicles">
             <Car className="mr-2 h-4 w-4" />
             Ver Vehículos

@@ -59,7 +59,7 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="text-green-600 h-5 w-5" />
+            <Activity className="text-green-700 h-5 w-5" />
             Actividad Reciente
           </CardTitle>
           <CardDescription>No hay actividad reciente</CardDescription>
@@ -83,12 +83,12 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="text-green-600 h-5 w-5" />
+              <Activity className="text-green-700 h-5 w-5" />
               Actividad Reciente
             </CardTitle>
             <CardDescription>Últimos {Math.min(maintenanceRecords.length, 5)} mantenimientos</CardDescription>
           </div>
-          <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700" asChild>
+          <Button variant="default" size="sm" className="bg-green-700 hover:bg-green-800" asChild>
             <Link href="/vehicles">Ver Todos</Link>
           </Button>
         </div>
@@ -100,8 +100,8 @@ export function RecentActivity({ maintenanceRecords }: RecentActivityProps) {
               key={record.id}
               className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 transition-colors hover:bg-slate-50/50"
             >
-              <div className="bg-green-50 rounded-xl p-2.5">
-                <Activity className="text-green-600 h-5 w-5" />
+              <div className="bg-green-100 rounded-xl p-2.5">
+                <Activity className="text-green-700 h-5 w-5" />
               </div>
 
               <div className="min-w-0 flex-1">
