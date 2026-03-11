@@ -9,7 +9,7 @@ interface LayoutProps {
 
 export function Layout({ children, showHeader = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-white">
       {showHeader && <Header />}
       <main>{children}</main>
     </div>
