@@ -99,7 +99,7 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
       {records.map((record) => (
         <Card
           key={record.id}
-          className="hover:shadow-md transition-shadow border-border/50"
+          className="hover:shadow-md hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200 border-border/50 active:scale-[0.98] cursor-pointer"
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
@@ -176,8 +176,8 @@ export function MaintenanceList({ records, vehicleId }: MaintenanceListProps) {
                         isOverdue(record.next_service_date)
                           ? "destructive"
                           : isUpcoming(record.next_service_date)
-                          ? "default"
-                          : "secondary"
+                          ? "warning"
+                          : "success"
                       }
                       className="flex items-center gap-1"
                     >

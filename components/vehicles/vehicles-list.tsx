@@ -42,7 +42,7 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
       {vehicles.map((vehicle) => (
         <Card
           key={vehicle.id}
-          className="hover:shadow-lg transition-shadow border-border/50"
+          className="hover:shadow-lg hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200 border-border/50 active:scale-[0.98] cursor-pointer"
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">

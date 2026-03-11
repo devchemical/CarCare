@@ -71,7 +71,7 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       value: upcomingServices.toString(),
       icon: AlertTriangle,
       description: "En los próximos 30 días",
-      color: upcomingServices > 0 ? "text-amber-600" : "text-slate-500",
+      color: upcomingServices > 0 ? "text-amber-600" : "text-muted-foreground",
     },
   ]
 
