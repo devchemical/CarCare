@@ -34,8 +34,7 @@ export default async function VehiclesPage() {
   return (
     <Layout showHeader={true}>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
+        <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               Mis Vehículos
             </h1>
@@ -43,16 +42,19 @@ export default async function VehiclesPage() {
               Gestiona todos tus vehículos desde aquí
             </p>
           </div>
-          <AddVehicleDialog>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Vehículo
-            </Button>
-          </AddVehicleDialog>
-        </div>
 
         {vehicles && vehicles.length > 0 ? (
-          <VehiclesList vehicles={vehicles} />
+          <>
+            <VehiclesList vehicles={vehicles} />
+            <div className="mt-6">
+              <AddVehicleDialog>
+                <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Vehículo
+                </Button>
+              </AddVehicleDialog>
+            </div>
+          </>
         ) : (
           <Card className="text-center py-12">
             <CardHeader>
