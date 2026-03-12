@@ -1,54 +1,46 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Car, MoreVertical, Edit, Trash2, Calendar, Gauge } from "lucide-react";
-import { EditVehicleDialog } from "./edit-vehicle-dialog";
-import { DeleteVehicleDialog } from "./delete-vehicle-dialog";
-import { useState } from "react";
-import Link from "next/link";
-import { formatMileage } from "@/lib/formatters";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Car, MoreVertical, Edit, Trash2, Calendar, Gauge } from "lucide-react"
+import { EditVehicleDialog } from "./edit-vehicle-dialog"
+import { DeleteVehicleDialog } from "./delete-vehicle-dialog"
+import { useState } from "react"
+import Link from "next/link"
+import { formatMileage } from "@/lib/formatters"
 
 interface Vehicle {
-  id: string;
-  make: string;
-  model: string;
-  year: number;
-  license_plate?: string;
-  vin?: string;
-  color?: string;
-  mileage: number;
-  created_at: string;
-  updated_at: string;
+  id: string
+  make: string
+  model: string
+  year: number
+  license_plate?: string
+  vin?: string
+  color?: string
+  mileage: number
+  created_at: string
+  updated_at: string
 }
 
 interface VehiclesListProps {
-  vehicles: Vehicle[];
+  vehicles: Vehicle[]
 }
 
 export function VehiclesList({ vehicles }: VehiclesListProps) {
-  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
-  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
+  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null)
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {vehicles.map((vehicle) => (
-        <Card
-          key={vehicle.id}
-          className="hover:shadow-lg transition-shadow border-border/50"
-        >
+        <Card key={vehicle.id} className="border-border/50">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <Car className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg text-foreground">
+                <Car className="text-primary h-5 w-5" />
+                <CardTitle className="text-foreground text-lg">
                   {vehicle.make} {vehicle.model}
                 </CardTitle>
               </div>
@@ -59,21 +51,21 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setEditingVehicle(vehicle)}>
-                    <Edit className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => setEditingVehicle(vehicle)}>
+                    <Edit className="mr-2 h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem asChild className="cursor-pointer">
                     <Link href={`/vehicles/${vehicle.id}/maintenance`}>
-                      <Calendar className="h-4 w-4 mr-2" />
+                      <Calendar className="mr-2 h-4 w-4" />
                       Ver Mantenimientos
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setDeletingVehicle(vehicle)}
-                    className="text-destructive focus:text-destructive"
+                    className="text-destructive focus:text-destructive cursor-pointer"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Eliminar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -85,9 +77,9 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {vehicle.color && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <div
-                  className="w-4 h-4 rounded-full border border-border"
+                  className="border-border h-4 w-4 rounded-full border"
                   style={{ backgroundColor: vehicle.color.toLowerCase() }}
                 />
                 <span className="capitalize">{vehicle.color}</span>
@@ -96,34 +88,27 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
 
             {vehicle.license_plate && (
               <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-foreground">Placa:</span>
+                <span className="text-foreground font-medium">Placa:</span>
                 <Badge variant="outline">{vehicle.license_plate}</Badge>
               </div>
             )}
 
             <div className="flex items-center gap-2 text-sm">
-              <Gauge className="h-4 w-4 text-muted-foreground" />
+              <Gauge className="text-muted-foreground h-4 w-4" />
               <span className="text-muted-foreground">Kilometraje:</span>
-              <span className="font-medium text-foreground">
-                {formatMileage(vehicle.mileage)}
-              </span>
+              <span className="text-foreground font-medium">{formatMileage(vehicle.mileage)}</span>
             </div>
 
             {vehicle.vin && (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 <span className="font-medium">VIN:</span> {vehicle.vin}
               </div>
             )}
 
             <div className="pt-2">
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="w-full bg-transparent"
-              >
+              <Button asChild size="sm" className="bg-primary hover:bg-primary/90 w-full">
                 <Link href={`/vehicles/${vehicle.id}/maintenance`}>
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Calendar className="mr-2 h-4 w-4" />
                   Ver Mantenimientos
                 </Link>
               </Button>
@@ -148,5 +133,5 @@ export function VehiclesList({ vehicles }: VehiclesListProps) {
         />
       )}
     </div>
-  );
+  )
 }

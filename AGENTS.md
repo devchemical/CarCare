@@ -82,7 +82,7 @@ Keepel lets users:
 
 ```json
 {
-  "package_manager": "pnpm 9.0.0",
+  "package_manager": "bun 9.0.0",
   "bundler": "Turbopack (Next.js built-in)",
   "linting": "ESLint (eslint-config-next)",
   "formatting": "Prettier + prettier-plugin-tailwindcss",
@@ -222,7 +222,7 @@ CarCare/
 ├── components.json                   # shadcn/ui config
 ├── .prettierrc
 ├── package.json
-└── pnpm-lock.yaml
+└── bun.lock
 ```
 
 ---
@@ -412,10 +412,10 @@ Token near expiry
 
 ### Route Protection
 
-| Route | Protection |
-|---|---|
-| `/` | Public (shows `LandingPage` if unauthenticated, `Dashboard` if authenticated) |
-| `/auth/*` | Guest-only via `useGuestRoute()` + middleware redirects authenticated users to `/` |
+| Route         | Protection                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| `/`           | Public (shows `LandingPage` if unauthenticated, `Dashboard` if authenticated)               |
+| `/auth/*`     | Guest-only via `useGuestRoute()` + middleware redirects authenticated users to `/`          |
 | `/vehicles/*` | Protected via `useProtectedRoute()` + middleware redirects unauthenticated to `/auth/login` |
 
 ### Environment Variables
@@ -444,12 +444,12 @@ The app is a full PWA using `@ducanh2912/next-pwa` (Workbox-based).
 
 ### Caching Strategy
 
-| Resource | Strategy | TTL |
-|---|---|---|
-| Supabase API (`*.supabase.co/*`) | NetworkFirst | 24h |
-| Google Fonts stylesheets | StaleWhileRevalidate | — |
-| Google Fonts webfonts | CacheFirst | 365d |
-| Images (png/jpg/svg/gif/webp) | CacheFirst | 7d |
+| Resource                         | Strategy             | TTL  |
+| -------------------------------- | -------------------- | ---- |
+| Supabase API (`*.supabase.co/*`) | NetworkFirst         | 24h  |
+| Google Fonts stylesheets         | StaleWhileRevalidate | —    |
+| Google Fonts webfonts            | CacheFirst           | 365d |
+| Images (png/jpg/svg/gif/webp)    | CacheFirst           | 7d   |
 
 ### PWA Files
 
@@ -512,9 +512,9 @@ Actual components available: `badge`, `button`, `card`, `dialog`, `dropdown-menu
 Always import from `@/contexts` (uses `index.ts` re-exports):
 
 ```typescript
-import { useAuth } from "@/contexts"           // auth state
-import { useData } from "@/contexts"            // vehicles + maintenance data
-import { useSupabase } from "@/contexts"        // raw Supabase client
+import { useAuth } from "@/contexts" // auth state
+import { useData } from "@/contexts" // vehicles + maintenance data
+import { useSupabase } from "@/contexts" // raw Supabase client
 ```
 
 **Do not import directly from context files** — use the barrel export.
@@ -538,7 +538,7 @@ export function MyComponent() {
 ### `useData()` — Vehicles & Maintenance
 
 ```typescript
-'use client'
+"use client"
 import { useData } from "@/contexts"
 
 export function VehiclesList() {
@@ -615,7 +615,7 @@ export default async function VehiclesPage() {
 **Client Component** (add `'use client'` when using hooks, state, or browser APIs):
 
 ```typescript
-'use client'
+"use client"
 import { useState } from "react"
 import { useAuth } from "@/contexts"
 import { useData } from "@/contexts"
@@ -647,12 +647,14 @@ if (!result.success) {
 When writing new Server Actions, always authenticate inside the action:
 
 ```typescript
-'use server'
+"use server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function myAction(data: unknown) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) throw new Error("Unauthorized")
 
@@ -735,10 +737,10 @@ import type { Vehicle } from "@/contexts/DataContext"
 
 `lib/ratelimit.ts` exports two Upstash rate limiters used in `app/auth/actions.ts`:
 
-| Limiter | Limit | Window | Key |
-|---|---|---|---|
-| `loginRateLimiter` | 5 attempts | 60 seconds | per email + per IP |
-| `signupRateLimiter` | 3 attempts | 1 hour | per email + per IP |
+| Limiter             | Limit      | Window     | Key                |
+| ------------------- | ---------- | ---------- | ------------------ |
+| `loginRateLimiter`  | 5 attempts | 60 seconds | per email + per IP |
+| `signupRateLimiter` | 3 attempts | 1 hour     | per email + per IP |
 
 Requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in env. The module **throws at import time** if these variables are missing.
 
@@ -747,15 +749,15 @@ Requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in env. The mod
 ## Key Commands
 
 ```bash
-pnpm dev              # Development server (PWA disabled)
-pnpm build            # Production build
-pnpm start            # Start production build
-pnpm lint             # ESLint
-pnpm type-check       # TypeScript check without emitting
-pnpm format           # Prettier format
-pnpm format:check     # Check formatting without writing
-pnpm clean            # Remove .next cache
-pnpm clean:install    # Clean + reinstall dependencies
+bun dev              # Development server (PWA disabled)
+bun build            # Production build
+bun start            # Start production build
+bun lint             # ESLint
+bun type-check       # TypeScript check without emitting
+bun format           # Prettier format
+bun format:check     # Check formatting without writing
+bun clean            # Remove .next cache
+bun clean:install    # Clean + reinstall dependencies
 ```
 
 ---
@@ -809,7 +811,7 @@ See the `next-best-practices` skill (`hydration-error.md`) for detailed fixes.
 ```typescript
 // Server Component → use server client
 import { createClient } from "@/lib/supabase/server"
-const supabase = await createClient()  // ← always await in Next.js 16
+const supabase = await createClient() // ← always await in Next.js 16
 
 // Client Component → use context
 import { useSupabase } from "@/contexts"
@@ -869,6 +871,7 @@ This project has skills installed that agents should load when working on releva
 **Load when**: writing or reviewing any Next.js-specific code — pages, layouts, Route Handlers, Server Actions, metadata, fonts, images, RSC boundaries.
 
 **Key areas covered**:
+
 - File conventions and special files (`page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`)
 - RSC boundaries — detecting invalid async Client Components, non-serializable props
 - Next.js 16 async APIs: `params`, `searchParams`, `cookies()`, `headers()` must all be awaited
@@ -881,6 +884,7 @@ This project has skills installed that agents should load when working on releva
 - Bundling and barrel import optimization
 
 **Example triggers**:
+
 - Adding a new page or layout
 - Implementing a new Server Action
 - Fetching data in a Server Component
@@ -892,18 +896,19 @@ This project has skills installed that agents should load when working on releva
 
 **57 rules across 8 priority categories**:
 
-| Priority | Category | Example rules |
-|---|---|---|
-| CRITICAL | Eliminating Waterfalls | `Promise.all` for independent fetches, strategic `Suspense` boundaries |
-| CRITICAL | Bundle Size | Avoid barrel imports from `lucide-react`, use `next/dynamic` for heavy components |
-| HIGH | Server-Side Performance | Authenticate Server Actions, `React.cache()` for deduplication, minimize RSC props |
-| MEDIUM-HIGH | Client Data Fetching | Passive event listeners, `localStorage` versioning |
-| MEDIUM | Re-render Optimization | `memo`, `useCallback`, functional `setState`, lazy state init |
-| MEDIUM | Rendering Performance | Conditional rendering (`ternary` not `&&`), `useTransition` for loading states |
-| LOW-MEDIUM | JavaScript Performance | `Set`/`Map` for O(1) lookups, early returns, hoisted RegExp |
-| LOW | Advanced Patterns | `useRef` for transient values, event handler refs |
+| Priority    | Category                | Example rules                                                                      |
+| ----------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| CRITICAL    | Eliminating Waterfalls  | `Promise.all` for independent fetches, strategic `Suspense` boundaries             |
+| CRITICAL    | Bundle Size             | Avoid barrel imports from `lucide-react`, use `next/dynamic` for heavy components  |
+| HIGH        | Server-Side Performance | Authenticate Server Actions, `React.cache()` for deduplication, minimize RSC props |
+| MEDIUM-HIGH | Client Data Fetching    | Passive event listeners, `localStorage` versioning                                 |
+| MEDIUM      | Re-render Optimization  | `memo`, `useCallback`, functional `setState`, lazy state init                      |
+| MEDIUM      | Rendering Performance   | Conditional rendering (`ternary` not `&&`), `useTransition` for loading states     |
+| LOW-MEDIUM  | JavaScript Performance  | `Set`/`Map` for O(1) lookups, early returns, hoisted RegExp                        |
+| LOW         | Advanced Patterns       | `useRef` for transient values, event handler refs                                  |
 
 **Example triggers**:
+
 - Adding a new React component
 - Implementing data fetching in a Client Component
 - Optimizing a slow page or component
@@ -916,18 +921,19 @@ This project has skills installed that agents should load when working on releva
 
 **Rules across 8 priority categories**:
 
-| Priority | Category | Impact | Examples |
-|---|---|---|---|
-| CRITICAL | Query Performance | Indexes, query plans, covering indexes, partial indexes | `query-missing-indexes`, `query-composite-indexes` |
-| CRITICAL | Connection Management | Pooling, idle timeouts, connection limits, prepared statements | `conn-pooling`, `conn-limits` |
-| CRITICAL | Security & RLS | RLS basics, policy performance, privilege management | `security-rls-basics`, `security-rls-performance` |
-| HIGH | Schema Design | Data types, primary keys, foreign key indexes, constraints | `schema-data-types`, `schema-foreign-key-indexes` |
-| MEDIUM-HIGH | Concurrency & Locking | Deadlock prevention, advisory locks, short transactions | `lock-deadlock-prevention`, `lock-skip-locked` |
-| MEDIUM | Data Access Patterns | N+1 queries, pagination, batch inserts, upserts | `data-n-plus-one`, `data-pagination` |
-| LOW-MEDIUM | Monitoring & Diagnostics | EXPLAIN ANALYZE, pg_stat_statements, VACUUM/ANALYZE | `monitor-explain-analyze`, `monitor-vacuum-analyze` |
-| LOW | Advanced Features | JSONB indexing, full-text search | `advanced-jsonb-indexing`, `advanced-full-text-search` |
+| Priority    | Category                 | Impact                                                         | Examples                                               |
+| ----------- | ------------------------ | -------------------------------------------------------------- | ------------------------------------------------------ |
+| CRITICAL    | Query Performance        | Indexes, query plans, covering indexes, partial indexes        | `query-missing-indexes`, `query-composite-indexes`     |
+| CRITICAL    | Connection Management    | Pooling, idle timeouts, connection limits, prepared statements | `conn-pooling`, `conn-limits`                          |
+| CRITICAL    | Security & RLS           | RLS basics, policy performance, privilege management           | `security-rls-basics`, `security-rls-performance`      |
+| HIGH        | Schema Design            | Data types, primary keys, foreign key indexes, constraints     | `schema-data-types`, `schema-foreign-key-indexes`      |
+| MEDIUM-HIGH | Concurrency & Locking    | Deadlock prevention, advisory locks, short transactions        | `lock-deadlock-prevention`, `lock-skip-locked`         |
+| MEDIUM      | Data Access Patterns     | N+1 queries, pagination, batch inserts, upserts                | `data-n-plus-one`, `data-pagination`                   |
+| LOW-MEDIUM  | Monitoring & Diagnostics | EXPLAIN ANALYZE, pg_stat_statements, VACUUM/ANALYZE            | `monitor-explain-analyze`, `monitor-vacuum-analyze`    |
+| LOW         | Advanced Features        | JSONB indexing, full-text search                               | `advanced-jsonb-indexing`, `advanced-full-text-search` |
 
 **Example triggers**:
+
 - Writing or modifying SQL migration scripts (`scripts/`)
 - Adding new tables or columns to the schema
 - Designing or reviewing RLS policies
@@ -939,12 +945,14 @@ This project has skills installed that agents should load when working on releva
 **Load when**: reviewing UI code, checking accessibility, auditing design, reviewing UX, or checking the site against best practices.
 
 **Key areas covered**:
+
 - Real-time fetching of Vercel's Web Interface Guidelines
 - UI/UX compliance and accessibility auditing
 - Design structure and layout best practices
 - Standardized `file:line` reporting for quick action
 
 **Example triggers**:
+
 - "Review my UI"
 - "Check accessibility"
 - "Audit design"
@@ -985,42 +993,42 @@ This project has skills installed that agents should load when working on releva
 
 ### Key Files
 
-| File | Purpose |
-|---|---|
-| `middleware.ts` | Delegates session refresh + route protection |
-| `lib/supabase/middleware.ts` | Route protection logic |
-| `lib/auth/authManager.ts` | Auth singleton (event-driven, BroadcastChannel) |
-| `lib/supabase/client.ts` | Browser Supabase client |
-| `lib/supabase/server.ts` | Server Component Supabase client |
-| `lib/ratelimit.ts` | Upstash rate limiters |
-| `contexts/AppProviders.tsx` | Root provider tree |
-| `contexts/AuthContext.tsx` | Auth state and `useAuth()` |
-| `contexts/DataContext.tsx` | App data and optimistic updates |
-| `app/auth/actions.ts` | Login and signup Server Actions |
-| `app/api/auth/signout/route.ts` | Server-side logout endpoint |
-| `app/globals.css` | Global styles + Tailwind v4 theme |
-| `next.config.mjs` | Next.js + PWA configuration |
+| File                            | Purpose                                         |
+| ------------------------------- | ----------------------------------------------- |
+| `middleware.ts`                 | Delegates session refresh + route protection    |
+| `lib/supabase/middleware.ts`    | Route protection logic                          |
+| `lib/auth/authManager.ts`       | Auth singleton (event-driven, BroadcastChannel) |
+| `lib/supabase/client.ts`        | Browser Supabase client                         |
+| `lib/supabase/server.ts`        | Server Component Supabase client                |
+| `lib/ratelimit.ts`              | Upstash rate limiters                           |
+| `contexts/AppProviders.tsx`     | Root provider tree                              |
+| `contexts/AuthContext.tsx`      | Auth state and `useAuth()`                      |
+| `contexts/DataContext.tsx`      | App data and optimistic updates                 |
+| `app/auth/actions.ts`           | Login and signup Server Actions                 |
+| `app/api/auth/signout/route.ts` | Server-side logout endpoint                     |
+| `app/globals.css`               | Global styles + Tailwind v4 theme               |
+| `next.config.mjs`               | Next.js + PWA configuration                     |
 
 ### Hooks Reference
 
-| Hook | Import | Usage |
-|---|---|---|
-| `useAuth()` | `@/contexts` | Auth state (user, profile, signOut) |
-| `useData()` | `@/contexts` | Vehicles + maintenance + optimistic mutations |
-| `useSupabase()` | `@/contexts` | Raw Supabase client |
-| `useProtectedRoute()` | `@/hooks` | Redirect to login if unauthenticated |
-| `useGuestRoute()` | `@/hooks` | Redirect to `/` if authenticated |
-| `useDashboardData()` | `@/hooks` | Aggregated dashboard statistics |
-| `usePWA()` | `@/hooks` | PWA install prompt and status |
-| `use-media-query` | `@/hooks` | Responsive breakpoint detection |
+| Hook                  | Import       | Usage                                         |
+| --------------------- | ------------ | --------------------------------------------- |
+| `useAuth()`           | `@/contexts` | Auth state (user, profile, signOut)           |
+| `useData()`           | `@/contexts` | Vehicles + maintenance + optimistic mutations |
+| `useSupabase()`       | `@/contexts` | Raw Supabase client                           |
+| `useProtectedRoute()` | `@/hooks`    | Redirect to login if unauthenticated          |
+| `useGuestRoute()`     | `@/hooks`    | Redirect to `/` if authenticated              |
+| `useDashboardData()`  | `@/hooks`    | Aggregated dashboard statistics               |
+| `usePWA()`            | `@/hooks`    | PWA install prompt and status                 |
+| `use-media-query`     | `@/hooks`    | Responsive breakpoint detection               |
 
 ### Contexts Reference
 
-| Context/Provider | File | Exposes |
-|---|---|---|
-| `AuthProvider` + `useAuth()` | `contexts/AuthContext.tsx` | `user`, `profile`, `isLoading`, `isAuthenticated`, `signOut`, `refreshProfile` |
-| `DataProvider` + `useData()` | `contexts/DataContext.tsx` | `vehicles`, `maintenanceRecords`, loading states, optimistic CRUD methods |
-| `SupabaseProvider` + `useSupabase()` | `contexts/SupabaseContext.tsx` | Supabase browser client |
+| Context/Provider                     | File                           | Exposes                                                                        |
+| ------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------ |
+| `AuthProvider` + `useAuth()`         | `contexts/AuthContext.tsx`     | `user`, `profile`, `isLoading`, `isAuthenticated`, `signOut`, `refreshProfile` |
+| `DataProvider` + `useData()`         | `contexts/DataContext.tsx`     | `vehicles`, `maintenanceRecords`, loading states, optimistic CRUD methods      |
+| `SupabaseProvider` + `useSupabase()` | `contexts/SupabaseContext.tsx` | Supabase browser client                                                        |
 
 ---
 

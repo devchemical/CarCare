@@ -123,8 +123,6 @@ class AuthManager {
     const {
       data: { subscription },
     } = this.supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("🔐 Auth Event:", event, session?.user?.email)
-
       const newState: AuthState = {
         user: session?.user ?? null,
         session: session ?? null,
@@ -139,17 +137,13 @@ class AuthManager {
       // Manejar eventos específicos
       switch (event) {
         case "SIGNED_IN":
-          console.log("✅ Usuario autenticado:", session?.user?.email)
           break
         case "SIGNED_OUT":
-          console.log("🚪 Usuario cerró sesión")
           this.clearLocalState()
           break
         case "TOKEN_REFRESHED":
-          console.log("🔄 Token actualizado")
           break
         case "USER_UPDATED":
-          console.log("👤 Usuario actualizado")
           break
       }
     })
@@ -189,8 +183,6 @@ class AuthManager {
    */
   private clearLocalState() {
     if (typeof window === "undefined") return
-
-    console.log("🧹 Limpiando estado local...")
 
     // Limpiar localStorage
     Object.keys(localStorage).forEach((key) => {
@@ -233,8 +225,6 @@ class AuthManager {
         document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${rootDomain}; max-age=0`
       }
     })
-
-    console.log(`🧹 Limpiadas ${cookiesToDelete.length} cookies`)
   }
 
   /**

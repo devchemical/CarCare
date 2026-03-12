@@ -21,7 +21,7 @@ npm-debug.log*
 pnpm-debug.log*
 
 # Lock files
-pnpm-lock.yaml
+bun-lock
 package-lock.json
 yarn.lock
 

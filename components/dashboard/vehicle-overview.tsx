@@ -33,12 +33,10 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
           <CardDescription>No tienes vehículos registrados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="py-6 text-center">
-            <div className="bg-muted mx-auto mb-4 w-fit rounded-full p-4">
-              <Car className="text-muted-foreground h-8 w-8" />
-            </div>
-            <p className="text-muted-foreground mb-4">Comienza agregando tu primer vehículo</p>
-            <Button asChild className="bg-primary hover:bg-primary/90">
+          <div className="py-8 text-center">
+            <Car className="text-muted-foreground/30 h-12 w-12 mx-auto mb-4" />
+            <p className="text-muted-foreground mb-6 leading-relaxed">Comienza agregando tu primer vehículo</p>
+            <Button asChild>
               <Link href="/vehicles">
                 <Plus className="mr-2 h-4 w-4" />
                 Agregar Vehículo
@@ -53,7 +51,7 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Car className="text-primary h-5 w-5" />
@@ -63,43 +61,43 @@ export function VehicleOverview({ vehicles }: VehicleOverviewProps) {
               {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""} registrado{vehicles.length !== 1 ? "s" : ""}
             </CardDescription>
           </div>
-          <Button variant="default" size="sm" asChild>
+          <Button variant="default" size="sm" className="w-full sm:w-auto" asChild>
             <Link href="/vehicles">Ver Todos</Link>
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {vehicles.slice(0, 3).map((vehicle) => (
             <div
               key={vehicle.id}
-              className="bg-background border-border flex items-center justify-between rounded-lg border p-3 transition-colors"
+              className="flex items-center justify-between rounded-xl border border-border/50 bg-card p-4 transition-all duration-200 hover:bg-accent/50 active:scale-[0.98] cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 rounded-lg p-2">
-                  <Car className="text-primary h-4 w-4" />
+              <div className="flex items-center gap-4">
+                <div className="bg-primary/10 rounded-xl p-2.5">
+                  <Car className="text-primary h-5 w-5" />
                 </div>
-                <div>
-                  <div className="text-foreground font-medium">
+                <div className="min-w-0 flex-1">
+                  <div className="text-foreground font-medium truncate">
                     {vehicle.make} {vehicle.model}
                   </div>
-                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-sm mt-0.5">
                     <Badge variant="secondary" className="text-xs">
                       {vehicle.year}
                     </Badge>
-                    {vehicle.license_plate && <span>{vehicle.license_plate}</span>}
+                    {vehicle.license_plate && <span className="text-muted-foreground">{vehicle.license_plate}</span>}
                   </div>
                 </div>
               </div>
-              <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                <Gauge className="h-4 w-4" />
-                <span>{formatMileage(vehicle.mileage)}</span>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground ml-2">
+                <Gauge className="h-4 w-4 text-muted-foreground/60" />
+                <span className="whitespace-nowrap">{formatMileage(vehicle.mileage)}</span>
               </div>
             </div>
           ))}
 
           {vehicles.length > 3 && (
-            <div className="pt-2 text-center">
+            <div className="pt-3 text-center">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/vehicles">
                   Ver {vehicles.length - 3} vehículo

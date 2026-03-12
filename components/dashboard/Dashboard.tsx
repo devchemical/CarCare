@@ -43,14 +43,14 @@ export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomin
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
-      <div className="mb-8">
-        <h2 className="text-foreground mb-2 text-3xl font-bold">Panel de Control</h2>
-        <p className="text-muted-foreground">Resumen de tus vehículos y mantenimientos</p>
+      <div className="mb-10">
+        <h2 className="text-slate-900 mb-2 text-3xl font-semibold tracking-tight">Panel de Control</h2>
+        <p className="text-slate-500 leading-relaxed">Resumen de tus vehículos y mantenimientos</p>
       </div>
 
       {/* Quick Actions */}
-      <div className="mb-8 flex flex-wrap gap-3">
-        <Button asChild className="bg-primary hover:bg-primary/90">
+      <div className="mb-10 flex flex-wrap gap-3">
+        <Button asChild className="bg-green-700 hover:bg-green-800">
           <Link href="/vehicles">
             <Car className="mr-2 h-4 w-4" />
             Ver Vehículos
@@ -68,15 +68,15 @@ export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomin
       <DashboardStats vehicles={vehicles} maintenanceRecords={maintenanceRecords} />
 
       {/* Main Content Grid */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="mt-10 grid gap-8 lg:grid-cols-3">
         {/* Left Column - Vehicle Overview */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-8 lg:col-span-2">
           <VehicleOverview vehicles={vehicles} />
           <RecentActivity maintenanceRecords={maintenanceRecords} />
         </div>
 
         {/* Right Column - Upcoming Maintenance */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <UpcomingMaintenance upcomingMaintenance={upcomingMaintenance} />
         </div>
       </div>

@@ -209,13 +209,11 @@ sequenceDiagram
 
 Antes de comenzar, asegúrate de tener instalado:
 
-| Requisito                                                                                     | Versión           | Enlace                                   |
-| --------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------- |
-| ![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js&logoColor=white)       | 18.0.0 o superior | [Descargar](https://nodejs.org/)         |
-| ![pnpm](https://img.shields.io/badge/pnpm-Recomendado-orange?logo=pnpm&logoColor=white)       | Última versión    | [Instalar](https://pnpm.io/installation) |
-| ![Supabase](https://img.shields.io/badge/Cuenta-Supabase-green?logo=supabase&logoColor=white) | Cuenta gratuita   | [Registrarse](https://supabase.com/)     |
-
-> 💡 **Tip**: También puedes usar `npm` o `yarn`, pero recomendamos `pnpm` para un mejor rendimiento.
+| Requisito                                                                                     | Versión           | Enlace                                        |
+| --------------------------------------------------------------------------------------------- | ----------------- | --------------------------------------------- |
+| ![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js&logoColor=white)       | 18.0.0 o superior | [Descargar](https://nodejs.org/)              |
+| ![bun](https://img.shields.io/badge/bun-Recomendado-orange?logo=bun&logoColor=white)          | Última versión    | [Instalar](https://bun.com/docs/installation) |
+| ![Supabase](https://img.shields.io/badge/Cuenta-Supabase-green?logo=supabase&logoColor=white) | Cuenta gratuita   | [Registrarse](https://supabase.com/)          |
 
 ## 🚀 Instalación
 
@@ -227,14 +225,14 @@ git clone https://github.com/devchemical/CarCare.git
 cd Keepel
 
 # 2. Instalar dependencias
-pnpm install
+bun install
 
 # 3. Configurar variables de entorno
 cp .env.example .env.local
 # Edita .env.local con tus credenciales de Supabase
 
 # 4. Ejecutar la aplicación
-pnpm dev
+bun dev
 ```
 
 ### Instalación Paso a Paso
@@ -251,10 +249,10 @@ cd Keepel
 
 #### 2. Instalar Dependencias
 
-**Con pnpm (recomendado):**
+**Con bun (recomendado):**
 
 ```bash
-pnpm install
+bun install
 ```
 
 **Con npm:**
@@ -320,11 +318,11 @@ supabase db push
 
 ```bash
 # Desarrollo
-pnpm dev
+bun dev
 
 # Construcción para producción
-pnpm build
-pnpm start
+bun build
+bun start
 ```
 
 </details>
@@ -416,7 +414,7 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 Una vez configurado todo, ejecuta:
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 🎉 **¡Listo!** La aplicación estará disponible en `http://localhost:3000`
@@ -918,10 +916,10 @@ graph LR
 
    ```bash
    # Instala dependencias
-   pnpm install
+   bun install
 
    # Ejecuta en modo desarrollo
-   pnpm dev
+   bun dev
 
    # Haz tus cambios...
    ```
@@ -930,10 +928,10 @@ graph LR
 
    ```bash
    # Ejecuta linting
-   pnpm lint
+   bun lint
 
    # Construye el proyecto
-   pnpm build
+   bun build
 
    # Prueba manualmente
    ```

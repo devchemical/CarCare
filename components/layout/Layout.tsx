@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/Header";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,9 +10,9 @@ interface LayoutProps {
 
 export function Layout({ children, showHeader = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-background flex flex-col">
       {showHeader && <Header />}
-      <main>{children}</main>
+      <main className={cn("flex-1", showHeader && "pt-16 sm:pt-20")}>{children}</main>
     </div>
   );
 }

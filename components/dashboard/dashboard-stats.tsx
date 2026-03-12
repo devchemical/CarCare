@@ -50,7 +50,7 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       value: totalVehicles.toString(),
       icon: Car,
       description: "Vehículos registrados",
-      color: "text-primary",
+      color: "text-green-700",
     },
     {
       title: "Mantenimientos",
@@ -64,28 +64,28 @@ export function DashboardStats({ vehicles, maintenanceRecords }: DashboardStatsP
       value: formatCurrency(totalCost),
       icon: DollarSign,
       description: "En mantenimientos",
-      color: "text-green-600",
+      color: "text-green-700",
     },
     {
       title: "Próximos Servicios",
       value: upcomingServices.toString(),
       icon: AlertTriangle,
       description: "En los próximos 30 días",
-      color: upcomingServices > 0 ? "text-orange-600" : "text-gray-600",
+      color: upcomingServices > 0 ? "text-amber-600" : "text-muted-foreground",
     },
   ]
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => (
-        <Card key={stat.title} className="hover:shadow-md transition-shadow border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card key={stat.title} className="hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
             <stat.icon className={`h-5 w-5 ${stat.color}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+            <div className="text-2xl font-semibold text-foreground tracking-tight">{stat.value}</div>
+            <p className="text-xs text-muted-foreground mt-1.5">{stat.description}</p>
           </CardContent>
         </Card>
       ))}

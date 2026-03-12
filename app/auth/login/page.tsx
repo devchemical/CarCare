@@ -139,7 +139,7 @@ export default function LoginPage() {
 
   return (
     <Layout showHeader={true}>
-      <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="flex min-h-[calc(100dvh-4rem)] items-start justify-center p-6 pt-12 md:pt-20">
         <div className="w-full max-w-md">
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">

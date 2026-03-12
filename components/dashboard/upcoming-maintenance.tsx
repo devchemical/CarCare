@@ -63,17 +63,15 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+            <Calendar className="h-5 w-5 text-green-700" />
             Próximos Mantenimientos
           </CardTitle>
           <CardDescription>No hay servicios programados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <div className="p-4 bg-green-100 rounded-full w-fit mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-            <p className="text-muted-foreground">
+          <div className="text-center py-8">
+            <CheckCircle className="h-12 w-12 text-green-700 mx-auto mb-4" />
+            <p className="text-slate-500 leading-relaxed">
               ¡Perfecto! No tienes mantenimientos pendientes en los próximos 30 días.
             </p>
           </div>
@@ -86,7 +84,7 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
+          <Calendar className="h-5 w-5 text-green-700" />
           Próximos Mantenimientos
         </CardTitle>
         <CardDescription>
@@ -95,7 +93,7 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {upcomingMaintenance.slice(0, 5).map((maintenance) => {
             const daysUntil = getDaysUntil(maintenance.next_service_date)
             const overdue = isOverdue(maintenance.next_service_date)
@@ -103,42 +101,46 @@ export function UpcomingMaintenance({ upcomingMaintenance }: UpcomingMaintenance
             return (
               <div
                 key={maintenance.id}
-                className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-white transition-colors hover:bg-slate-50/50"
               >
-                <div className={`p-2 rounded-lg ${overdue ? "bg-destructive/10" : "bg-orange-100"}`}>
+                <div className={`p-2.5 rounded-xl ${overdue ? "bg-red-50" : "bg-amber-50"}`}>
                   {overdue ? (
-                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
                   ) : (
-                    <Calendar className="h-4 w-4 text-orange-600" />
+                    <Calendar className="h-5 w-5 text-amber-600" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-foreground text-sm">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="font-medium text-slate-900 text-sm">
                       {maintenanceTypes[maintenance.type as keyof typeof maintenanceTypes] || maintenance.type}
                     </span>
-                    <Badge variant={overdue ? "destructive" : "secondary"} className="text-xs">
+                    <Badge 
+                      variant={overdue ? "destructive" : "secondary"} 
+                      className={`text-xs border-0 ${overdue ? "" : "bg-amber-100 text-amber-700"}`}
+                    >
                       {overdue ? "Vencido" : `${daysUntil} días`}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Car className="h-3 w-3" />
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Car className="h-3.5 w-3.5 text-slate-400" />
                     <span>
                       {maintenance.vehicles.make} {maintenance.vehicles.model} {maintenance.vehicles.year}
                     </span>
-                    {maintenance.vehicles.license_plate && <span>• {maintenance.vehicles.license_plate}</span>}
+                    {maintenance.vehicles.license_plate && <span className="text-slate-300">•</span>}
+                    {maintenance.vehicles.license_plate && <span>{maintenance.vehicles.license_plate}</span>}
                   </div>
 
-                  <div className="text-xs text-muted-foreground mt-1">{formatDate(maintenance.next_service_date)}</div>
+                  <div className="text-xs text-slate-500 mt-1.5">{formatDate(maintenance.next_service_date)}</div>
                 </div>
               </div>
             )
           })}
 
           {upcomingMaintenance.length > 5 && (
-            <div className="text-center pt-2">
+            <div className="text-center pt-3">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/vehicles">Ver {upcomingMaintenance.length - 5} más</Link>
               </Button>

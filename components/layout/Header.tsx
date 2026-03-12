@@ -81,19 +81,19 @@ export function Header() {
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
   if (authLoading) {
     return (
-      <header className="border-border/50 bg-background/80 sticky top-0 z-50 border-b backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           {/* Logo y nombre */}
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Car className="text-primary h-8 w-8" />
-            <h1 className="text-foreground text-2xl font-bold">Keepel</h1>
+            <h1 className="text-slate-900 text-2xl font-bold tracking-tight">Keepel</h1>
           </Link>
 
           {/* Skeleton para el área de navegación */}
           <div className="flex items-center gap-4">
-            <div className="bg-muted hidden h-4 w-20 animate-pulse rounded sm:block"></div>
-            <div className="bg-muted h-8 w-24 animate-pulse rounded"></div>
-            <div className="bg-muted h-8 w-8 animate-pulse rounded-full"></div>
+            <div className="bg-slate-100 hidden h-4 w-20 animate-pulse rounded-lg sm:block"></div>
+            <div className="bg-slate-100 h-8 w-24 animate-pulse rounded-lg"></div>
+            <div className="bg-slate-100 h-8 w-8 animate-pulse rounded-full"></div>
           </div>
         </div>
       </header>
@@ -101,12 +101,12 @@ export function Header() {
   }
 
   return (
-    <header className="border-border/50 bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo y nombre */}
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <Car className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
-          <h1 className="text-foreground text-xl font-bold sm:text-2xl">Keepel</h1>
+          <h1 className="text-slate-900 text-xl font-bold tracking-tight sm:text-2xl">Keepel</h1>
         </Link>
 
         {/* Navegación del usuario autenticado */}
