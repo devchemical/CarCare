@@ -161,10 +161,10 @@ export function LandingPage() {
       <footer className="border-border/50 bg-background/80 border-t backdrop-blur-sm">
         <div className="container mx-auto px-4 py-8 text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Car className="text-primary h-6 w-6" />
+            <img src="/keepel_logo.svg" alt="Keepel" className="h-5 w-5" />
             <span className="text-foreground text-lg font-semibold">Keepel</span>
           </div>
-          <p className="text-muted-foreground text-sm">© 2025 Keepel. Todos los derechos reservados.</p>
+          <p className="text-muted-foreground text-sm">© 2026 Keepel. Todos los derechos reservados.</p>
         </div>
       </footer>
     </>
