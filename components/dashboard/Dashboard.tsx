@@ -7,7 +7,6 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { UpcomingMaintenance } from "@/components/dashboard/upcoming-maintenance"
 import { VehicleOverview } from "@/components/dashboard/vehicle-overview"
-import { OfflineIndicator } from "@/components/pwa/offline-indicator"
 
 interface Vehicle {
   id: string
@@ -44,8 +43,8 @@ export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomin
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
       <div className="mb-10">
-        <h2 className="text-slate-900 mb-2 text-3xl font-semibold tracking-tight">Panel de Control</h2>
-        <p className="text-slate-500 leading-relaxed">Resumen de tus vehículos y mantenimientos</p>
+        <h2 className="mb-2 text-3xl font-semibold tracking-tight text-slate-900">Panel de Control</h2>
+        <p className="leading-relaxed text-slate-500">Resumen de tus vehículos y mantenimientos</p>
       </div>
 
       {/* Quick Actions */}
@@ -80,9 +79,6 @@ export function Dashboard({ user, profile, vehicles, maintenanceRecords, upcomin
           <UpcomingMaintenance upcomingMaintenance={upcomingMaintenance} />
         </div>
       </div>
-
-      {/* Offline Indicator */}
-      <OfflineIndicator />
     </div>
   )
 }

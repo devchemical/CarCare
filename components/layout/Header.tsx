@@ -25,8 +25,6 @@ interface Vehicle {
   license_plate?: string
 }
 
-
-
 export function Header() {
   const { user, profile, isLoading: authLoading, isLoggingOut, signOut } = useAuth()
   const { vehicles } = useData()
@@ -64,7 +62,7 @@ export function Header() {
     return (
       <div className="bg-background/95 fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm">
         <div className="flex flex-col items-center gap-4">
-          <Car className="text-primary h-12 w-12 animate-pulse" />
+          <img src="/keepel_logo.svg" alt="Keepel" className="h-12 w-12 animate-pulse" />
           <div className="flex flex-col items-center gap-2">
             <p className="text-foreground text-xl font-semibold">Cerrando sesión...</p>
           </div>
@@ -81,19 +79,19 @@ export function Header() {
   // Mostrar skeleton durante la carga inicial para evitar parpadeo
   if (authLoading) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
+      <header className="border-border/50 fixed top-0 right-0 left-0 z-50 border-b bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           {/* Logo y nombre */}
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <Car className="text-primary h-8 w-8" />
-            <h1 className="text-slate-900 text-2xl font-bold tracking-tight">Keepel</h1>
+            <img src="/keepel_logo.svg" alt="Keepel" className="h-8 w-8" />
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Keepel</h1>
           </Link>
 
           {/* Skeleton para el área de navegación */}
           <div className="flex items-center gap-4">
-            <div className="bg-slate-100 hidden h-4 w-20 animate-pulse rounded-lg sm:block"></div>
-            <div className="bg-slate-100 h-8 w-24 animate-pulse rounded-lg"></div>
-            <div className="bg-slate-100 h-8 w-8 animate-pulse rounded-full"></div>
+            <div className="hidden h-4 w-20 animate-pulse rounded-lg bg-slate-100 sm:block"></div>
+            <div className="h-8 w-24 animate-pulse rounded-lg bg-slate-100"></div>
+            <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100"></div>
           </div>
         </div>
       </header>
@@ -101,12 +99,12 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-white/80 backdrop-blur-md">
+    <header className="border-border/50 fixed top-0 right-0 left-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo y nombre */}
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <Car className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
-          <h1 className="text-slate-900 text-xl font-bold tracking-tight sm:text-2xl">Keepel</h1>
+          <img src="/keepel_logo.svg" alt="Keepel" className="h-6 w-6 sm:h-8 sm:w-8" />
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Keepel</h1>
         </Link>
 
         {/* Navegación del usuario autenticado */}
@@ -228,8 +226,8 @@ export function Header() {
                 <SheetContent side="right" className="w-[300px] sm:w-[350px]">
                   <SheetHeader className="text-left">
                     <SheetTitle className="flex items-center gap-2">
-                      <Car className="text-primary h-5 w-5" />
-                      CarCare
+                      <img src="/keepel_logo.svg" alt="Keepel" className="h-5 w-5" />
+                      Keepel
                     </SheetTitle>
                   </SheetHeader>
 
