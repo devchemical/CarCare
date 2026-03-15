@@ -4,7 +4,6 @@ import { Dashboard } from "@/components/dashboard/Dashboard"
 import { LandingPage } from "@/components/home/LandingPage"
 import { Layout } from "@/components/layout/Layout"
 import { LoadingScreen } from "@/components/ui/loading-screen"
-// import { PWADebug } from "@/components/pwa/pwa-debug"; // Comentado para producción
 import { useAuth, useData } from "@/contexts"
 
 export default function HomePage() {
