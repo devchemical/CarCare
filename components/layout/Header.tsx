@@ -62,7 +62,7 @@ export function Header() {
     return (
       <div className="bg-background/95 fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-sm">
         <div className="flex flex-col items-center gap-4">
-          <img src="/keepel_logo.svg" alt="Keepel" className="h-12 w-12 animate-pulse" />
+          <img src="/logo_keepel_grueso.svg" alt="Keepel" className="h-12 w-12 animate-pulse" />
           <div className="flex flex-col items-center gap-2">
             <p className="text-foreground text-xl font-semibold">Cerrando sesión...</p>
           </div>
@@ -83,7 +83,7 @@ export function Header() {
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           {/* Logo y nombre */}
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <img src="/keepel_logo.svg" alt="Keepel" className="h-8 w-8" />
+            <img src="/logo_keepel_grueso.svg" alt="Keepel" className="h-8 w-8" />
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Keepel</h1>
           </Link>
 
@@ -103,7 +103,7 @@ export function Header() {
       <div className="container mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo y nombre */}
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <img src="/keepel_logo.svg" alt="Keepel" className="h-6 w-6 sm:h-8 sm:w-8" />
+          <img src="/logo_keepel_grueso.svg" alt="Keepel" className="h-10 w-10 sm:h-8 sm:w-8" />
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Keepel</h1>
         </Link>
 
@@ -226,7 +226,7 @@ export function Header() {
                 <SheetContent side="right" className="w-[300px] sm:w-[350px]">
                   <SheetHeader className="text-left">
                     <SheetTitle className="flex items-center gap-2">
-                      <img src="/keepel_logo.svg" alt="Keepel" className="h-5 w-5" />
+                      <img src="/logo_keepel_grueso.svg" alt="Keepel" className="h-5 w-5" />
                       Keepel
                     </SheetTitle>
                   </SheetHeader>

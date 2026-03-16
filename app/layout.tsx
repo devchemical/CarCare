@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "Keepel",
     images: [
       {
-        url: "/keepel_logo.svg",
+        url: "/logo_keepel_grueso.svg",
         width: 444,
         height: 345,
         alt: "Keepel Logo",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Keepel - Gestión de Mantenimiento Automotriz",
     description: "Gestiona el mantenimiento de todos tus vehículos desde una sola plataforma",
-    images: ["/keepel_logo.svg"],
+    images: ["/logo_keepel_grueso.svg"],
   },
   verification: {
     google: "google-site-verification-token",
@@ -70,7 +70,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no" />
-        <link rel="icon" type="image/svg+xml" href="/keepel_logo.svg" />
+        <link rel="icon" type="image/svg+xml" href="/logo_keepel_grueso.svg" />
       </head>
       <body className="font-sans" suppressHydrationWarning={true}>
         <AppProviders>{children}</AppProviders>
