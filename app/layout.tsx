@@ -77,9 +77,9 @@ export default function RootLayout({
         <OpenPanelComponent
           clientId="3fa7d07b-d3dc-4091-8f22-af8bd3adacca"
           apiUrl="https://openpanel.chemicaldev.com/api"
-          trackScreenViews={true}
-          trackOutgoingLinks={true}
-          trackAttributes={true}
+          trackScreenViews={false}
+          trackOutgoingLinks={false}
+          trackAttributes={false}
         />
         <AppProviders>{children}</AppProviders>
       </body>

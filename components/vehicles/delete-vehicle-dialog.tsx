@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -28,7 +28,7 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
   const supabase = useSupabase()
   const { refreshVehicles } = useData()
   const router = useRouter()
-  const op = useOpenPanel()
+  const { trackVehicleAction } = useAnalytics()
 
   const handleDelete = async () => {
     setIsLoading(true)
@@ -36,24 +36,19 @@ export function DeleteVehicleDialog({ vehicle, open, onOpenChange }: DeleteVehic
 
     try {
       // Track vehicle delete attempt
-      op.track("vehicle_action", { action: "delete", vehicle_id: vehicle.id })
+      trackVehicleAction("delete", vehicle.id)
 
       const { error } = await supabase.from("vehicles").delete().eq("id", vehicle.id)
 
       if (error) throw error
 
       // Track successful delete
-      op.track("vehicle_action", {
-        action: "delete_success",
-        vehicle_id: vehicle.id,
-        make: vehicle.make,
-        model: vehicle.model,
-      })
+      trackVehicleAction("delete", vehicle.id)
 
       onOpenChange(false)
     } catch (error: unknown) {
       // Track error
-      op.track("vehicle_action", { action: "delete_error", vehicle_id: vehicle.id })
+      trackVehicleAction("delete", vehicle.id)
       setError(error instanceof Error ? error.message : "Error al eliminar vehículo")
     } finally {
       setIsLoading(false)

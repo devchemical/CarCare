@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -44,7 +44,7 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
   const supabase = useSupabase()
   const { refreshMaintenance } = useData()
   const router = useRouter()
-  const op = useOpenPanel()
+  const { trackMaintenanceAction } = useAnalytics()
 
   const handleDelete = async () => {
     setIsLoading(true)
@@ -58,11 +58,7 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
       }
 
       // Track maintenance delete attempt
-      op.track("maintenance_action", {
-        action: "delete",
-        record_id: record.id,
-        type: record.type,
-      })
+      trackMaintenanceAction("delete", record.id)
 
       // RLS se encarga de verificar permisos automáticamente
       setLoadingStep("Eliminando registro...")
@@ -79,21 +75,13 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
       }
 
       // Track successful delete
-      op.track("maintenance_action", {
-        action: "delete_success",
-        record_id: record.id,
-        type: record.type,
-      })
+      trackMaintenanceAction("delete", record.id)
 
       setLoadingStep("Finalizando...")
       onOpenChange(false)
     } catch (error: unknown) {
       // Track error
-      op.track("maintenance_action", {
-        action: "delete_error",
-        record_id: record.id,
-        type: record.type,
-      })
+      trackMaintenanceAction("delete", record.id)
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al eliminar registro"
       setError(errorMessage)
     } finally {

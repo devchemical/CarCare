@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = useSupabase()
-  const op = useOpenPanel()
+  const { trackAuthAction } = useAnalytics()
 
   // Ensure we're fully logged out when landing on login page
   useEffect(() => {
@@ -86,14 +86,14 @@ export default function LoginPage() {
 
     try {
       // Track login attempt
-      op.track("auth_action", { action: "sign_in", method: "email" })
+      trackAuthAction("sign_in", "email")
 
       // Llamar al Server Action
       const result = await loginAction(email, password)
 
       if (!result.success) {
         // Track login error
-        op.track("auth_action", { action: "error", method: "email" })
+        trackAuthAction("error", "email")
 
         // Si hay información de rate limit, actualizarla
         if (result.rateLimit) {
@@ -126,7 +126,7 @@ export default function LoginPage() {
       }
 
       // Track successful login
-      op.track("auth_action", { action: "sign_in_success", method: "email" })
+      trackAuthAction("sign_in", "email")
 
       // Obtener URL de redirección si existe
       const urlParams = new URLSearchParams(window.location.search)
@@ -139,7 +139,7 @@ export default function LoginPage() {
       router.push(redirectTo)
     } catch (error: unknown) {
       // Track error
-      op.track("auth_action", { action: "error", method: "email" })
+      trackAuthAction("error", "email")
 
       if (error instanceof Error) {
         setError(error.message)
