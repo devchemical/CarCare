@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
+import { OpenPanelComponent } from "@openpanel/nextjs"
 import { AppProviders } from "@/contexts"
 import "./globals.css"
 import "@/styles/responsive.css"
@@ -73,6 +74,13 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/logo_keepel_grueso.svg" />
       </head>
       <body className="font-sans" suppressHydrationWarning={true}>
+        <OpenPanelComponent
+          clientId="3fa7d07b-d3dc-4091-8f22-af8bd3adacca"
+          apiUrl="https://openpanel.chemicaldev.com/api"
+          trackScreenViews={true}
+          trackOutgoingLinks={true}
+          trackAttributes={true}
+        />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

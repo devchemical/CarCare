@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useOpenPanel } from "@openpanel/nextjs"
 import { useSupabase, useData, useAuth } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
@@ -50,6 +51,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
   const supabase = useSupabase()
   const { refreshVehicles } = useData()
   const router = useRouter()
+  const op = useOpenPanel()
 
   const [formData, setFormData] = useState({
     make: "",
@@ -69,7 +71,10 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
     try {
       if (!user) throw new Error("Usuario no autenticado")
 
-      const { error } = await supabase.from("vehicles").insert({
+      // Track vehicle add attempt
+      op.track("vehicle_action", { action: "add" })
+
+      const { error, data } = await supabase.from("vehicles").insert({
         user_id: user.id,
         make: formData.make,
         model: formData.model,
@@ -78,9 +83,17 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
         vin: formData.vin || null,
         color: formData.color || null,
         mileage: Number.parseInt(formData.mileage) || 0,
-      })
+      }).select()
 
       if (error) throw error
+
+      // Track successful vehicle add
+      op.track("vehicle_action", {
+        action: "add_success",
+        vehicle_id: data?.[0]?.id,
+        make: formData.make,
+        model: formData.model,
+      })
 
       setOpen(false)
       setFormData({
@@ -93,6 +106,8 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
         mileage: "",
       })
     } catch (error: unknown) {
+      // Track error
+      op.track("vehicle_action", { action: "add_error" })
       setError(error instanceof Error ? error.message : "Error al agregar vehículo")
     } finally {
       setIsLoading(false)

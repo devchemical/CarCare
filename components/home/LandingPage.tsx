@@ -20,10 +20,20 @@ export function LandingPage() {
             de tu automóvil con Keepel.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Button size="lg" asChild className="bg-primary hover:bg-primary/90">
+            <Button
+              size="lg"
+              asChild
+              className="bg-primary hover:bg-primary/90"
+              data-track="landing_signup_click"
+            >
               <Link href="/auth/signup">Comenzar Gratis</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              data-track="landing_login_click"
+            >
               <Link href="/auth/login">Iniciar Sesión</Link>
             </Button>
           </div>

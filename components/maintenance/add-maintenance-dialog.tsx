@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useOpenPanel } from "@openpanel/nextjs"
 import { useAuth, useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
@@ -58,6 +59,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   const supabase = useSupabase()
   const { refreshMaintenance } = useData()
   const router = useRouter()
+  const op = useOpenPanel()
 
   // Lista de servicios múltiples
   const [services, setServices] = useState<ServiceItem[]>([
@@ -109,6 +111,13 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
         throw new Error("No hay sesión activa. Por favor, inicia sesión.")
       }
 
+      // Track maintenance add attempt
+      op.track("maintenance_action", {
+        action: "add",
+        vehicle_id: vehicleId,
+        service_count: validServices.length,
+      })
+
       // Validar números comunes
       const mileage = formData.mileage ? parseInt(formData.mileage, 10) : null
       const nextServiceMileage = formData.next_service_mileage ? parseInt(formData.next_service_mileage, 10) : null
@@ -147,11 +156,19 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
       })
 
       try {
-        const { error } = await supabase.from("maintenance_records").insert(maintenanceRecords).select()
+        const { error, data } = await supabase.from("maintenance_records").insert(maintenanceRecords).select()
 
         if (error) {
           throw new Error(`Error al insertar: ${error.message}`)
         }
+
+        // Track successful maintenance add
+        op.track("maintenance_action", {
+          action: "add_success",
+          vehicle_id: vehicleId,
+          service_count: validServices.length,
+          record_ids: data?.map((r) => r.id),
+        })
 
         await refreshMaintenance()
         router.refresh()
@@ -171,6 +188,12 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
 
       setOpen(false)
     } catch (error: unknown) {
+      // Track error
+      op.track("maintenance_action", {
+        action: "add_error",
+        vehicle_id: vehicleId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al agregar mantenimiento"
       setError(errorMessage)
     } finally {

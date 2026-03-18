@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
+import { useOpenPanel } from "@openpanel/nextjs"
 import { authManager } from "@/lib/auth/authManager"
 import type { User } from "@supabase/supabase-js"
 
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const supabase = authManager.getSupabase()
+  const op = useOpenPanel()
 
   const loadProfile = useCallback(
     async (userId: string) => {
@@ -87,6 +89,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // Cargar perfil completo desde BD
         loadProfile(state.user.id)
+
+        // Identify user in OpenPanel
+        op.identify({
+          profileId: state.user.id,
+          email: state.user.email || "",
+          firstName: state.user.user_metadata?.name || state.user.user_metadata?.full_name || state.user.email?.split("@")[0] || "Usuario",
+        })
       } else {
         // Usuario no autenticado
         setUser(null)
@@ -98,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       unsubscribe()
     }
-  }, [loadProfile])
+  }, [loadProfile, op])
 
   const signOut = async () => {
     // Prevenir múltiples intentos simultáneos
@@ -106,6 +115,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       setIsLoggingOut(true)
+
+      // Track sign out event
+      op.track("auth_action", { action: "sign_out" })
 
       // Usar AuthManager para cerrar sesión
       await authManager.signOut()
@@ -116,6 +128,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("Error durante sign out:", error)
+
+      // Track error
+      op.track("auth_action", { action: "error", method: "sign_out" })
 
       // Forzar redirección incluso si hay error
       if (typeof window !== "undefined") {
