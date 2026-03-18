@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { useAuth, useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
@@ -59,7 +59,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
   const supabase = useSupabase()
   const { refreshMaintenance } = useData()
   const router = useRouter()
-  const op = useOpenPanel()
+  const { trackMaintenanceAction } = useAnalytics()
 
   // Lista de servicios múltiples
   const [services, setServices] = useState<ServiceItem[]>([
@@ -112,11 +112,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
       }
 
       // Track maintenance add attempt
-      op.track("maintenance_action", {
-        action: "add",
-        vehicle_id: vehicleId,
-        service_count: validServices.length,
-      })
+      trackMaintenanceAction("add", vehicleId)
 
       // Validar números comunes
       const mileage = formData.mileage ? parseInt(formData.mileage, 10) : null
@@ -163,12 +159,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
         }
 
         // Track successful maintenance add
-        op.track("maintenance_action", {
-          action: "add_success",
-          vehicle_id: vehicleId,
-          service_count: validServices.length,
-          record_ids: data?.map((r) => r.id),
-        })
+        trackMaintenanceAction("add", vehicleId)
 
         await refreshMaintenance()
         router.refresh()
@@ -189,11 +180,7 @@ export function AddMaintenanceDialog({ children, vehicleId }: AddMaintenanceDial
       setOpen(false)
     } catch (error: unknown) {
       // Track error
-      op.track("maintenance_action", {
-        action: "add_error",
-        vehicle_id: vehicleId,
-        error: error instanceof Error ? error.message : "Unknown error",
-      })
+      trackMaintenanceAction("add", vehicleId)
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al agregar mantenimiento"
       setError(errorMessage)
     } finally {

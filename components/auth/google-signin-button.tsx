@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
@@ -22,14 +22,14 @@ export function GoogleSignInButton({
   const defaultSupabase = useSupabase()
   // Usar el cliente pasado como prop o el hook por defecto
   const supabase = supabaseClient || defaultSupabase
-  const op = useOpenPanel()
+  const { trackAuthAction } = useAnalytics()
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
 
       // Track Google sign in attempt
-      op.track("auth_action", { action: "sign_in", method: "google" })
+      trackAuthAction("sign_in", "google")
 
       // Usar la URL actual del navegador para garantizar la redirección correcta
       const baseUrl =
@@ -53,14 +53,14 @@ export function GoogleSignInButton({
       if (error) {
         console.error("Google OAuth error:", error)
         // Track error
-        op.track("auth_action", { action: "error", method: "google" })
+        trackAuthAction("error", "google")
         setIsLoading(false)
       }
       // No quitamos el loading state si no hay error porque seremos redirigidos
     } catch (error) {
       console.error("Unexpected error during Google sign-in:", error)
       // Track error
-      op.track("auth_action", { action: "error", method: "google" })
+      trackAuthAction("error", "google")
       setIsLoading(false)
     }
   }

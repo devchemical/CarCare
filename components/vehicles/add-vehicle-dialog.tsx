@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { useSupabase, useData, useAuth } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
@@ -51,7 +51,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
   const supabase = useSupabase()
   const { refreshVehicles } = useData()
   const router = useRouter()
-  const op = useOpenPanel()
+  const { trackVehicleAction } = useAnalytics()
 
   const [formData, setFormData] = useState({
     make: "",
@@ -72,28 +72,26 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
       if (!user) throw new Error("Usuario no autenticado")
 
       // Track vehicle add attempt
-      op.track("vehicle_action", { action: "add" })
+      trackVehicleAction("add")
 
-      const { error, data } = await supabase.from("vehicles").insert({
-        user_id: user.id,
-        make: formData.make,
-        model: formData.model,
-        year: Number.parseInt(formData.year),
-        license_plate: formData.license_plate || null,
-        vin: formData.vin || null,
-        color: formData.color || null,
-        mileage: Number.parseInt(formData.mileage) || 0,
-      }).select()
+      const { error, data } = await supabase
+        .from("vehicles")
+        .insert({
+          user_id: user.id,
+          make: formData.make,
+          model: formData.model,
+          year: Number.parseInt(formData.year),
+          license_plate: formData.license_plate || null,
+          vin: formData.vin || null,
+          color: formData.color || null,
+          mileage: Number.parseInt(formData.mileage) || 0,
+        })
+        .select()
 
       if (error) throw error
 
       // Track successful vehicle add
-      op.track("vehicle_action", {
-        action: "add_success",
-        vehicle_id: data?.[0]?.id,
-        make: formData.make,
-        model: formData.model,
-      })
+      trackVehicleAction("add", data?.[0]?.id)
 
       setOpen(false)
       setFormData({
@@ -107,7 +105,7 @@ export function AddVehicleDialog({ children }: AddVehicleDialogProps) {
       })
     } catch (error: unknown) {
       // Track error
-      op.track("vehicle_action", { action: "add_error" })
+      trackVehicleAction("add")
       setError(error instanceof Error ? error.message : "Error al agregar vehículo")
     } finally {
       setIsLoading(false)

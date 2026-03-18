@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
-import { useOpenPanel } from "@openpanel/nextjs"
+import { useAnalytics } from "@/hooks/use-analytics"
 import { authManager } from "@/lib/auth/authManager"
 import type { User } from "@supabase/supabase-js"
 
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const supabase = authManager.getSupabase()
-  const op = useOpenPanel()
+  const { identifyUser, trackAuthAction, resetIdentification } = useAnalytics()
 
   const loadProfile = useCallback(
     async (userId: string) => {
@@ -90,16 +90,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Cargar perfil completo desde BD
         loadProfile(state.user.id)
 
-        // Identify user in OpenPanel
-        op.identify({
-          profileId: state.user.id,
+        // Identify user in OpenPanel (prevents duplicates internally)
+        identifyUser(state.user.id, {
           email: state.user.email || "",
-          firstName: state.user.user_metadata?.name || state.user.user_metadata?.full_name || state.user.email?.split("@")[0] || "Usuario",
+          firstName:
+            state.user.user_metadata?.name ||
+            state.user.user_metadata?.full_name ||
+            state.user.email?.split("@")[0] ||
+            "Usuario",
         })
       } else {
         // Usuario no autenticado
         setUser(null)
         setProfile(null)
+        // Reset identification when user logs out
+        resetIdentification()
       }
     })
 
@@ -107,7 +112,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       unsubscribe()
     }
-  }, [loadProfile, op])
+  }, [loadProfile, identifyUser, resetIdentification])
 
   const signOut = async () => {
     // Prevenir múltiples intentos simultáneos
@@ -117,7 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoggingOut(true)
 
       // Track sign out event
-      op.track("auth_action", { action: "sign_out" })
+      trackAuthAction("sign_out")
 
       // Usar AuthManager para cerrar sesión
       await authManager.signOut()
@@ -130,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("Error durante sign out:", error)
 
       // Track error
-      op.track("auth_action", { action: "error", method: "sign_out" })
+      trackAuthAction("error", "sign_out")
 
       // Forzar redirección incluso si hay error
       if (typeof window !== "undefined") {
