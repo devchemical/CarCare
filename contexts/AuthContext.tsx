@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { authManager } from "@/lib/auth/authManager"
 import type { User } from "@supabase/supabase-js"
@@ -39,6 +39,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const supabase = authManager.getSupabase()
   const { identifyUser, trackAuthAction, resetIdentification } = useAnalytics()
+
+  // REFS para prevenir bucles infinitos con OpenPanel
+  const analyticsRef = useRef({ identifyUser, resetIdentification })
+  const isIdentifiedRef = useRef(false)
+
+  // Actualizar la ref cuando cambien las funciones de analytics
+  useEffect(() => {
+    analyticsRef.current = { identifyUser, resetIdentification }
+  }, [identifyUser, resetIdentification])
 
   const loadProfile = useCallback(
     async (userId: string) => {
@@ -90,21 +99,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Cargar perfil completo desde BD
         loadProfile(state.user.id)
 
-        // Identify user in OpenPanel (prevents duplicates internally)
-        identifyUser(state.user.id, {
-          email: state.user.email || "",
-          firstName:
-            state.user.user_metadata?.name ||
-            state.user.user_metadata?.full_name ||
-            state.user.email?.split("@")[0] ||
-            "Usuario",
-        })
+        // Identify user in OpenPanel (solo una vez por sesión)
+        if (!isIdentifiedRef.current) {
+          isIdentifiedRef.current = true
+          analyticsRef.current.identifyUser(state.user.id, {
+            email: state.user.email || "",
+            firstName:
+              state.user.user_metadata?.name ||
+              state.user.user_metadata?.full_name ||
+              state.user.email?.split("@")[0] ||
+              "Usuario",
+          })
+        }
       } else {
         // Usuario no autenticado
         setUser(null)
         setProfile(null)
+        isIdentifiedRef.current = false
         // Reset identification when user logs out
-        resetIdentification()
+        analyticsRef.current.resetIdentification()
       }
     })
 
@@ -112,7 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       unsubscribe()
     }
-  }, [loadProfile, identifyUser, resetIdentification])
+  }, [loadProfile])
 
   const signOut = async () => {
     // Prevenir múltiples intentos simultáneos

@@ -346,13 +346,16 @@ export function DataProvider({ children }: DataProviderProps) {
     [maintenanceRecords, supabase]
   )
 
-  // Load data when user changes
+  // Load data when user changes - only once per auth state change
+  const hasLoadedRef = React.useRef(false)
+
   useEffect(() => {
-    if (isAuthenticated && user?.id) {
+    if (isAuthenticated && user?.id && !hasLoadedRef.current) {
+      hasLoadedRef.current = true
       refreshAll()
-      // No timeout needed - data loading has proper error boundaries
-    } else {
+    } else if (!isAuthenticated) {
       // Clear data when user logs out
+      hasLoadedRef.current = false
       setVehicles([])
       setMaintenanceRecords([])
       setUpcomingMaintenance([])
@@ -360,7 +363,7 @@ export function DataProvider({ children }: DataProviderProps) {
       setIsVehiclesLoading(false)
       setIsMaintenanceLoading(false)
     }
-  }, [isAuthenticated, user?.id, refreshAll])
+  }, [isAuthenticated, user?.id])
 
   const value: DataContextType = {
     // Data
