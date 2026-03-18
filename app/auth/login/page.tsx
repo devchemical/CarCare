@@ -2,6 +2,7 @@
 
 import type React from "react"
 
+import { useOpenPanel } from "@openpanel/nextjs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = useSupabase()
+  const op = useOpenPanel()
 
   // Ensure we're fully logged out when landing on login page
   useEffect(() => {
@@ -83,10 +85,16 @@ export default function LoginPage() {
     setRateLimitInfo(null)
 
     try {
+      // Track login attempt
+      op.track("auth_action", { action: "sign_in", method: "email" })
+
       // Llamar al Server Action
       const result = await loginAction(email, password)
 
       if (!result.success) {
+        // Track login error
+        op.track("auth_action", { action: "error", method: "email" })
+
         // Si hay información de rate limit, actualizarla
         if (result.rateLimit) {
           setRateLimitInfo(result.rateLimit)
@@ -117,6 +125,9 @@ export default function LoginPage() {
         throw new Error("No se pudo sincronizar la sesión. Intenta nuevamente.")
       }
 
+      // Track successful login
+      op.track("auth_action", { action: "sign_in_success", method: "email" })
+
       // Obtener URL de redirección si existe
       const urlParams = new URLSearchParams(window.location.search)
       const redirectTo = urlParams.get("redirect") || result.redirectTo || "/"
@@ -127,6 +138,9 @@ export default function LoginPage() {
       // Redirigir al dashboard o a la URL original
       router.push(redirectTo)
     } catch (error: unknown) {
+      // Track error
+      op.track("auth_action", { action: "error", method: "email" })
+
       if (error instanceof Error) {
         setError(error.message)
       } else {
