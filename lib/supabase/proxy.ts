@@ -3,6 +3,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { sanitizeInternalRedirect } from "@/lib/auth/redirects"
+import { getSupabaseClientCookieOptions, normalizeSupabaseCookieOptions } from "@/lib/supabase/cookie-options"
 
 interface ProxyCookie {
   name: string
@@ -92,13 +93,20 @@ function createSupabaseAuthProxyAdapter(request: NextRequest): AuthProxyAdapter 
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: getSupabaseClientCookieOptions(),
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
         setAll(nextCookies) {
-          nextCookies.forEach(({ name, value }) => request.cookies.set(name, value))
-          cookiesToSet.push(...nextCookies)
+          const normalizedCookies = nextCookies.map(({ name, value, options }) => ({
+            name,
+            value,
+            options: normalizeSupabaseCookieOptions(name, options),
+          }))
+
+          normalizedCookies.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.push(...normalizedCookies)
         },
       },
     }

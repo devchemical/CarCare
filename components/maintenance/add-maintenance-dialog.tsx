@@ -6,7 +6,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAnalytics } from "@/hooks/use-analytics"
 import { useAuthProjection, useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import {
@@ -71,7 +70,6 @@ export function AddMaintenanceDialog({
   const supabase = useSupabase()
   const { refreshMaintenance } = useData()
   const router = useRouter()
-  const { trackMaintenanceAction } = useAnalytics()
 
   // Helper para generar IDs temporales compatibles con todos los navegadores
   const generateTempId = () => `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 11)}`
@@ -126,9 +124,6 @@ export function AddMaintenanceDialog({
 
       const userId = authState.user.id
 
-      // Track maintenance add attempt
-      trackMaintenanceAction("add", vehicleId)
-
       // Validar números comunes
       const mileage = formData.mileage ? parseInt(formData.mileage, 10) : null
 
@@ -165,9 +160,6 @@ export function AddMaintenanceDialog({
         throw new Error(`Error al insertar: ${error.message}`)
       }
 
-      // Track successful maintenance add
-      trackMaintenanceAction("add", vehicleId)
-
       await refreshMaintenance()
       router.refresh()
 
@@ -181,8 +173,6 @@ export function AddMaintenanceDialog({
 
       setOpen(false)
     } catch (error: unknown) {
-      // Track error
-      trackMaintenanceAction("add", vehicleId)
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al agregar mantenimiento"
       setError(errorMessage)
     } finally {
@@ -316,6 +306,10 @@ export function AddMaintenanceDialog({
               rows={3}
               className="resize-none text-sm"
             />
+            <p className="text-muted-foreground text-xs leading-5">
+              Incluye solo información necesaria del vehículo. No introduzcas datos sensibles ni datos personales de
+              terceras personas.
+            </p>
           </div>
 
           {error && (

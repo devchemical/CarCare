@@ -253,18 +253,25 @@ yarn install
 
    Crea un archivo `.env.local` en la raíz del proyecto:
 
+Copia `.env.example` y configura, como mínimo:
+
 ```env
-# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+APP_BASE_URL=http://localhost:3000
 
-# Development URL
-NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/dashboard
+UPSTASH_REDIS_REST_URL=tu_upstash_url
+UPSTASH_REDIS_REST_TOKEN=tu_upstash_token
+KEEPEL_RATE_LIMIT_HMAC_SECRET=un_secreto_independiente_de_al_menos_32_caracteres
 
-# Production URL (opcional)
-NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://tu-dominio.com/dashboard
+KEEPEL_CONSENT_SIGNING_SECRET=otro_secreto_independiente_de_al_menos_32_caracteres
+
+OPENPANEL_API_URL=https://openpanel.chemicaldev.com/api
+OPENPANEL_SERVER_CLIENT_ID=
+OPENPANEL_SERVER_CLIENT_SECRET=
 ```
+
+Las credenciales de OpenPanel son exclusivamente de servidor. Keepel no utiliza una clave `SUPABASE_SERVICE_ROLE_KEY` en la aplicación.
 
 #### 4. Configurar Base de Datos
 
@@ -411,12 +418,7 @@ bun dev
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/your-template)
 
-**Variables de entorno necesarias:**
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_SUPABASE_REDIRECT_URL`
+**Variables de entorno necesarias:** consulta `.env.example`. Producción necesita Supabase, Upstash, `APP_BASE_URL`, dos secretos HMAC independientes y, si se habilita analítica consentida, el cliente de escritura de OpenPanel.
 
 </details>
 
@@ -440,7 +442,7 @@ Keepel/
 │   ├── page.tsx                     # Landing page / Dashboard
 │   └── globals.css                  # Estilos globales + Tailwind theme
 ├── 📁 components/                   # Componentes React
-│   ├── analytics/                   # Analytics barrel export
+│   ├── privacy/                     # Consentimiento y preferencias de privacidad
 │   ├── auth/                        # Componentes de autenticación
 │   ├── dashboard/                   # Componentes del dashboard
 │   │   ├── Dashboard.tsx            # Dashboard principal
@@ -662,14 +664,14 @@ El dashboard centraliza toda la información importante:
 
 <div align="center">
 
-|       🛡️ Característica       |             📋 Descripción             |  ✅ Estado   |
-| :---------------------------: | :------------------------------------: | :----------: |
-| **Row Level Security (RLS)**  |  Cada usuario solo accede a sus datos  | Implementado |
-|     **Autenticación JWT**     | Tokens seguros manejados por Supabase  | Implementado |
-| **Validación de Formularios** | Validación cliente y servidor con Zod  | Implementado |
-|    **Proxy de Protección**    |    Rutas protegidas automáticamente    | Implementado |
-|   **Encriptación de Datos**   | Datos encriptados en tránsito y reposo | Por defecto  |
-|   **Auditoría de Accesos**    |  Registro de actividades del usuario   | Planificado  |
+|       🛡️ Característica       |                  📋 Descripción                   |  ✅ Estado   |
+| :---------------------------: | :-----------------------------------------------: | :----------: |
+| **Row Level Security (RLS)**  |       Cada persona solo accede a sus datos        | Implementado |
+|  **Autenticación Supabase**   |  Sesiones necesarias con validación del servidor  | Implementado |
+| **Validación de Formularios** |       Validación cliente y servidor con Zod       | Implementado |
+|    **Proxy de Protección**    |   Rutas protegidas mediante claims verificados    | Implementado |
+|     **Transporte HTTPS**      |       HSTS y conexiones HTTPS en producción       | Implementado |
+|    **Analítica opcional**     | Eventos anónimos del servidor tras consentimiento | Implementado |
 
 </div>
 
@@ -692,8 +694,10 @@ Las políticas de seguridad garantizan que:
 
 - ✅ Los usuarios solo ven **sus propios vehículos**
 - ✅ Los mantenimientos están **asociados al propietario**
-- ✅ No hay **acceso cruzado** entre usuarios
-- ✅ Las operaciones están **auditadas** automáticamente
+- ✅ No hay **acceso cruzado** entre personas usuarias
+- ✅ La analítica no recibe perfiles, correos ni identificadores de vehículos o mantenimientos
+
+La política pública está disponible en [`/privacidad`](https://keepel.chemicaldev.com/privacidad). Los procedimientos internos se documentan en `docs/privacy/data-rights-runbook.md`.
 
 ---
 

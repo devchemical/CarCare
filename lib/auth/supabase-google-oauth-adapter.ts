@@ -19,10 +19,7 @@ interface SupabaseGoogleOAuthClient {
       provider: "google"
       options: {
         redirectTo: string
-        queryParams: {
-          access_type: "offline"
-          prompt: "consent"
-        }
+        scopes: "openid email profile"
         skipBrowserRedirect: true
       }
     }): Promise<SupabaseGoogleOAuthResult>
@@ -64,10 +61,7 @@ export function createSupabaseGoogleOAuthAdapter(
         provider: "google",
         options: {
           redirectTo: callbackUrl,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
+          scopes: "openid email profile",
           skipBrowserRedirect: true,
         },
       })

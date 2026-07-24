@@ -55,6 +55,9 @@ describe("Google OAuth flow", () => {
     expect(authorizationUrl.origin).toBe("https://keepel-test.supabase.co")
     expect(authorizationUrl.pathname).toBe("/auth/v1/authorize")
     expect(authorizationUrl.searchParams.get("provider")).toBe("google")
+    expect(authorizationUrl.searchParams.get("scopes")).toBe("openid email profile")
+    expect(authorizationUrl.searchParams.get("access_type")).toBeNull()
+    expect(authorizationUrl.searchParams.get("prompt")).toBeNull()
     expect(authorizationUrl.searchParams.get("redirect_to")).toBe("https://keepel.example/auth/callback?next=%2F")
     expect(authorizationUrl.searchParams.get("code_challenge_method")).toBe("s256")
     expect(authorizationUrl.searchParams.get("code_challenge")).toEqual(expect.any(String))
@@ -143,5 +146,61 @@ describe("Google OAuth flow", () => {
     expect(Array.from(serverCookies.values.keys())).toContainEqual(expect.stringMatching(/^sb-keepel-test-auth-token$/))
     expect(response.headers.get("location")).not.toMatch(/access.?token|refresh.?token|session/i)
     expect(await response.text()).toBe("")
+  })
+
+  it("fails closed when the trusted application origin cannot be resolved", async () => {
+    const handleGoogleOAuth = createGoogleOAuthHandler(
+      async () => ({
+        async createAuthorizationUrl() {
+          throw new Error("must not be called")
+        },
+      }),
+      () => {
+        throw new Error("missing APP_BASE_URL")
+      }
+    )
+
+    const response = await handleGoogleOAuth(new NextRequest("https://attacker.example/auth/google"))
+
+    expect(response.status).toBe(500)
+    expect(response.headers.get("location")).toBeNull()
+  })
+
+  it("uses the trusted application origin behind a reverse proxy", async () => {
+    let callbackUrl = ""
+    const handleGoogleOAuth = createGoogleOAuthHandler(
+      async () => ({
+        async createAuthorizationUrl(value) {
+          callbackUrl = value
+          return {
+            started: true,
+            authorizationUrl: "https://keepel-test.supabase.co/auth/v1/authorize?provider=google",
+          }
+        },
+      }),
+      () => "https://keepel.example"
+    )
+
+    await handleGoogleOAuth(new NextRequest("http://localhost:3000/auth/google?redirectTo=%2Fvehicles"))
+
+    expect(callbackUrl).toBe("https://keepel.example/auth/callback?next=%2Fvehicles")
+  })
+
+  it("records analytics only after a successful callback exchange", async () => {
+    const events: string[] = []
+    const handleCallback = createAuthCallbackHandler(
+      async () => ({
+        async exchangeCodeForSession() {
+          return { data: { user: { id: "user-1" } }, error: null }
+        },
+      }),
+      async () => {
+        events.push("success")
+      }
+    )
+
+    await handleCallback(new NextRequest("https://keepel.example/auth/callback?code=valid-code"))
+
+    expect(events).toEqual(["success"])
   })
 })

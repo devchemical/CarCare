@@ -47,13 +47,13 @@ export function Dashboard({ vehicles, maintenanceRecords, upcomingMaintenance, i
 
       {/* Quick Actions */}
       <div className="mb-10 flex flex-wrap gap-3">
-        <Button asChild className="bg-green-700 hover:bg-green-800" data-track="dashboard_view_vehicles_click">
+        <Button asChild className="bg-green-700 hover:bg-green-800">
           <Link href="/vehicles">
             <Car className="mr-2 h-4 w-4" />
             Ver Vehículos
           </Link>
         </Button>
-        <Button variant="outline" asChild data-track="dashboard_add_vehicle_click">
+        <Button variant="outline" asChild>
           <Link href="/vehicles">
             <CheckCircle className="mr-2 h-4 w-4" />
             Agregar Vehículo

@@ -24,6 +24,7 @@ interface ControlledUser {
 }
 
 const sessions = new Map<string, ControlledUser>()
+const analyticsEvents: unknown[] = []
 let sessionSequence = 0
 let oauthMode: ControlledOAuthMode = "success"
 
@@ -149,12 +150,32 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   if (request.method === "POST" && url.pathname === "/__test__/reset") {
     const body = (await readJson(request)) as { oauthMode?: unknown } | null
     sessions.clear()
+    analyticsEvents.length = 0
     sessionSequence = 0
     oauthMode =
       body?.oauthMode === "cancel" || body?.oauthMode === "provider_error" || body?.oauthMode === "exchange_error"
         ? body.oauthMode
         : "success"
     sendJson(response, 200, { ok: true })
+    return
+  }
+
+  if (request.method === "GET" && url.pathname === "/__test__/analytics") {
+    sendJson(response, 200, { events: analyticsEvents })
+    return
+  }
+
+  if (request.method === "POST" && url.pathname === "/track") {
+    const clientId = request.headers["openpanel-client-id"]
+    const clientSecret = request.headers["openpanel-client-secret"]
+
+    if (clientId !== "e2e-openpanel-writer" || clientSecret !== "e2e-openpanel-secret") {
+      sendJson(response, 401, { message: "Invalid OpenPanel credentials" })
+      return
+    }
+
+    analyticsEvents.push(await readJson(request))
+    sendJson(response, 202, { accepted: true })
     return
   }
 

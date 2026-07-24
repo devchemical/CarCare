@@ -1,9 +1,9 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
-import { OpenPanelComponent } from "@openpanel/nextjs"
 import { AppProviders } from "@/contexts/AppProviders"
 import { getAuthState } from "@/lib/auth/server"
+import { readPrivacyConsent } from "@/lib/privacy/server"
 import "./globals.css"
 
 const inter = Inter({
@@ -65,7 +65,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const initialAuthState = await getAuthState()
+  const [initialAuthState, initialPrivacyConsent] = await Promise.all([getAuthState(), readPrivacyConsent()])
 
   return (
     <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
@@ -76,14 +76,9 @@ export default async function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/logo_keepel_grueso.svg" />
       </head>
       <body className="font-sans" suppressHydrationWarning={true}>
-        <OpenPanelComponent
-          clientId="3fa7d07b-d3dc-4091-8f22-af8bd3adacca"
-          apiUrl="https://openpanel.chemicaldev.com/api"
-          trackScreenViews={false}
-          trackOutgoingLinks={false}
-          trackAttributes={false}
-        />
-        <AppProviders initialAuthState={initialAuthState}>{children}</AppProviders>
+        <AppProviders initialAuthState={initialAuthState} initialPrivacyConsent={initialPrivacyConsent}>
+          {children}
+        </AppProviders>
       </body>
     </html>
   )
