@@ -37,3 +37,6 @@ next-env.d.ts
 id_rsa
 id_ed25519
 id_ecdsapackage-lock.json
+
+# cbmignore
+.cbmignore

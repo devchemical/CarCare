@@ -1,440 +1,260 @@
-# AGENTS.md - Keepel (CarCare)
+# AGENTS.md
 
-**Complete automotive maintenance management system**
+Instructions for coding agents working in the Keepel repository. This file follows the
+[AGENTS.md open format](https://agents.md/) and complements the human-facing `README.md`.
 
-This document provides context for AI agents working on this project. It follows the [AGENTS.md](https://agents.md/) open standard — a tool-agnostic interface for specifying project needs.
+## Project overview
 
----
+Keepel is a responsive vehicle-maintenance web application. It lets authenticated users manage
+vehicles, maintenance records, schedules, costs, and reports.
 
-## Project Overview
+- **Runtime:** Node.js 20.9+ and Bun 1.3+
+- **Application:** Next.js 16 App Router, React 19, strict TypeScript
+- **UI:** Tailwind CSS 4, shadcn/ui and Radix primitives
+- **Backend:** Supabase Auth, PostgreSQL, Storage, and Row Level Security
+- **Validation and forms:** Zod and React Hook Form
+- **Tests:** Vitest for unit/integration tests and Playwright for end-to-end tests
+- **Quality tools:** Oxlint and Oxfmt
 
-### Identity
+The repository is a single application, not a monorepo. If a nested `AGENTS.md` is added later,
+its instructions take precedence for files in that subtree. An explicit user instruction always
+takes precedence over repository guidance.
 
-- **Project Name**: Keepel (formerly CarCare)
-- **Purpose**: Web application to manage vehicle maintenance
-- **Type**: Web Application
-- **License**: MIT
-- **Repository**: https://github.com/devchemical/CarCare
-- **Demo**: https://keepel.chemicaldev.com
+## Setup
 
-### Description
-
-Keepel lets users:
-
-- Register and manage multiple vehicles
-- Track complete maintenance history
-- Schedule future services
-- Monitor maintenance costs
-- View statistics and reports
-- Access from any device (responsive, mobile-friendly)
-
----
-
-## Tech Stack (Tool-Agnostic)
-
-This project uses the following technologies. Agents should understand these regardless of which tool is being used.
-
-### Frontend
-
-| Category   | Technology                                      |
-| ---------- | ----------------------------------------------- |
-| Framework  | Next.js 16.x (App Router)                       |
-| UI Library | React 19.x                                      |
-| Language   | TypeScript 5.x                                  |
-| Styling    | TailwindCSS 4.x                                 |
-| Components | shadcn/ui (Radix UI primitives)                 |
-| Icons      | lucide-react                                    |
-| Forms      | react-hook-form + zod                           |
-| Charts     | recharts                                        |
-| Fonts      | next/font/google (Inter, JetBrains Mono), Geist |
-| Toasts     | sonner                                          |
-| Themes     | next-themes                                     |
-| Dates      | date-fns                                        |
-
-### Backend & Database
-
-| Category      | Technology                                         |
-| ------------- | -------------------------------------------------- |
-| Backend       | Supabase (BaaS)                                    |
-| Database      | PostgreSQL (via Supabase)                          |
-| Auth          | Supabase Auth (JWT + OAuth Google)                 |
-| Storage       | Supabase Storage                                   |
-| Security      | Row Level Security (RLS)                           |
-| Rate Limiting | @upstash/ratelimit + @upstash/redis                |
-| Analytics     | Consent-gated server-only OpenPanel HTTP transport |
-
-### Build & Tools
-
-| Category        | Technology                   |
-| --------------- | ---------------------------- |
-| Package Manager | bun                          |
-| Bundler         | Turbopack (Next.js built-in) |
-| Linting         | Oxlint                       |
-| Formatting      | Oxfmt                        |
-
----
-
-## What This Project Needs (Not Which Tools to Use)
-
-### Development Environment
-
-- Node.js 18+ runtime
-- A code editor with TypeScript support
-
-### Building & Testing
+Run commands from the repository root.
 
 ```bash
-bun dev              # Development server
-bun build            # Production build
-bun start            # Start production build
-bun run test          # Unit and integration tests
-bun run test:e2e      # Playwright browser tests
-bun lint             # oxlint
-bun type-check       # TypeScript check without emitting
-bun format           # oxfmt format
-bun format:check     # Check formatting without writing
-bun clean            # Remove .next cache
-bun clean:install    # Clean + reinstall dependencies
+bun install
+cp .env.example .env.local
+bun dev
 ```
+
+Populate `.env.local` from a development Supabase/Upstash environment. Never copy credentials,
+tokens, production data, or a populated environment file into source control.
+
+## Commands
+
+Use the package scripts rather than similarly named Bun built-ins.
+
+```bash
+bun dev                    # Start the development server
+bun run build              # Create a production build
+bun start                  # Serve the production build
+
+bun fmt:check              # Check formatting
+bun run fmt                # Format files
+bun lint                   # Run Oxlint
+bun type-check             # Run TypeScript without emitting
+
+bun run test               # Run all Vitest unit/integration tests
+bun run test:unit          # Run unit tests
+bun run test:integration   # Run integration tests
+bun run test:e2e           # Run Playwright tests
+bun run test:watch         # Run Vitest in watch mode
+```
+
+For a focused Vitest run, pass the relevant file after `--`:
+
+```bash
+bun run test -- tests/unit/auth/example.test.ts
+```
+
+Before handing off a code change, run the smallest relevant tests while iterating, then run:
+
+```bash
+bun fmt:check
+bun lint
+bun type-check
+bun run test
+bun run build
+```
+
+Run `bun run test:e2e` when changing a user journey, auth flow, privacy flow, routing behavior, or
+Playwright support code. The Playwright configuration starts controlled local services and the app;
+do not point E2E tests at production.
+
+## Repository map
+
+- `app/` — App Router pages, layouts, route handlers, and Server Actions
+- `components/` — feature and reusable UI components
+- `contexts/` — auth projection, Supabase data client, and application data providers
+- `hooks/` — reusable client hooks
+- `lib/auth/` — server-auth boundary, typed contracts, redirects, and invalidation
+- `lib/supabase/` — browser/server clients, SSR cookie behavior, and proxy logic
+- `lib/privacy/` — signed consent contract and server adapter
+- `lib/analytics/` — consent-gated, server-only analytics transport
+- `lib/security/` — HMAC and client-IP helpers
+- `proxy.ts` — top-level Next.js proxy entry point
+- `scripts/` — database SQL and maintenance scripts
+- `tests/unit/` — isolated behavior tests
+- `tests/integration/` — boundary and multi-module tests
+- `tests/e2e/` — Playwright journeys with controlled services
+- `docs/adr/` — accepted architecture decisions
+- `docs/agents/` — issue-tracker, domain-doc, and triage conventions
+
+Before changing architecture or domain language, read `CONTEXT.md` when present and the relevant
+records in `docs/adr/`. Do not silently contradict an ADR.
+
+## Architecture invariants
 
 ### Authentication
 
-This project requires Supabase and Upstash Redis for rate limiting. Configure these environment variables:
-
-```bash
-# Supabase (required)
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-APP_BASE_URL=http://localhost:3000
-
-# Upstash Redis and privacy-preserving rate-limit identifiers
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
-KEEPEL_RATE_LIMIT_HMAC_SECRET=
-
-# Signed analytics preference
-KEEPEL_CONSENT_SIGNING_SECRET=
-
-# Optional consented server-only analytics
-OPENPANEL_API_URL=https://openpanel.chemicaldev.com/api
-OPENPANEL_SERVER_CLIENT_ID=
-OPENPANEL_SERVER_CLIENT_SECRET=
-
-# Email redirect after signup
-NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/
-NEXT_PUBLIC_SUPABASE_REDIRECT_URL=https://keepel.chemicaldev.com/
-```
-
----
-
-## Project Knowledge (Tool-Agnostic)
-
-### Architecture
-
-The app follows a clean architecture with these layers:
-
-- **App Router** (`app/`) — Pages, layouts, Server Actions, API routes
-- **Components** (`components/`) — UI and feature components
-- **Contexts** (`contexts/`) — React Contexts for auth and data state
-- **Hooks** (`hooks/`) — Custom React hooks
-- **Lib** (`lib/`) — Utilities, Supabase clients, and server auth boundaries
-
-### Key Patterns
-
-#### Authentication Flow
-
-Authentication is server-authoritative:
-
-1. **Proxy** — Refreshes SSR cookies and protects routes with verified claims
-2. **Server commands** — Login, signup, OAuth, and logout call Supabase only on the server
-3. **AuthProjectionProvider** — Seeds client UI with the typed `AuthState`/`CurrentUser` projection
-4. **AuthProjectionSynchronization** — Sends semantic invalidation across tabs without session data
-5. **DataProvider** — Uses the single browser Supabase client for data queries and optimistic updates
-
-#### Data Flow
-
-```
-Server Component → createClient() → Supabase
-Client Component → useSupabase() from context
-```
-
-#### Route Protection
-
-- `/auth/*` — Guest-only (redirects authenticated users to `/`)
-- `/vehicles/*` — Protected (redirects unauthenticated users to `/auth/login`)
-
-### Database Schema
-
-Three main tables with RLS:
-
-- **profiles** — User profiles (1:1 with auth.users)
-- **vehicles** — User vehicles (1:N with profiles)
-- **maintenance_records** — Service records (1:N with vehicles)
-
-### Design System
-
-- **Themes**: Light / Dark / System mode via next-themes
-- **Styling**: TailwindCSS 4.x with CSS-based config (no tailwind.config.js)
-- **Fonts**: Inter (UI), JetBrains Mono (code), Geist Sans/Mono
-- **Toasts**: sonner (not use-toast)
-
----
-
-## Code Conventions
-
-### Naming
-
-- **Files**: kebab-case.tsx (except contexts and some components use PascalCase)
-- **Components**: PascalCase
-- **Functions**: camelCase
-- **Constants**: UPPER_SNAKE_CASE
-- **Types/Interfaces**: PascalCase
-
-### Import Order
-
-1. React and Next.js
-2. External libraries
-3. Contexts and hooks
-4. UI components
-5. Lib utilities
-6. Types
-
-### React Patterns
-
-- Use `'use client'` directive when using hooks, state, or browser APIs
-- Server Components don't need the directive
-- Always authenticate inside Server Actions
-- Use optimistic updates for mutations
-
----
-
-## AI Agent Skills
-
-This project has skills for common tasks. Load them when working on specific areas.
-
-### Project-specific skills
-
-These skills encode architecture and framework guidance specific to this codebase.
-
-### `next-best-practices`
-
-**When to load**: Writing or reviewing Next.js code — pages, layouts, Route Handlers, Server Actions, metadata, fonts, images, RSC boundaries.
-
-### `vercel-react-best-practices`
-
-**When to load**: Writing, reviewing, or refactoring React components — performance, data fetching, bundle size, re-renders.
-
-### `supabase-postgres-best-practices`
-
-**When to load**: Writing, reviewing, or optimizing SQL, database schema, RLS policies, indexes.
-
-### `web-design-guidelines`
-
-**When to load**: Reviewing UI code, checking accessibility, auditing design.
-
-### Workflow skills
-
-These skills define execution process and should be used by OpenCode when the task intent matches.
-
-- `spec-driven-development`
-- `planning-and-task-breakdown`
-- `incremental-implementation`
-- `test-driven-development`
-- `debugging-and-error-recovery`
-- `code-review-and-quality`
-- `code-simplification`
-- `api-and-interface-design`
-- `frontend-ui-engineering`
-- `shipping-and-launch`
-
----
-
-## OpenCode Execution Rules
-
-For OpenCode, use a skill-first workflow powered by the local `skills/` directory.
-
-### Skill location
-
-- Skills are located in `.agents/skills/<skill-name>/SKILL.md`
-- If a task matches a skill, invoke it before implementing directly
-- Do not skip an applicable skill just because the task seems small
-- Follow the selected skill workflow completely, not partially
-
-### Intent → Skill Mapping
-
-- **Feature / new functionality** → `spec-driven-development`, then `planning-and-task-breakdown`, then `incremental-implementation`, then `test-driven-development`
-- **Planning / breakdown** → `planning-and-task-breakdown`
-- **Bug / failure / unexpected behavior** → `debugging-and-error-recovery`
-- **Code review** → `code-review-and-quality`
-- **Refactoring / simplification** → `code-simplification`
-- **API or interface design** → `api-and-interface-design`
-- **UI work** → `frontend-ui-engineering`
-- **Release / deploy / launch** → `shipping-and-launch`
-
-### Preferred composition
-
-When multiple skills apply, combine workflow skills with project-specific skills.
-
-1. Use workflow skills to drive process discipline
-2. Use project-specific skills to respect this codebase's architecture and stack
-3. Prefer the most specific skill available when two overlap
-
-### Examples
-
-- **New Next.js feature** → `spec-driven-development` + `planning-and-task-breakdown` + `incremental-implementation` + `test-driven-development` + `next-best-practices`
-- **Supabase schema or RLS change** → `spec-driven-development` + `supabase-postgres-best-practices`
-- **UI page or component work** → `frontend-ui-engineering` + `web-design-guidelines` + `vercel-react-best-practices`
-- **Production bug** → `debugging-and-error-recovery` + relevant project-specific skill
-- **Pre-merge review** → `code-review-and-quality` + relevant project-specific skill
-
-### Execution lifecycle
-
-OpenCode should internally follow this lifecycle when relevant:
-
-- **DEFINE** → `spec-driven-development`
-- **PLAN** → `planning-and-task-breakdown`
-- **BUILD** → `incremental-implementation` + `test-driven-development`
-- **VERIFY** → `debugging-and-error-recovery`
-- **REVIEW** → `code-review-and-quality`
-- **SHIP** → `shipping-and-launch`
-
-### Anti-rationalization
-
-The following reasoning is incorrect and should be avoided:
-
-- "This is too small for a skill"
-- "I can just implement this quickly"
-- "I'll gather context first and maybe use a skill later"
-
-Correct behavior:
-
-- Always check whether a skill applies first
-- If a skill applies, use it
-- Only implement directly when no skill is relevant
-
----
+Authentication is server-authoritative.
+
+1. `proxy.ts` delegates to `lib/supabase/proxy.ts` to refresh SSR cookies and protect routes.
+2. Login, signup, Google OAuth, callback exchange, and logout cross server boundaries.
+3. Browser-facing auth outcomes use typed contracts and never expose sessions or tokens.
+4. `AuthProjectionProvider` seeds the UI with the minimal `AuthState`/`CurrentUser` projection.
+5. Cross-tab coordination sends semantic invalidation only, never credentials or session payloads.
+
+Use verified claims for navigation decisions and authenticated user lookup for private operations.
+Validate third-party response shapes and redirect URLs at the server boundary. Treat a missing
+session as anonymous or as the established sanitized session-expiry outcome; never leak provider
+messages.
+
+### Data
+
+- Server Components use the server Supabase client.
+- Client Components access the single browser Supabase client through `useSupabase()`.
+- Feature state and optimistic mutations belong in `DataContext`; do not create extra browser
+  Supabase clients.
+- Every new table requires RLS, policies scoped with `auth.uid()`, appropriate constraints, and
+  indexes justified by its query patterns.
+
+### Privacy and analytics
+
+- Consent is signed and enforced on the server.
+- Analytics is optional, anonymous, consent-gated, and server-only.
+- Do not add browser analytics secrets, stable user identifiers, or silent tracking fallbacks.
+
+## Code conventions
+
+- Keep TypeScript strict and avoid `any`; validate untrusted data at boundaries.
+- Prefer Server Components. Add `"use client"` only when hooks, state, context, or browser APIs
+  require it.
+- Authenticate inside every private Server Action or route handler; route protection alone is not
+  authorization.
+- Use the `@/` alias for project imports.
+- Follow existing local naming: PascalCase components/types, camelCase functions, and
+  `UPPER_SNAKE_CASE` constants. Match the surrounding file convention when legacy filenames differ.
+- Reuse existing UI primitives, contexts, hooks, and utilities before adding a parallel abstraction.
+- Use `sonner` for toasts and `lucide-react` for icons.
+- Preserve responsive behavior, keyboard access, focus handling, labels, and light/dark themes in UI
+  changes.
+- Keep comments focused on intent, invariants, or non-obvious trade-offs.
+
+## Working agreement
+
+1. Inspect the current worktree before editing. Preserve unrelated tracked and untracked changes.
+2. Understand the nearest implementation, tests, ADRs, and issue context before proposing a new
+   abstraction.
+3. For behavior changes, work test-first: add a failing test, make the smallest implementation pass,
+   then refactor.
+4. Keep scope narrow. Do not bundle opportunistic migrations, feature additions, or cleanup.
+5. Stage explicit paths only. Never use destructive Git commands or overwrite user work.
+6. Report which checks ran and distinguish regressions caused by the change from pre-existing
+   failures.
 
 ## Security
 
-1. **Never commit**: `.env.local`, API keys, real user data
-2. **RLS**: Always enable RLS on new tables; policies must validate `auth.uid()`
-3. **Server Actions**: Always authenticate inside each action
-4. **Rate limiting**: Auth actions use Upstash sliding window limiters
-5. **Input validation**: Zod in client forms + RLS + DB constraints
+- Never commit `.env*` files other than sanitized templates, API keys, tokens, cookies, or user data.
+- Keep server-only modules and credentials out of client bundles.
+- Validate inputs with Zod or an equivalent established boundary validator.
+- Sanitize same-origin redirects with the shared auth redirect utility; do not implement ad hoc
+  redirect validation.
+- Preserve rate limiting on auth actions and privacy-preserving rate-limit identifiers.
+- Do not expose Supabase sessions, access/refresh tokens, provider error text, or analytics secrets
+  in browser-facing results or logs.
+- Treat RLS as defense in depth, not a substitute for authenticating private server operations.
+- Report vulnerabilities privately rather than opening a public issue.
 
-### Vulnerability Reports
+## Pull requests and commits
 
-Do not open a public issue. Email: security@keepel.dev
+- Keep commits focused and use imperative commit subjects.
+- Include tests for changed behavior.
+- In a handoff or pull-request description, summarize the change, security/architecture impact, and
+  exact verification performed.
+- Do not claim a check passed unless it was run in the current worktree.
+- GitHub Issues are the request and planning surface; see `docs/agents/issue-tracker.md` and
+  `docs/agents/triage-labels.md` before changing issue state or labels.
 
----
+# Project agent instructions
 
-## Directory Structure
+## Source of truth
 
-```
-Keepel/
-├── app/                              # Next.js App Router
-│   ├── actions/                     # Privacy and analytics Server Actions
-│   ├── auth/                        # Auth pages + actions
-│   ├── privacidad/                  # Privacy and cookies policy
-│   ├── vehicles/                    # Vehicle pages
-│   ├── globals.css                  # Global styles + Tailwind theme
-│   ├── layout.tsx                   # Root layout
-│   └── page.tsx                     # Landing/dashboard
-│
-├── components/                       # React components
-│   ├── auth/                        # Auth components
-│   ├── dashboard/                   # Dashboard components
-│   ├── home/                        # Landing page
-│   ├── layout/                      # Header, Layout
-│   ├── maintenance/                 # Maintenance CRUD
-│   ├── privacy/                     # Consent banner and preferences
-│   ├── skeletons/                   # Loading skeletons
-│   ├── ui/                          # shadcn/ui components
-│   └── vehicles/                    # Vehicle CRUD
-│
-├── contexts/                         # React Contexts
-│   ├── AppProviders.tsx             # Root provider tree
-│   ├── AuthProjectionContext.tsx    # Server-seeded auth projection
-│   ├── DataContext.tsx              # App data + optimistic updates
-│   └── SupabaseContext.tsx          # Browser data client
-│
-├── hooks/                            # Custom hooks
-├── lib/                              # Utilities
-│   ├── analytics/                   # Anonymous server-only analytics
-│   ├── auth/                        # Server auth commands + projection
-│   ├── privacy/                     # Signed consent contract and server adapter
-│   ├── security/                    # HMAC and client-IP helpers
-│   ├── supabase/                    # Client, server, proxy
-│   ├── formatters.ts                # Data formatters
-│   ├── ratelimit.ts                 # Rate limiting config
-│   └── utils.ts                     # General utilities
-├── scripts/                          # SQL migrations
-├── styles/                           # Additional styles
-├── public/                           # Static assets
-├── proxy.ts                          # Session refresh + route protection
-├── next.config.mjs                   # Next.js config
-└── package.json
-```
+The current repository is the authoritative source.
 
----
+Codebase Memory and Engram are navigation and historical-context tools.
+Validate their results against the current source before modifying code.
 
-## Quick Reference
+## Context acquisition
 
-### Key Files
+Before broad repository exploration:
 
-| File                                 | Purpose                                  |
-| ------------------------------------ | ---------------------------------------- |
-| `proxy.ts`                           | Session refresh + route protection       |
-| `lib/auth/server.ts`                 | Server authentication boundary           |
-| `lib/auth/auth-invalidation.ts`      | Semantic cross-tab invalidation          |
-| `lib/supabase/client.ts`             | Singleton browser data client            |
-| `lib/supabase/server.ts`             | Server Supabase client                   |
-| `lib/ratelimit.ts`                   | Rate limiting configuration              |
-| `contexts/AuthProjectionContext.tsx` | Typed server-seeded authentication state |
-| `contexts/DataContext.tsx`           | Data + optimistic mutations              |
-| `app/auth/actions.ts`                | Login/signup/logout Server Actions       |
+1. Use Codebase Memory to inspect architecture, symbols, dependencies,
+   consumers, call paths and change impact.
+2. Identify the smallest relevant set of files.
+3. Read the actual source files before editing.
+4. Do not infer runtime behavior from the graph alone.
 
-### Contexts & Hooks
+For delegated tasks, pass the project name, qualified symbols, relevant paths
+and discovered call-chain evidence to the subagent.
 
-| Item                              | Import           | Exposes                                     |
-| --------------------------------- | ---------------- | ------------------------------------------- |
-| `useAuthProjection()`             | `@/contexts`     | Typed `AuthState` and server-projected user |
-| `useAuthProjectionInvalidation()` | `@/contexts`     | Local + cross-tab auth invalidation         |
-| `useData()`                       | `@/contexts`     | vehicles, maintenance, CRUD methods         |
-| `useSupabase()`                   | `@/contexts`     | Browser client for data operations          |
-| `useAuthCommandRecovery()`        | `@/hooks`        | Session-expiry recovery for server commands |
-| `usePrivacyConsent()`             | privacy provider | Current preference and settings trigger     |
-| `useMediaQuery()`                 | `@/hooks`        | Responsive breakpoint detection             |
+## Persistent memory
 
----
+Use Engram for:
 
-## Roadmap
+- architectural decisions;
+- verified non-obvious bug causes;
+- project-specific conventions;
+- rejected approaches and their rationale;
+- relevant unfinished work.
 
-### v1.1 (In Development)
+Do not save:
 
-- [ ] Testing setup with Vitest (unit/integration) and Playwright (e2e)
-- [ ] Full REST API for integrations
-- [ ] Advanced reports with improved charts
-- [ ] Internationalization (i18n) Spanish/English
-- [ ] Advanced search with multiple filters
+- source files;
+- generated summaries of the whole repository;
+- raw logs;
+- temporary command output;
+- obvious facts;
+- speculative conclusions.
 
-### v1.2 (Planned)
+Validate retrieved memories against the current code.
 
-- [ ] Native mobile app (React Native)
-- [ ] OCR for automatic invoice scanning
-- [ ] Integration with repair shops
-- [ ] Budget management
-- [ ] Cost comparison between vehicles
+## Shell efficiency
 
-### v2.0 (Future)
+Prefer RTK for verbose commands such as:
 
-- [ ] AI-based maintenance prediction
-- [ ] Advanced performance analytics
-- [ ] Manufacturer API integrations
-- [ ] Services marketplace
-- [ ] Recommendation engine
+- tests;
+- linting;
+- git diff and git status;
+- broad searches;
+- directory trees;
+- build output.
 
----
+Use unfiltered commands when exact output is necessary.
+Inspect RTK's retained raw failure log before re-running a failed command.
 
-**Last updated**: April 2026
-**Format**: AGENTS.md (open standard)
+## Change workflow
+
+Before editing:
+
+1. inspect relevant Engram decisions when applicable;
+2. query Codebase Memory;
+3. inspect actual source and tests;
+4. state the intended change and risk surface.
+
+After editing:
+
+1. run focused tests;
+2. run relevant static checks;
+3. inspect the diff;
+4. use Codebase Memory change-impact analysis for transversal changes;
+5. save only durable new knowledge to Engram.
+
+## Agent-specific adapters
+
+`AGENTS.md` is the canonical shared instruction surface. Agent-specific files, including
+`CLAUDE.md`, should import or point to this file and contain only adapter-specific guidance rather
+than duplicating project rules.
