@@ -9,15 +9,15 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
 // Rate Limiter para LOGIN: 5 intentos cada 60 segundos (1 minuto)
 export const loginRateLimiter = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, "60 s"),
+  limiter: Ratelimit.fixedWindow(5, "60 s"),
   prefix: "@upstash/ratelimit/login",
-  analytics: true,
+  analytics: false,
 })
 
 // Rate Limiter para SIGNUP: 3 intentos cada hora
 export const signupRateLimiter = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, "3600 s"), // 3600s = 1 hora
+  limiter: Ratelimit.fixedWindow(3, "3600 s"), // 3600s = 1 hora
   prefix: "@upstash/ratelimit/signup",
-  analytics: true,
+  analytics: false,
 })

@@ -221,6 +221,10 @@ export function ScheduleServiceDialog({
               rows={3}
               className="resize-none text-sm"
             />
+            <p className="text-muted-foreground text-xs leading-5">
+              Incluye solo información necesaria del vehículo. No introduzcas datos sensibles ni datos personales de
+              terceras personas.
+            </p>
           </div>
 
           {error && (

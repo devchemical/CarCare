@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation"
 import { Car, User, LogOut, Plus, ChevronDown, Menu } from "lucide-react"
 
 import { useAuthProjection, useData } from "@/contexts"
-import { useAnalytics } from "@/hooks"
 import { LogoutControl } from "@/components/auth/logout-control"
 import { HeaderUserIdentity } from "@/components/layout/header-user-identity"
 import { Button } from "@/components/ui/button"
@@ -26,27 +25,18 @@ export function Header() {
   const authState = useAuthProjection()
   const user = authState.status === AUTH_STATE_STATUS.AUTHENTICATED ? authState.user : null
   const { vehicles } = useData()
-  const { trackAuthAction } = useAnalytics()
   const [showVehiclesDropdown, setShowVehiclesDropdown] = useState(false)
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
 
-  const handleLogoutAttempt = () => {
-    trackAuthAction("sign_out")
-  }
-
-  const handleLogoutError = () => {
-    trackAuthAction("error", "sign_out")
-  }
-
   return (
-    <header className="border-border/50 fixed top-0 right-0 left-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+    <header className="border-border/50 bg-background/80 fixed top-0 right-0 left-0 z-50 w-full border-b backdrop-blur-md">
       <div className="container mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo y nombre */}
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <Image src="/logo_keepel_grueso.svg" alt="Keepel" width={40} height={40} className="sm:h-8 sm:w-8" priority />
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Keepel</h1>
+          <Image src="/logo_keepel_grueso.svg" alt="Keepel" width={41} height={32} priority />
+          <span className="text-foreground text-xl font-semibold tracking-tight sm:text-2xl">Keepel</span>
         </Link>
 
         {/* Navegación del usuario autenticado */}
@@ -133,7 +123,7 @@ export function Header() {
 
                   <DropdownMenuSeparator />
 
-                  <LogoutControl className="w-full" onAttempt={handleLogoutAttempt} onError={handleLogoutError}>
+                  <LogoutControl className="w-full">
                     {({ isPending }) => (
                       <DropdownMenuItem asChild disabled={isPending} onSelect={(event) => event.preventDefault()}>
                         <button type="submit" className="w-full cursor-pointer">
@@ -160,7 +150,7 @@ export function Header() {
                 <SheetContent side="right" className="w-[300px] sm:w-[350px]">
                   <SheetHeader className="text-left">
                     <SheetTitle className="flex items-center gap-2">
-                      <Image src="/logo_keepel_grueso.svg" alt="Keepel" width={20} height={20} />
+                      <Image src="/logo_keepel_grueso.svg" alt="Keepel" width={26} height={20} />
                       Keepel
                     </SheetTitle>
                   </SheetHeader>
@@ -218,7 +208,7 @@ export function Header() {
 
                     {/* Actions Section */}
                     <div className="border-border mt-auto space-y-2 border-t pt-4">
-                      <LogoutControl className="w-full" onAttempt={handleLogoutAttempt} onError={handleLogoutError}>
+                      <LogoutControl className="w-full">
                         {({ isPending }) => (
                           <Button
                             type="submit"

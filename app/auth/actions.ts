@@ -4,6 +4,7 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { recordAnonymousAnalytics } from "@/lib/analytics/anonymous-analytics"
 import {
   AUTH_COMMAND_STATUS,
   AUTH_ERROR_CODE,
@@ -19,6 +20,8 @@ import { createSupabasePasswordLoginAuthAdapter } from "@/lib/auth/supabase-pass
 import { createSupabaseLogoutAuthAdapter } from "@/lib/auth/supabase-logout-adapter"
 import { createSupabaseSignupAuthAdapter } from "@/lib/auth/supabase-signup-adapter"
 import { loginRateLimiter, signupRateLimiter } from "@/lib/ratelimit"
+import { readClientIp } from "@/lib/security/client-ip"
+import { createRateLimitIdentifier } from "@/lib/security/rate-limit-identifier"
 import { createClient } from "@/lib/supabase/server"
 
 const passwordLogin = createPasswordLoginCommand({
@@ -26,8 +29,8 @@ const passwordLogin = createPasswordLoginCommand({
   rateLimitAdapter: {
     async isAllowed({ email, clientIp }) {
       const [emailLimit, ipLimit] = await Promise.all([
-        loginRateLimiter.limit(`login_email_${email}`),
-        loginRateLimiter.limit(`login_ip_${clientIp}`),
+        loginRateLimiter.limit(createRateLimitIdentifier("login-email", email)),
+        loginRateLimiter.limit(createRateLimitIdentifier("login-ip", clientIp)),
       ])
 
       return emailLimit.success && ipLimit.success
@@ -44,7 +47,7 @@ const signup = createSignupCommand({
   authAdapter: createSupabaseSignupAuthAdapter(createClient),
   rateLimitAdapter: {
     async isAllowed({ email, clientIp }) {
-      const ipLimit = await signupRateLimiter.limit(`signup_ip_${clientIp}`)
+      const ipLimit = await signupRateLimiter.limit(createRateLimitIdentifier("signup-ip", clientIp))
 
       if (!ipLimit.success) {
         return {
@@ -56,7 +59,7 @@ const signup = createSignupCommand({
         }
       }
 
-      const emailLimit = await signupRateLimiter.limit(`signup_email_${email}`)
+      const emailLimit = await signupRateLimiter.limit(createRateLimitIdentifier("signup-email", email))
 
       return emailLimit.success
         ? { allowed: true }
@@ -71,12 +74,6 @@ const signup = createSignupCommand({
   },
 })
 
-function readClientIp(headersList: Headers) {
-  return (
-    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || headersList.get("x-real-ip")?.trim() || "127.0.0.1"
-  )
-}
-
 export async function loginAction(
   _previousResult: PasswordLoginResult | null,
   formData: FormData
@@ -84,12 +81,18 @@ export async function loginAction(
   try {
     const headersList = await headers()
 
-    return await passwordLogin({
+    const result = await passwordLogin({
       email: formData.get("email"),
       password: formData.get("password"),
       clientIp: readClientIp(headersList),
       redirectTo: formData.get("redirectTo"),
     })
+
+    if (result.status === AUTH_COMMAND_STATUS.SUCCESS) {
+      await recordAnonymousAnalytics("auth_login_email_succeeded")
+    }
+
+    return result
   } catch (error) {
     console.error("Unexpected password login action failure:", error)
 
@@ -104,6 +107,7 @@ export async function logoutAction(_previousResult: LogoutResult | null, _formDa
   const result = await logout()
 
   if (result.status === AUTH_COMMAND_STATUS.SUCCESS) {
+    await recordAnonymousAnalytics("auth_logout_succeeded")
     revalidatePath("/", "layout")
   }
 

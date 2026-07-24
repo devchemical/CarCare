@@ -53,15 +53,15 @@ This project uses the following technologies. Agents should understand these reg
 
 ### Backend & Database
 
-| Category      | Technology                           |
-| ------------- | ------------------------------------ |
-| Backend       | Supabase (BaaS)                      |
-| Database      | PostgreSQL (via Supabase)            |
-| Auth          | Supabase Auth (JWT + OAuth Google)   |
-| Storage       | Supabase Storage                     |
-| Security      | Row Level Security (RLS)             |
-| Rate Limiting | @upstash/ratelimit + @upstash/redis  |
-| Analytics     | @vercel/analytics, @openpanel/nextjs |
+| Category      | Technology                                         |
+| ------------- | -------------------------------------------------- |
+| Backend       | Supabase (BaaS)                                    |
+| Database      | PostgreSQL (via Supabase)                          |
+| Auth          | Supabase Auth (JWT + OAuth Google)                 |
+| Storage       | Supabase Storage                                   |
+| Security      | Row Level Security (RLS)                           |
+| Rate Limiting | @upstash/ratelimit + @upstash/redis                |
+| Analytics     | Consent-gated server-only OpenPanel HTTP transport |
 
 ### Build & Tools
 
@@ -105,10 +105,20 @@ This project requires Supabase and Upstash Redis for rate limiting. Configure th
 # Supabase (required)
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+APP_BASE_URL=http://localhost:3000
 
-# Upstash Redis for rate limiting (required in production)
+# Upstash Redis and privacy-preserving rate-limit identifiers
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
+KEEPEL_RATE_LIMIT_HMAC_SECRET=
+
+# Signed analytics preference
+KEEPEL_CONSENT_SIGNING_SECRET=
+
+# Optional consented server-only analytics
+OPENPANEL_API_URL=https://openpanel.chemicaldev.com/api
+OPENPANEL_SERVER_CLIENT_ID=
+OPENPANEL_SERVER_CLIENT_SECRET=
 
 # Email redirect after signup
 NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/
@@ -321,22 +331,23 @@ Do not open a public issue. Email: security@keepel.dev
 ## Directory Structure
 
 ```
-CarCare/
+Keepel/
 ├── app/                              # Next.js App Router
-│   ├── api/                         # API routes
+│   ├── actions/                     # Privacy and analytics Server Actions
 │   ├── auth/                        # Auth pages + actions
+│   ├── privacidad/                  # Privacy and cookies policy
 │   ├── vehicles/                    # Vehicle pages
 │   ├── globals.css                  # Global styles + Tailwind theme
 │   ├── layout.tsx                   # Root layout
 │   └── page.tsx                     # Landing/dashboard
 │
 ├── components/                       # React components
-│   ├── analytics/                   # Analytics barrel export
 │   ├── auth/                        # Auth components
 │   ├── dashboard/                   # Dashboard components
 │   ├── home/                        # Landing page
 │   ├── layout/                      # Header, Layout
 │   ├── maintenance/                 # Maintenance CRUD
+│   ├── privacy/                     # Consent banner and preferences
 │   ├── skeletons/                   # Loading skeletons
 │   ├── ui/                          # shadcn/ui components
 │   └── vehicles/                    # Vehicle CRUD
@@ -349,7 +360,10 @@ CarCare/
 │
 ├── hooks/                            # Custom hooks
 ├── lib/                              # Utilities
+│   ├── analytics/                   # Anonymous server-only analytics
 │   ├── auth/                        # Server auth commands + projection
+│   ├── privacy/                     # Signed consent contract and server adapter
+│   ├── security/                    # HMAC and client-IP helpers
 │   ├── supabase/                    # Client, server, proxy
 │   ├── formatters.ts                # Data formatters
 │   ├── ratelimit.ts                 # Rate limiting config
@@ -382,15 +396,15 @@ CarCare/
 
 ### Contexts & Hooks
 
-| Item                              | Import       | Exposes                                     |
-| --------------------------------- | ------------ | ------------------------------------------- |
-| `useAuthProjection()`             | `@/contexts` | Typed `AuthState` and server-projected user |
-| `useAuthProjectionInvalidation()` | `@/contexts` | Local + cross-tab auth invalidation         |
-| `useData()`                       | `@/contexts` | vehicles, maintenance, CRUD methods         |
-| `useSupabase()`                   | `@/contexts` | Browser client for data operations          |
-| `useAuthCommandRecovery()`        | `@/hooks`    | Session-expiry recovery for server commands |
-| `useAnalytics()`                  | `@/hooks`    | @openpanel/nextjs analytics integration     |
-| `useMediaQuery()`                 | `@/hooks`    | Responsive breakpoint detection             |
+| Item                              | Import           | Exposes                                     |
+| --------------------------------- | ---------------- | ------------------------------------------- |
+| `useAuthProjection()`             | `@/contexts`     | Typed `AuthState` and server-projected user |
+| `useAuthProjectionInvalidation()` | `@/contexts`     | Local + cross-tab auth invalidation         |
+| `useData()`                       | `@/contexts`     | vehicles, maintenance, CRUD methods         |
+| `useSupabase()`                   | `@/contexts`     | Browser client for data operations          |
+| `useAuthCommandRecovery()`        | `@/hooks`        | Session-expiry recovery for server commands |
+| `usePrivacyConsent()`             | privacy provider | Current preference and settings trigger     |
+| `useMediaQuery()`                 | `@/hooks`        | Responsive breakpoint detection             |
 
 ---
 

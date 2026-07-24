@@ -31,6 +31,14 @@ export default function SignUpPage() {
 
               <SignupForm />
 
+              <p className="text-muted-foreground mt-4 text-center text-xs leading-5">
+                Keepel está dirigido a personas mayores de 18 años. Antes de registrarte, consulta nuestra{" "}
+                <Link href="/privacidad" className="text-primary font-medium underline underline-offset-4">
+                  Política de Privacidad y Cookies
+                </Link>
+                .
+              </p>
+
               <div className="text-muted-foreground mt-4 text-center text-sm">
                 ¿Ya tienes una cuenta?{" "}
                 <Link href="/auth/login" className="text-primary hover:text-primary/80 underline underline-offset-4">

@@ -4,7 +4,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAnalytics } from "@/hooks/use-analytics"
 import { useSupabase, useData } from "@/contexts"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -45,7 +44,6 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
   const supabase = useSupabase()
   const { refreshMaintenance } = useData()
   const router = useRouter()
-  const { trackMaintenanceAction } = useAnalytics()
 
   const handleDelete = async () => {
     setIsLoading(true)
@@ -56,9 +54,6 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
       if (!record?.id) {
         throw new Error("ID del registro no válido")
       }
-
-      // Track maintenance delete attempt
-      trackMaintenanceAction("delete", record.id)
 
       // RLS se encarga de verificar permisos automáticamente
       const deletePromise = supabase.from("maintenance_records").delete().eq("id", record.id)
@@ -73,13 +68,8 @@ export function DeleteMaintenanceDialog({ record, open, onOpenChange }: DeleteMa
         throw new Error(`Error al eliminar: ${deleteError.message}`)
       }
 
-      // Track successful delete
-      trackMaintenanceAction("delete", record.id)
-
       onOpenChange(false)
     } catch (error: unknown) {
-      // Track error
-      trackMaintenanceAction("delete", record.id)
       const errorMessage = error instanceof Error ? error.message : "Error desconocido al eliminar registro"
       setError(errorMessage)
     } finally {
