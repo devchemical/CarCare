@@ -1,3 +1,7 @@
+import { getRequiredConsentSigningSecret } from "./lib/privacy/config.mjs"
+
+getRequiredConsentSigningSecret()
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {

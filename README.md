@@ -271,6 +271,16 @@ OPENPANEL_SERVER_CLIENT_ID=
 OPENPANEL_SERVER_CLIENT_SECRET=
 ```
 
+`KEEPEL_CONSENT_SIGNING_SECRET` es obligatorio y debe tener al menos 32 caracteres. Genera un valor aleatorio independiente para cada entorno (local, preview y producción), por ejemplo:
+
+```bash
+openssl rand -base64 32
+```
+
+Guarda el valor local en `.env.local` y los valores de preview/producción en el gestor de secretos de la plataforma de despliegue. No reutilices valores entre entornos ni guardes secretos generados en el repositorio. `bun run build`, `bun dev` y `bun start` fallan de forma explícita si esta variable falta o es demasiado corta.
+
+Rotar el secreto invalida las preferencias firmadas anteriormente. Tras una rotación, el banner volverá a mostrarse y la analítica permanecerá desactivada hasta que la persona usuaria elija de nuevo.
+
 Las credenciales de OpenPanel son exclusivamente de servidor. Keepel no utiliza una clave `SUPABASE_SERVICE_ROLE_KEY` en la aplicación.
 
 #### 4. Configurar Base de Datos

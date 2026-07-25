@@ -1,5 +1,55 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test"
 import { CONTROLLED_SERVICES_URL } from "../support/controlled-services-config"
+
+const ONE_DAY_SECONDS = 60 * 60 * 24
+
+function collectBrowserAnalyticsRequests(page: Page) {
+  const requests: string[] = []
+
+  page.on("request", (request) => {
+    if (request.url().includes("openpanel")) {
+      requests.push(request.url())
+    }
+  })
+
+  return requests
+}
+
+async function expectPersistedConsentCookie(context: BrowserContext) {
+  const cookie = (await context.cookies()).find((candidate) => candidate.name === "keepel_privacy_consent")
+
+  expect(cookie).toMatchObject({ httpOnly: true, path: "/", sameSite: "Lax", secure: false })
+  expect(cookie?.expires).toBeGreaterThan(Date.now() / 1000 + 364 * ONE_DAY_SECONDS)
+  expect(cookie?.expires).toBeLessThanOrEqual(Date.now() / 1000 + 366 * ONE_DAY_SECONDS)
+}
+
+async function loginWithEmail(page: Page) {
+  await page.goto("/auth/login")
+  await page.getByLabel("Email").fill("driver@keepel.test")
+  await page.getByLabel("Contraseña").fill("correct-horse")
+  await page.getByRole("button", { name: "Iniciar Sesión", exact: true }).click()
+  await expect(page).toHaveURL(/\/$/)
+}
+
+async function readAnalyticsEvents(request: APIRequestContext) {
+  const response = await request.get(`${CONTROLLED_SERVICES_URL}/__test__/analytics`)
+  const body = (await response.json()) as { events: unknown[] }
+
+  return body.events
+}
+
+const consentJourneys = [
+  {
+    choice: "accepts" as const,
+    buttonName: "Aceptar analítica",
+    expectedEvents: [{ type: "track", payload: { name: "auth_login_email_succeeded" } }],
+  },
+  {
+    choice: "rejects" as const,
+    buttonName: "Rechazar analítica",
+    expectedEvents: [],
+  },
+]
 
 test.describe("privacy and cookies", () => {
   test("publishes the combined policy and global privacy controls", async ({ page }) => {
@@ -13,54 +63,53 @@ test.describe("privacy and cookies", () => {
     await expect(page.getByRole("button", { name: "Configurar cookies" })).toBeVisible()
   })
 
-  test("rejects optional analytics, persists the choice, and allows changing it", async ({
-    context,
-    page,
-    request,
-  }) => {
-    await request.post(`${CONTROLLED_SERVICES_URL}/__test__/reset`, { data: {} })
+  for (const journey of consentJourneys) {
+    test(`${journey.choice} optional analytics and persists the choice after reload`, async ({
+      context,
+      page,
+      request,
+    }) => {
+      await request.post(`${CONTROLLED_SERVICES_URL}/__test__/reset`, { data: {} })
+      const browserAnalyticsRequests = collectBrowserAnalyticsRequests(page)
 
-    const browserAnalyticsRequests: string[] = []
-    page.on("request", (browserRequest) => {
-      if (browserRequest.url().includes("openpanel")) {
-        browserAnalyticsRequests.push(browserRequest.url())
+      await page.goto("/")
+
+      const accept = page.getByRole("button", { name: "Aceptar analítica" })
+      const reject = page.getByRole("button", { name: "Rechazar analítica" })
+      await expect(accept).toBeVisible()
+      await expect(reject).toBeVisible()
+
+      await page.getByRole("button", { name: journey.buttonName }).click()
+      await expect(accept).toBeHidden()
+      await expect(reject).toBeHidden()
+      await expectPersistedConsentCookie(context)
+
+      await page.reload()
+      await expect(accept).toBeHidden()
+      await expect(reject).toBeHidden()
+
+      await loginWithEmail(page)
+
+      if (journey.expectedEvents.length > 0) {
+        await expect.poll(() => readAnalyticsEvents(request)).toEqual(journey.expectedEvents)
+      } else {
+        await page.waitForTimeout(500)
+        expect(await readAnalyticsEvents(request)).toEqual([])
       }
+
+      expect(browserAnalyticsRequests).toEqual([])
     })
+  }
 
+  test("allows changing privacy preferences from the global control", async ({ page }) => {
     await page.goto("/")
-
-    const accept = page.getByRole("button", { name: "Aceptar analítica" })
-    const reject = page.getByRole("button", { name: "Rechazar analítica" })
-    await expect(accept).toBeVisible()
-    await expect(reject).toBeVisible()
-
-    await reject.click()
-    await expect(reject).toBeHidden()
-    expect(await (await request.get(`${CONTROLLED_SERVICES_URL}/__test__/analytics`)).json()).toEqual({ events: [] })
-
-    const consentCookie = (await context.cookies()).find((cookie) => cookie.name === "keepel_privacy_consent")
-    expect(consentCookie).toMatchObject({ httpOnly: true, sameSite: "Lax" })
-
-    await page.reload()
-    await expect(page.getByRole("button", { name: "Rechazar analítica" })).toBeHidden()
+    await page.getByRole("button", { name: "Rechazar analítica" }).click()
 
     await page.getByRole("button", { name: "Configurar cookies" }).click()
     await expect(page.getByRole("heading", { name: "Preferencias de privacidad" })).toBeVisible()
     expect(await page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true)
     await page.getByRole("button", { name: "Permitir analítica" }).click()
     await expect(page.getByRole("heading", { name: "Preferencias de privacidad" })).toBeHidden()
-
-    await page.goto("/auth/login")
-    await page.getByLabel("Email").fill("driver@keepel.test")
-    await page.getByLabel("Contraseña").fill("correct-horse")
-    await page.getByRole("button", { name: "Iniciar Sesión", exact: true }).click()
-    await expect(page).toHaveURL(/\/$/)
-
-    await expect
-      .poll(async () => (await (await request.get(`${CONTROLLED_SERVICES_URL}/__test__/analytics`)).json()).events)
-      .toEqual([{ type: "track", payload: { name: "auth_login_email_succeeded" } }])
-
-    expect(browserAnalyticsRequests).toEqual([])
   })
 
   test("shows an informational privacy notice at signup without a checkbox", async ({ page }) => {
