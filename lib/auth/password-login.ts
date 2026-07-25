@@ -1,7 +1,12 @@
-import { AUTH_COMMAND_STATUS, AUTH_ERROR_CODE, AUTH_UNAVAILABLE_STAGE, type AuthCommandResult } from "./contracts"
-import { sanitizeInternalRedirect } from "./redirects"
-import { parsePasswordLoginCredentials } from "./password-login-validation"
-import { createTemporarilyUnavailableError, type AuthUnavailableReporter } from "./temporarily-unavailable"
+import {
+  AUTH_COMMAND_STATUS,
+  AUTH_ERROR_CODE,
+  AUTH_UNAVAILABLE_STAGE,
+  type AuthCommandResult,
+} from "@/lib/auth/contracts"
+import { parsePasswordLoginCredentials } from "@/lib/auth/password-login-validation"
+import { sanitizeInternalRedirect } from "@/lib/auth/redirects"
+import { createTemporarilyUnavailableError, type AuthUnavailableReporter } from "@/lib/auth/temporarily-unavailable"
 
 export interface PasswordLoginInput {
   email: unknown

@@ -1,4 +1,4 @@
-import { AUTH_ERROR_CODE, type AuthError, type AuthUnavailableStage } from "./contracts"
+import { AUTH_ERROR_CODE, type AuthError, type AuthUnavailableStage } from "@/lib/auth/contracts"
 
 export type AuthUnavailableReporter = (stage: AuthUnavailableStage) => string
 

@@ -4,9 +4,9 @@ import {
   SIGN_UP_STATUS,
   type SignUpRateLimitScope,
   type SignUpResult,
-} from "./contracts"
-import { parseSignupInput } from "./signup-validation"
-import { createTemporarilyUnavailableError, type AuthUnavailableReporter } from "./temporarily-unavailable"
+} from "@/lib/auth/contracts"
+import { parseSignupInput } from "@/lib/auth/signup-validation"
+import { createTemporarilyUnavailableError, type AuthUnavailableReporter } from "@/lib/auth/temporarily-unavailable"
 
 export interface SignupInput {
   email: unknown
