@@ -26,6 +26,19 @@ test("invalid password credentials show stable user-facing feedback", async ({ p
   await expect(page).toHaveURL(/\/auth\/login$/)
 })
 
+test("a rate-limit outage blocks password login with an incident reference", async ({ page, request }) => {
+  await resetControlledServices(request, "success", "error")
+  await page.goto("/auth/login")
+  await page.getByLabel("Email").fill("driver@keepel.test")
+  await page.getByLabel("Contraseña").fill("correct-horse")
+  await page.getByRole("button", { name: "Iniciar Sesión", exact: true }).click()
+
+  const alert = page.getByRole("alert").filter({ hasText: "Ocurrió un error inesperado." })
+  await expect(alert).toContainText("Ocurrió un error inesperado. Inténtalo de nuevo.")
+  await expect(alert).toContainText(/Referencia: [0-9a-f-]{36}/)
+  await expect(page).toHaveURL(/\/auth\/login$/)
+})
+
 test("signup requiring email confirmation leads to the confirmation instructions", async ({ page }) => {
   await page.goto("/auth/signup")
   await page.getByLabel("Nombre Completo").fill("Grace Mechanic")
@@ -37,4 +50,19 @@ test("signup requiring email confirmation leads to the confirmation instructions
   await expect(page).toHaveURL(/\/auth\/signup-success$/)
   await expect(page.getByText("¡Cuenta Creada Exitosamente!", { exact: true })).toBeVisible()
   await expect(page.getByText("Verifica tu email para continuar", { exact: true })).toBeVisible()
+})
+
+test("a rate-limit outage blocks signup with an incident reference", async ({ page, request }) => {
+  await resetControlledServices(request, "success", "error")
+  await page.goto("/auth/signup")
+  await page.getByLabel("Nombre Completo").fill("Grace Mechanic")
+  await page.getByLabel("Email").fill("grace@keepel.test")
+  await page.getByLabel("Contraseña", { exact: true }).fill("correct-horse")
+  await page.getByLabel("Confirmar Contraseña").fill("correct-horse")
+  await page.getByRole("button", { name: "Crear Cuenta", exact: true }).click()
+
+  const alert = page.getByRole("alert").filter({ hasText: "Ocurrió un error inesperado." })
+  await expect(alert).toContainText("Ocurrió un error inesperado. Inténtalo de nuevo.")
+  await expect(alert).toContainText(/Referencia: [0-9a-f-]{36}/)
+  await expect(page).toHaveURL(/\/auth\/signup$/)
 })

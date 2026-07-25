@@ -63,6 +63,7 @@ describe("signup flow", () => {
           return { allowed: true }
         },
       },
+      reportUnavailable: () => "unused-auth-incident",
     })
     const navigatedTo: string[] = []
     const formData = new FormData()
@@ -151,6 +152,7 @@ describe("signup flow", () => {
           return { allowed: true }
         },
       },
+      reportUnavailable: () => "unused-auth-incident",
     })
     const navigatedTo: string[] = []
     const formData = new FormData()

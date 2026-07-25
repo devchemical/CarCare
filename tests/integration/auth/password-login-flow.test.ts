@@ -59,6 +59,7 @@ describe("password login flow", () => {
           return true
         },
       },
+      reportUnavailable: () => "unused-auth-incident",
     })
     const navigatedTo: string[] = []
     const formData = new FormData()

@@ -16,6 +16,7 @@ function getSignupErrorMessage(error: SignUpError) {
     case AUTH_ERROR_CODE.INVALID_CREDENTIALS:
     case AUTH_ERROR_CODE.PROVIDER_ERROR:
       return "No pudimos crear la cuenta. Inténtalo de nuevo."
+    case AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE:
     case AUTH_ERROR_CODE.UNEXPECTED:
       return "Ocurrió un error inesperado. Inténtalo de nuevo."
     case AUTH_ERROR_CODE.AUTHENTICATION_REQUIRED:
@@ -40,6 +41,9 @@ export function SignupFeedback({ error }: SignupFeedbackProps) {
       className="text-destructive bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm"
     >
       {getSignupErrorMessage(error)}
+      {error.code === AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE && (
+        <span className="mt-1 block font-mono text-xs">Referencia: {error.reference}</span>
+      )}
     </div>
   )
 }

@@ -15,6 +15,7 @@ export const AUTH_ERROR_CODE = {
   VALIDATION_FAILED: "validation_failed",
   PROVIDER_ERROR: "provider_error",
   SESSION_EXPIRED: "session_expired",
+  TEMPORARILY_UNAVAILABLE: "temporarily_unavailable",
   UNEXPECTED: "unexpected",
 } as const
 
@@ -35,6 +36,12 @@ export const SIGN_UP_RATE_LIMIT_SCOPE = {
   EMAIL: "email",
 } as const
 
+export const AUTH_UNAVAILABLE_STAGE = {
+  ACTION: "action",
+  AUTH_PROVIDER: "auth_provider",
+  RATE_LIMIT: "rate_limit",
+} as const
+
 type ValueOf<T> = T[keyof T]
 
 declare const userIdBrand: unique symbol
@@ -42,13 +49,16 @@ declare const userIdBrand: unique symbol
 export type UserId = string & { readonly [userIdBrand]: "UserId" }
 
 export type AuthErrorCode = ValueOf<typeof AUTH_ERROR_CODE>
+export type AuthUnavailableStage = ValueOf<typeof AUTH_UNAVAILABLE_STAGE>
 
 export type OAuthErrorCode = ValueOf<typeof OAUTH_ERROR_CODE>
 
 export type SignUpRateLimitScope = ValueOf<typeof SIGN_UP_RATE_LIMIT_SCOPE>
 
 export type AuthError = {
-  [Code in AuthErrorCode]: { code: Code }
+  [Code in AuthErrorCode]: Code extends typeof AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE
+    ? { code: Code; reference: string }
+    : { code: Code }
 }[AuthErrorCode]
 
 export interface CurrentUser {

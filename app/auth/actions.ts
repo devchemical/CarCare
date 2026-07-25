@@ -1,18 +1,18 @@
 "use server"
 
-/* eslint-disable no-console -- Server actions log unexpected auth failures until centralized observability is added. */
-
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { recordAnonymousAnalytics } from "@/lib/analytics/anonymous-analytics"
 import {
   AUTH_COMMAND_STATUS,
-  AUTH_ERROR_CODE,
+  AUTH_UNAVAILABLE_STAGE,
   SIGN_UP_RATE_LIMIT_SCOPE,
   SIGN_UP_STATUS,
   type SignUpResult,
 } from "@/lib/auth/contracts"
 import { createPasswordLoginCommand, type PasswordLoginResult } from "@/lib/auth/password-login"
+import { reportAuthUnavailable } from "@/lib/auth/auth-unavailable"
+import { createTemporarilyUnavailableError } from "@/lib/auth/temporarily-unavailable"
 import { createLogoutCommand, type LogoutResult } from "@/lib/auth/logout"
 import { getCurrentUser, requireCurrentUser } from "@/lib/auth/server"
 import { createSignupCommand } from "@/lib/auth/signup"
@@ -36,6 +36,7 @@ const passwordLogin = createPasswordLoginCommand({
       return emailLimit.success && ipLimit.success
     },
   },
+  reportUnavailable: reportAuthUnavailable,
 })
 
 const logout = createLogoutCommand({
@@ -72,6 +73,7 @@ const signup = createSignupCommand({
           }
     },
   },
+  reportUnavailable: reportAuthUnavailable,
 })
 
 export async function loginAction(
@@ -93,12 +95,10 @@ export async function loginAction(
     }
 
     return result
-  } catch (error) {
-    console.error("Unexpected password login action failure:", error)
-
+  } catch {
     return {
       status: AUTH_COMMAND_STATUS.ERROR,
-      error: { code: AUTH_ERROR_CODE.UNEXPECTED },
+      error: createTemporarilyUnavailableError(AUTH_UNAVAILABLE_STAGE.ACTION, reportAuthUnavailable),
     }
   }
 }
@@ -135,12 +135,10 @@ export async function signupAction(_previousResult: SignUpResult | null, formDat
         process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL ||
         "http://localhost:3000/",
     })
-  } catch (error) {
-    console.error("Unexpected signup action failure:", error)
-
+  } catch {
     return {
       status: SIGN_UP_STATUS.ERROR,
-      error: { code: AUTH_ERROR_CODE.UNEXPECTED },
+      error: createTemporarilyUnavailableError(AUTH_UNAVAILABLE_STAGE.ACTION, reportAuthUnavailable),
     }
   }
 }

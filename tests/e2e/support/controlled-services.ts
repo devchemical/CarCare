@@ -1,7 +1,12 @@
 /* eslint-disable no-console -- Controlled E2E service reports startup and request failures. */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http"
-import { APP_URL, CONTROLLED_SERVICES_URL, type ControlledOAuthMode } from "./controlled-services-config"
+import {
+  APP_URL,
+  CONTROLLED_SERVICES_URL,
+  type ControlledOAuthMode,
+  type ControlledRateLimitMode,
+} from "./controlled-services-config"
 
 const controlledServicesUrl = new URL(CONTROLLED_SERVICES_URL)
 const HOST = controlledServicesUrl.hostname
@@ -27,6 +32,7 @@ const sessions = new Map<string, ControlledUser>()
 const analyticsEvents: unknown[] = []
 let sessionSequence = 0
 let oauthMode: ControlledOAuthMode = "success"
+let rateLimitMode: ControlledRateLimitMode = "success"
 
 function corsHeaders() {
   return {
@@ -148,7 +154,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "POST" && url.pathname === "/__test__/reset") {
-    const body = (await readJson(request)) as { oauthMode?: unknown } | null
+    const body = (await readJson(request)) as { oauthMode?: unknown; rateLimitMode?: unknown } | null
     sessions.clear()
     analyticsEvents.length = 0
     sessionSequence = 0
@@ -156,6 +162,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       body?.oauthMode === "cancel" || body?.oauthMode === "provider_error" || body?.oauthMode === "exchange_error"
         ? body.oauthMode
         : "success"
+    rateLimitMode = body?.rateLimitMode === "error" ? "error" : "success"
     sendJson(response, 200, { ok: true })
     return
   }
@@ -275,6 +282,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "POST" && url.pathname === "/pipeline") {
+    if (rateLimitMode === "error") {
+      sendJson(response, 503, { message: "Controlled Redis failure" })
+      return
+    }
+
     const commands = await readJson(request)
     const results = Array.isArray(commands) ? commands.map(handleRedis) : []
     sendJson(response, 200, results)
@@ -282,6 +294,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "POST" && url.pathname === "/") {
+    if (rateLimitMode === "error") {
+      sendJson(response, 503, { message: "Controlled Redis failure" })
+      return
+    }
+
     sendJson(response, 200, handleRedis(await readJson(request)))
     return
   }

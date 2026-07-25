@@ -16,6 +16,20 @@ describe("signup feedback", () => {
     expect(markup).toContain(expectedMessage)
   })
 
+  it("shows the incident reference for temporary unavailability", () => {
+    const markup = renderToStaticMarkup(
+      createElement(SignupFeedback, {
+        error: {
+          code: AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE,
+          reference: "auth-incident-signup",
+        },
+      })
+    )
+
+    expect(markup).toContain("Ocurrió un error inesperado. Inténtalo de nuevo.")
+    expect(markup).toContain("Referencia: auth-incident-signup")
+  })
+
   it.each([
     [SIGN_UP_RATE_LIMIT_SCOPE.IP, "Demasiados intentos de registro desde esta IP. Intenta más tarde."],
     [
