@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   AUTH_ERROR_CODE,
   SIGN_UP_RATE_LIMIT_SCOPE,
@@ -7,6 +7,8 @@ import {
   type UserId,
 } from "@/lib/auth/contracts"
 import { createSignupCommand, type SignupAuthAdapter, type SignupRateLimitAdapter } from "@/lib/auth/signup"
+
+const unusedUnavailableReporter = () => "unused-auth-incident"
 
 describe("signup", () => {
   it("returns the public user when signup creates an immediate session", async () => {
@@ -25,7 +27,11 @@ describe("signup", () => {
         return { allowed: true }
       },
     }
-    const signup = createSignupCommand({ authAdapter, rateLimitAdapter })
+    const signup = createSignupCommand({
+      authAdapter,
+      rateLimitAdapter,
+      reportUnavailable: unusedUnavailableReporter,
+    })
 
     const result = await signup({
       email: "driver@example.com",
@@ -50,7 +56,11 @@ describe("signup", () => {
         throw new Error("rate limiting should not run")
       },
     }
-    const signup = createSignupCommand({ authAdapter, rateLimitAdapter })
+    const signup = createSignupCommand({
+      authAdapter,
+      rateLimitAdapter,
+      reportUnavailable: unusedUnavailableReporter,
+    })
 
     const result = await signup({
       email: "driver@example.com",
@@ -82,7 +92,11 @@ describe("signup", () => {
         throw new Error("rate limiting should not run")
       },
     }
-    const signup = createSignupCommand({ authAdapter, rateLimitAdapter })
+    const signup = createSignupCommand({
+      authAdapter,
+      rateLimitAdapter,
+      reportUnavailable: unusedUnavailableReporter,
+    })
 
     const result = await signup({
       email,
@@ -118,7 +132,11 @@ describe("signup", () => {
           : { allowed: true }
       },
     }
-    const signup = createSignupCommand({ authAdapter, rateLimitAdapter })
+    const signup = createSignupCommand({
+      authAdapter,
+      rateLimitAdapter,
+      reportUnavailable: unusedUnavailableReporter,
+    })
 
     const result = await signup({
       email: "  Driver@Example.com  ",
@@ -141,7 +159,7 @@ describe("signup", () => {
     })
   })
 
-  it("converts unexpected server failures into the stable unexpected code", async () => {
+  it("reports provider failures as temporarily unavailable with an incident reference", async () => {
     const authAdapter: SignupAuthAdapter = {
       async signUp() {
         throw new Error("provider connection failed")
@@ -152,7 +170,8 @@ describe("signup", () => {
         return { allowed: true }
       },
     }
-    const signup = createSignupCommand({ authAdapter, rateLimitAdapter })
+    const reportUnavailable = vi.fn(() => "auth-incident-signup")
+    const signup = createSignupCommand({ authAdapter, rateLimitAdapter, reportUnavailable })
 
     const result = await signup({
       email: "driver@example.com",
@@ -165,7 +184,68 @@ describe("signup", () => {
 
     expect(result).toEqual({
       status: SIGN_UP_STATUS.ERROR,
-      error: { code: AUTH_ERROR_CODE.UNEXPECTED },
+      error: { code: AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE, reference: "auth-incident-signup" },
     })
+    expect(reportUnavailable).toHaveBeenCalledExactlyOnceWith("auth_provider")
+  })
+
+  it("reports a rejected provider result as the same unavailable outcome", async () => {
+    const authAdapter: SignupAuthAdapter = {
+      async signUp() {
+        return { status: SIGN_UP_STATUS.ERROR, error: { code: AUTH_ERROR_CODE.PROVIDER_ERROR } }
+      },
+    }
+    const rateLimitAdapter: SignupRateLimitAdapter = {
+      async isAllowed() {
+        return { allowed: true }
+      },
+    }
+    const reportUnavailable = vi.fn(() => "auth-incident-provider-result")
+    const signup = createSignupCommand({ authAdapter, rateLimitAdapter, reportUnavailable })
+
+    const result = await signup({
+      email: "driver@example.com",
+      password: "secret-password",
+      confirmPassword: "secret-password",
+      fullName: "Ada Driver",
+      clientIp: "203.0.113.10",
+      emailRedirectTo: "https://keepel.example/auth/callback",
+    })
+
+    expect(result).toEqual({
+      status: SIGN_UP_STATUS.ERROR,
+      error: { code: AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE, reference: "auth-incident-provider-result" },
+    })
+    expect(reportUnavailable).toHaveBeenCalledExactlyOnceWith("auth_provider")
+  })
+
+  it("reports rate-limit dependency failures without attempting signup", async () => {
+    const authAdapter: SignupAuthAdapter = {
+      async signUp() {
+        throw new Error("signup should not run")
+      },
+    }
+    const rateLimitAdapter: SignupRateLimitAdapter = {
+      async isAllowed() {
+        throw new Error("redis unavailable")
+      },
+    }
+    const reportUnavailable = vi.fn(() => "auth-incident-rate-limit")
+    const signup = createSignupCommand({ authAdapter, rateLimitAdapter, reportUnavailable })
+
+    const result = await signup({
+      email: "driver@example.com",
+      password: "secret-password",
+      confirmPassword: "secret-password",
+      fullName: "Ada Driver",
+      clientIp: "203.0.113.10",
+      emailRedirectTo: "https://keepel.example/auth/callback",
+    })
+
+    expect(result).toEqual({
+      status: SIGN_UP_STATUS.ERROR,
+      error: { code: AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE, reference: "auth-incident-rate-limit" },
+    })
+    expect(reportUnavailable).toHaveBeenCalledExactlyOnceWith("rate_limit")
   })
 })

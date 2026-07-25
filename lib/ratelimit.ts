@@ -1,10 +1,8 @@
 import { Ratelimit } from "@upstash/ratelimit"
 import { Redis } from "@upstash/redis"
+import { validateRateLimitEnvironment } from "@/lib/config/rate-limit-environment.mjs"
 
-// Validamos que las variables de entorno existan para evitar errores silenciosos en producción
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-  throw new Error("Redis credentials are not defined in environment variables.")
-}
+validateRateLimitEnvironment()
 
 // Rate Limiter para LOGIN: 5 intentos cada 60 segundos (1 minuto)
 export const loginRateLimiter = new Ratelimit({

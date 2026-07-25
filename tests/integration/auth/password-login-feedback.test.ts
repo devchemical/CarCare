@@ -17,4 +17,18 @@ describe("password login feedback", () => {
     expect(markup).toContain('role="alert"')
     expect(markup).toContain(expectedMessage)
   })
+
+  it("shows the incident reference for temporary unavailability", () => {
+    const markup = renderToStaticMarkup(
+      createElement(PasswordLoginFeedback, {
+        error: {
+          code: AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE,
+          reference: "auth-incident-login",
+        },
+      })
+    )
+
+    expect(markup).toContain("Ocurrió un error inesperado. Inténtalo de nuevo.")
+    expect(markup).toContain("Referencia: auth-incident-login")
+  })
 })

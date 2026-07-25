@@ -1,6 +1,7 @@
-import { AUTH_COMMAND_STATUS, AUTH_ERROR_CODE, type AuthCommandResult } from "./contracts"
+import { AUTH_COMMAND_STATUS, AUTH_ERROR_CODE, AUTH_UNAVAILABLE_STAGE, type AuthCommandResult } from "./contracts"
 import { sanitizeInternalRedirect } from "./redirects"
 import { parsePasswordLoginCredentials } from "./password-login-validation"
+import { createTemporarilyUnavailableError, type AuthUnavailableReporter } from "./temporarily-unavailable"
 
 export interface PasswordLoginInput {
   email: unknown
@@ -30,9 +31,14 @@ export interface PasswordLoginRateLimitAdapter {
 interface PasswordLoginDependencies {
   authAdapter: PasswordLoginAuthAdapter
   rateLimitAdapter: PasswordLoginRateLimitAdapter
+  reportUnavailable: AuthUnavailableReporter
 }
 
-export function createPasswordLoginCommand({ authAdapter, rateLimitAdapter }: PasswordLoginDependencies) {
+export function createPasswordLoginCommand({
+  authAdapter,
+  rateLimitAdapter,
+  reportUnavailable,
+}: PasswordLoginDependencies) {
   return async function login(input: PasswordLoginInput): Promise<PasswordLoginResult> {
     const credentials = parsePasswordLoginCredentials({
       email: input.email,
@@ -48,32 +54,52 @@ export function createPasswordLoginCommand({ authAdapter, rateLimitAdapter }: Pa
 
     const { email, password } = credentials.data
 
+    let isAllowed: boolean
+
     try {
-      if (!(await rateLimitAdapter.isAllowed({ email, clientIp: input.clientIp }))) {
-        return {
-          status: AUTH_COMMAND_STATUS.ERROR,
-          error: { code: AUTH_ERROR_CODE.RATE_LIMITED },
-        }
-      }
-
-      const result = await authAdapter.signInWithPassword({ email, password })
-
-      if (!result.authenticated) {
-        return {
-          status: AUTH_COMMAND_STATUS.ERROR,
-          error: { code: result.errorCode },
-        }
-      }
-
-      return {
-        status: AUTH_COMMAND_STATUS.SUCCESS,
-        data: { redirectTo: sanitizeInternalRedirect(input.redirectTo) },
-      }
+      isAllowed = await rateLimitAdapter.isAllowed({ email, clientIp: input.clientIp })
     } catch {
       return {
         status: AUTH_COMMAND_STATUS.ERROR,
-        error: { code: AUTH_ERROR_CODE.UNEXPECTED },
+        error: createTemporarilyUnavailableError(AUTH_UNAVAILABLE_STAGE.RATE_LIMIT, reportUnavailable),
       }
+    }
+
+    if (!isAllowed) {
+      return {
+        status: AUTH_COMMAND_STATUS.ERROR,
+        error: { code: AUTH_ERROR_CODE.RATE_LIMITED },
+      }
+    }
+
+    let result: PasswordLoginAdapterResult
+
+    try {
+      result = await authAdapter.signInWithPassword({ email, password })
+    } catch {
+      return {
+        status: AUTH_COMMAND_STATUS.ERROR,
+        error: createTemporarilyUnavailableError(AUTH_UNAVAILABLE_STAGE.AUTH_PROVIDER, reportUnavailable),
+      }
+    }
+
+    if (!result.authenticated) {
+      if (result.errorCode === AUTH_ERROR_CODE.PROVIDER_ERROR) {
+        return {
+          status: AUTH_COMMAND_STATUS.ERROR,
+          error: createTemporarilyUnavailableError(AUTH_UNAVAILABLE_STAGE.AUTH_PROVIDER, reportUnavailable),
+        }
+      }
+
+      return {
+        status: AUTH_COMMAND_STATUS.ERROR,
+        error: { code: result.errorCode },
+      }
+    }
+
+    return {
+      status: AUTH_COMMAND_STATUS.SUCCESS,
+      data: { redirectTo: sanitizeInternalRedirect(input.redirectTo) },
     }
   }
 }

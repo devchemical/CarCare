@@ -10,6 +10,7 @@ function getPasswordLoginErrorMessage(error: AuthError) {
       return "Revisa el email y la contraseña e inténtalo de nuevo."
     case AUTH_ERROR_CODE.PROVIDER_ERROR:
       return "No pudimos iniciar sesión. Inténtalo de nuevo."
+    case AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE:
     case AUTH_ERROR_CODE.UNEXPECTED:
       return "Ocurrió un error inesperado. Inténtalo de nuevo."
     case AUTH_ERROR_CODE.AUTHENTICATION_REQUIRED:
@@ -34,6 +35,9 @@ export function PasswordLoginFeedback({ error }: PasswordLoginFeedbackProps) {
       className="text-destructive bg-destructive/10 border-destructive/20 rounded-md border p-3 text-sm"
     >
       {getPasswordLoginErrorMessage(error)}
+      {error.code === AUTH_ERROR_CODE.TEMPORARILY_UNAVAILABLE && (
+        <span className="mt-1 block font-mono text-xs">Referencia: {error.reference}</span>
+      )}
     </div>
   )
 }

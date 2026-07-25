@@ -1,6 +1,8 @@
 import { getRequiredConsentSigningSecret } from "./lib/privacy/config.mjs"
+import { validateRateLimitEnvironment } from "./lib/config/rate-limit-environment.mjs"
 
 getRequiredConsentSigningSecret()
+validateRateLimitEnvironment()
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
