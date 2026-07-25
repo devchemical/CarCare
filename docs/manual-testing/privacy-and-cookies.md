@@ -5,6 +5,9 @@ Run this checklist on a preview first and repeat it on `https://keepel.chemicald
 ## Configuration
 
 - Set distinct high-entropy values for `KEEPEL_CONSENT_SIGNING_SECRET` and `KEEPEL_RATE_LIMIT_HMAC_SECRET`.
+- Confirm `KEEPEL_CONSENT_SIGNING_SECRET` contains at least 32 characters and differs across local, preview, and production environments.
+- Confirm a build and server startup with a missing or short consent secret stop with `KEEPEL_CONSENT_SIGNING_SECRET must be defined and contain at least 32 characters.`
+- Confirm no real consent secret appears in the repository, logs, or release artifacts.
 - Configure `OPENPANEL_API_URL`, `OPENPANEL_SERVER_CLIENT_ID`, and `OPENPANEL_SERVER_CLIENT_SECRET` for the Spain-hosted writer.
 - Set `APP_BASE_URL=https://keepel.chemicaldev.com` in production.
 - Confirm Supabase and Upstash are in Frankfurt.
@@ -23,10 +26,12 @@ Run this checklist on a preview first and repeat it on `https://keepel.chemicald
 
 1. Use a clean browser profile and open `/privacidad` and `/` without signing in.
 2. Confirm the banner appears, both choices are equally visible, and keyboard focus remains usable.
-3. Reject analytics and reload. Confirm the banner stays hidden and the `keepel_privacy_consent` cookie is `HttpOnly`, `SameSite=Lax`, `Secure`, and expires within 12 months.
-4. Open **Configurar cookies** from the footer, accept analytics, and reload.
-5. Withdraw consent again and confirm later successful operations do not produce events.
-6. Tamper with or delete the preference cookie and confirm analytics fails closed and the banner returns.
+3. Accept analytics directly from the banner and reload. Confirm the banner stays hidden and a supported successful operation produces the expected property-free server event.
+4. In a clean profile, reject analytics directly from the banner and reload. Confirm the banner stays hidden, later successful operations produce no events, and the `keepel_privacy_consent` cookie is `HttpOnly`, `SameSite=Lax`, `Secure`, and expires within 12 months.
+5. Open **Configurar cookies** from the footer, change the preference, and reload.
+6. Withdraw consent again and confirm later successful operations do not produce events.
+7. Tamper with or delete the preference cookie and confirm analytics fails closed and the banner returns.
+8. Rotate the consent secret in a test environment. Confirm the old cookie becomes unverifiable, the banner returns, analytics remains disabled, and a new accept or reject choice persists after reload.
 
 ## Browser analytics boundary
 

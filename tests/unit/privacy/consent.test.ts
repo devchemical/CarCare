@@ -46,6 +46,15 @@ describe("privacy consent cookie", () => {
     expect(parsePrivacyConsentCookieValue(value ?? undefined, secret, afterExpiry)).toEqual(UNKNOWN_PRIVACY_CONSENT)
   })
 
+  it.each(["accepted", "rejected"] as const)("fails closed after rotating a %s preference", (choice) => {
+    const value = createPrivacyConsentCookieValue(choice, secret, now)
+    const rotatedSecret = "rotated-consent-secret-that-is-at-least-32-characters"
+    const parsed = parsePrivacyConsentCookieValue(value ?? undefined, rotatedSecret, now)
+
+    expect(parsed).toEqual(UNKNOWN_PRIVACY_CONSENT)
+    expect(allowsAnonymousAnalytics(parsed)).toBe(false)
+  })
+
   it("refuses short signing secrets", () => {
     expect(createPrivacyConsentCookieValue("accepted", "too-short", now)).toBeNull()
     expect(parsePrivacyConsentCookieValue("value.signature", "too-short", now)).toEqual(UNKNOWN_PRIVACY_CONSENT)

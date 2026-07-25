@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer"
 import { createHmac, timingSafeEqual } from "node:crypto"
+import { isValidConsentSigningSecret } from "@/lib/privacy/config.mjs"
 
 export const PRIVACY_POLICY_VERSION = "1.0"
 export const PRIVACY_CONSENT_COOKIE_NAME = "keepel_privacy_consent"
@@ -7,7 +8,6 @@ export const PRIVACY_CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
 
 const CONSENT_COOKIE_FORMAT_VERSION = 1
 const MAX_FUTURE_CLOCK_SKEW_MS = 5 * 60 * 1000
-const MINIMUM_SECRET_LENGTH = 32
 
 export const PRIVACY_CONSENT_CHOICES = ["accepted", "rejected"] as const
 
@@ -31,10 +31,6 @@ export const UNKNOWN_PRIVACY_CONSENT: PrivacyConsentState = {
   preference: "unknown",
   decidedAt: null,
   policyVersion: null,
-}
-
-function hasValidSecret(secret: string | undefined): secret is string {
-  return typeof secret === "string" && secret.length >= MINIMUM_SECRET_LENGTH
 }
 
 function isConsentChoice(value: unknown): value is PrivacyConsentChoice {
@@ -86,7 +82,7 @@ export function createPrivacyConsentCookieValue(
   secret: string | undefined,
   now = new Date()
 ): string | null {
-  if (!hasValidSecret(secret)) {
+  if (!isValidConsentSigningSecret(secret)) {
     return null
   }
 
@@ -105,7 +101,7 @@ export function parsePrivacyConsentCookieValue(
   secret: string | undefined,
   now = new Date()
 ): PrivacyConsentState {
-  if (!value || !hasValidSecret(secret)) {
+  if (!value || !isValidConsentSigningSecret(secret)) {
     return UNKNOWN_PRIVACY_CONSENT
   }
 
