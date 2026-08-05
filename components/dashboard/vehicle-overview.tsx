@@ -1,152 +1,81 @@
 "use client"
 
-/* eslint-disable react/no-array-index-key -- Static skeleton placeholders are not data-backed and have no stable ids. */
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Car, Plus, Gauge } from "lucide-react"
 import Link from "next/link"
+import { ArrowRight, Car, Gauge, Plus } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Vehicle } from "@/contexts"
 import { formatMileage } from "@/lib/formatters"
 
-interface Vehicle {
-  id: string
-  make: string
-  model: string
-  year: number
-  license_plate?: string
-  color?: string
-  mileage: number
-}
-
-interface VehicleOverviewProps {
-  vehicles: Vehicle[]
-  isLoading?: boolean
-}
-
-export function VehicleOverview({ vehicles, isLoading }: VehicleOverviewProps) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-5 w-28" />
-            </div>
-            <Skeleton className="h-8 w-20" />
-          </div>
-          <Skeleton className="mt-2 h-4 w-40" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl border p-4">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-10 w-10 rounded-xl" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-5 w-12 rounded-md" />
-                      <Skeleton className="h-5 w-20 rounded-md" />
-                    </div>
-                  </div>
-                </div>
-                <Skeleton className="h-4 w-20" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (vehicles.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Car className="text-primary h-5 w-5" />
-            Mis Vehículos
+export function VehicleOverview({ vehicles }: { vehicles: Vehicle[] }) {
+  return (
+    <Card className="border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-[0_12px_36px_rgba(31,49,38,0.06)]">
+      <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle id="vehicles-heading" className="flex items-center gap-2 text-lg">
+            <Car className="h-5 w-5 text-green-700" aria-hidden="true" />
+            Mis vehículos
           </CardTitle>
-          <CardDescription>No tienes vehículos registrados</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="py-8 text-center">
-            <Car className="text-muted-foreground/30 mx-auto mb-4 h-12 w-12" />
-            <p className="text-muted-foreground mb-6 leading-relaxed">Comienza agregando tu primer vehículo</p>
+          <CardDescription className="mt-1">
+            {vehicles.length === 0
+              ? "Empieza añadiendo el vehículo que quieres cuidar."
+              : `${vehicles.length} vehículo${vehicles.length === 1 ? "" : "s"} registrado${vehicles.length === 1 ? "" : "s"}`}
+          </CardDescription>
+        </div>
+        {vehicles.length > 0 ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/vehicles">Gestionar vehículos</Link>
+          </Button>
+        ) : null}
+      </CardHeader>
+      <CardContent>
+        {vehicles.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[var(--shell-border)] bg-[var(--shell-elevated)] p-6 text-center sm:p-8">
+            <Car className="mx-auto mb-3 h-9 w-9 text-green-700" aria-hidden="true" />
+            <p className="mb-5 text-sm text-[var(--shell-muted)]">
+              Añade tu primer vehículo para registrar y programar mantenimientos.
+            </p>
             <Button asChild>
               <Link href="/vehicles">
-                <Plus className="mr-2 h-4 w-4" />
-                Agregar Vehículo
+                <Plus aria-hidden="true" />
+                Añadir primer vehículo
               </Link>
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Car className="text-primary h-5 w-5" />
-              Mis Vehículos
-            </CardTitle>
-            <CardDescription>
-              {vehicles.length} vehículo{vehicles.length !== 1 ? "s" : ""} registrado{vehicles.length !== 1 ? "s" : ""}
-            </CardDescription>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {vehicles.slice(0, 3).map((vehicle) => (
+              <article
+                key={vehicle.id}
+                className="flex min-w-0 flex-col rounded-xl border border-[var(--shell-border)] bg-[var(--shell-elevated)] p-4 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-green-700/40 motion-reduce:transform-none motion-reduce:transition-none"
+              >
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <span className="rounded-lg bg-white p-2 text-green-700 shadow-sm">
+                    <Car className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <Badge variant="secondary">{vehicle.year}</Badge>
+                </div>
+                <h3 className="truncate font-semibold">
+                  {vehicle.make} {vehicle.model}
+                </h3>
+                <p className="mt-1 min-h-5 truncate text-sm text-[var(--shell-muted)]">
+                  {vehicle.license_plate || "Sin matrícula"}
+                </p>
+                <p className="mt-3 flex items-center gap-2 text-sm text-[var(--shell-muted)]">
+                  <Gauge className="h-4 w-4" aria-hidden="true" />
+                  {formatMileage(vehicle.mileage)}
+                </p>
+                <Button variant="ghost" size="sm" className="mt-4 w-full justify-between" asChild>
+                  <Link href={`/vehicles/${vehicle.id}`}>
+                    Ver vehículo
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+              </article>
+            ))}
           </div>
-          <Button variant="default" size="sm" className="w-full sm:w-auto" asChild>
-            <Link href="/vehicles">Ver Todos</Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {vehicles.slice(0, 3).map((vehicle) => (
-            <div
-              key={vehicle.id}
-              className="border-border/50 bg-card hover:bg-accent/50 flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all duration-200 active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 rounded-xl p-2.5">
-                  <Car className="text-primary h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-foreground truncate font-medium">
-                    {vehicle.make} {vehicle.model}
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-2 text-sm">
-                    <Badge variant="secondary" className="text-xs">
-                      {vehicle.year}
-                    </Badge>
-                    {vehicle.license_plate && <span className="text-muted-foreground">{vehicle.license_plate}</span>}
-                  </div>
-                </div>
-              </div>
-              <div className="text-muted-foreground ml-2 flex items-center gap-2 text-sm">
-                <Gauge className="text-muted-foreground/60 h-4 w-4" />
-                <span className="whitespace-nowrap">{formatMileage(vehicle.mileage)}</span>
-              </div>
-            </div>
-          ))}
-
-          {vehicles.length > 3 && (
-            <div className="pt-3 text-center">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/vehicles">
-                  Ver {vehicles.length - 3} vehículo
-                  {vehicles.length - 3 !== 1 ? "s" : ""} más
-                </Link>
-              </Button>
-            </div>
-          )}
-        </div>
+        )}
       </CardContent>
     </Card>
   )

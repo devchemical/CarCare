@@ -1,227 +1,165 @@
 "use client"
 
-/* eslint-disable react/no-array-index-key, unicorn/consistent-function-scoping -- Static skeleton placeholders have no ids; date helpers stay near usage for readability. */
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useMemo, useState } from "react"
+import { CalendarDays, Car, ChevronDown, ChevronUp, Edit, MoreVertical } from "lucide-react"
+import { MaintenanceCreationAction } from "@/components/dashboard/maintenance-creation-action"
+import { EditScheduledServiceDialog } from "@/components/maintenance/edit-scheduled-service-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Calendar, AlertTriangle, CheckCircle, Car, MoreVertical, Edit } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
-import { EditScheduledServiceDialog } from "@/components/maintenance/edit-scheduled-service-dialog"
+import type { ScheduledService, Vehicle } from "@/contexts"
+import { classifyPendingMaintenance, sortPendingMaintenance } from "@/lib/dashboard/pending-maintenance"
 
-interface UpcomingMaintenanceRecord {
-  id: string
-  type: string
-  description?: string
-  scheduled_date?: string
-  scheduled_mileage?: number
-  status: string
-  notes?: string
-  vehicles?: {
-    make: string
-    model: string
-    year: number
-    license_plate?: string
-  }
-}
-
-interface UpcomingMaintenanceProps {
-  upcomingMaintenance: UpcomingMaintenanceRecord[]
-  isLoading?: boolean
-}
-
-const maintenanceTypes = {
-  oil_change: "Cambio de Aceite",
-  tire_rotation: "Rotación de Llantas",
-  brake_service: "Servicio de Frenos",
+const maintenanceTypes: Record<string, string> = {
+  oil_change: "Cambio de aceite",
+  tire_rotation: "Rotación de neumáticos",
+  brake_service: "Servicio de frenos",
   transmission: "Transmisión",
-  engine_tune: "Afinación del Motor",
+  engine_tune: "Afinación del motor",
   battery: "Batería",
-  air_filter: "Filtro de Aire",
+  air_filter: "Filtro de aire",
   coolant: "Refrigerante",
   spark_plugs: "Bujías",
-  belts_hoses: "Correas y Mangueras",
+  belts_hoses: "Correas y mangueras",
   suspension: "Suspensión",
-  exhaust: "Sistema de Escape",
+  exhaust: "Sistema de escape",
   other: "Otro",
 }
 
-export function UpcomingMaintenance({ upcomingMaintenance, isLoading }: UpcomingMaintenanceProps) {
-  const [editingService, setEditingService] = useState<UpcomingMaintenanceRecord | null>(null)
+const statusClasses = {
+  overdue: "border-red-200 bg-red-50 text-red-700",
+  today: "border-orange-200 bg-orange-50 text-orange-700",
+  upcoming: "border-amber-200 bg-amber-50 text-amber-800",
+  scheduled: "border-slate-200 bg-slate-50 text-slate-600",
+}
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-5 w-5 rounded-full" />
-            <Skeleton className="h-5 w-40" />
-          </div>
-          <Skeleton className="mt-2 h-4 w-48" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-4 rounded-xl border p-4">
-                <Skeleton className="h-10 w-10 rounded-xl" />
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-5 w-16 rounded-md" />
-                  </div>
-                  <Skeleton className="h-3 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+function formatDate(value: string) {
+  const [year, month, day] = value.slice(0, 10).split("-").map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })
+}
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      month: "short",
-      day: "numeric",
-    })
-  }
-
-  const isOverdue = (dateString: string) => {
-    return new Date(dateString) < new Date()
-  }
-
-  const getDaysUntil = (dateString: string) => {
-    const today = new Date()
-    const serviceDate = new Date(dateString)
-    const diffTime = serviceDate.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
-  }
-
-  if (upcomingMaintenance.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-green-700" />
-            Próximos Mantenimientos
-          </CardTitle>
-          <CardDescription>No hay servicios programados</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="py-8 text-center">
-            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-700" />
-            <p className="leading-relaxed text-slate-500">
-              ¡Perfecto! No tienes mantenimientos pendientes en los próximos 30 días.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+export function UpcomingMaintenance({
+  upcomingMaintenance,
+  vehicles,
+}: {
+  upcomingMaintenance: ScheduledService[]
+  vehicles: Vehicle[]
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [editingService, setEditingService] = useState<ScheduledService | null>(null)
+  const ordered = useMemo(
+    () => sortPendingMaintenance(upcomingMaintenance.filter(({ status }) => status === "pending")),
+    [upcomingMaintenance]
+  )
+  const visible = expanded ? ordered : ordered.slice(0, 3)
+  const hiddenCount = Math.max(ordered.length - 3, 0)
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-green-700" />
-          Próximos Mantenimientos
-        </CardTitle>
-        <CardDescription>
-          {upcomingMaintenance.length} servicio{upcomingMaintenance.length !== 1 ? "s" : ""} programado
-          {upcomingMaintenance.length !== 1 ? "s" : ""}
-        </CardDescription>
+    <Card className="border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-[0_12px_36px_rgba(31,49,38,0.06)]">
+      <CardHeader className="gap-4">
+        <div>
+          <CardTitle id="pending-heading" className="flex items-center gap-2 text-lg">
+            <CalendarDays className="h-5 w-5 text-green-700" aria-hidden="true" />
+            Mantenimientos pendientes
+          </CardTitle>
+          <CardDescription className="mt-1">
+            {ordered.length === 0
+              ? "No hay trabajo pendiente."
+              : `${ordered.length} mantenimiento${ordered.length === 1 ? "" : "s"} por atender`}
+          </CardDescription>
+        </div>
+        <MaintenanceCreationAction vehicles={vehicles} />
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {upcomingMaintenance.slice(0, 5).map((maintenance) => {
-            const scheduledDate = maintenance.scheduled_date || ""
-            const daysUntil = scheduledDate ? getDaysUntil(scheduledDate) : null
-            const overdue = scheduledDate ? isOverdue(scheduledDate) : false
-
-            return (
-              <div
-                key={maintenance.id}
-                className="flex items-start gap-4 rounded-xl border border-slate-100 bg-white p-4 transition-colors hover:bg-slate-50/50"
-              >
-                <div className={`rounded-xl p-2.5 ${overdue ? "bg-red-50" : "bg-amber-50"}`}>
-                  {overdue ? (
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                  ) : (
-                    <Calendar className="h-5 w-5 text-amber-600" />
-                  )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-900">
-                      {maintenanceTypes[maintenance.type as keyof typeof maintenanceTypes] || maintenance.type}
-                    </span>
-                    <Badge
-                      variant={overdue ? "destructive" : "secondary"}
-                      className={`border-0 text-xs ${overdue ? "" : "bg-amber-100 text-amber-700"}`}
-                    >
-                      {overdue ? "Vencido" : daysUntil !== null ? `${daysUntil} días` : "Programado"}
+        {ordered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[var(--shell-border)] bg-[var(--shell-elevated)] p-6 text-center">
+            <CalendarDays className="mx-auto mb-3 h-9 w-9 text-green-700" aria-hidden="true" />
+            <p className="text-sm text-[var(--shell-muted)]">
+              No tienes mantenimientos pendientes. Puedes añadir uno cuando lo necesites.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {visible.map((maintenance) => {
+              const status = classifyPendingMaintenance(maintenance.scheduled_date)
+              const recordName = maintenanceTypes[maintenance.type] || maintenance.type
+              return (
+                <article
+                  key={maintenance.id}
+                  className="relative rounded-xl border border-[var(--shell-border)] bg-[var(--shell-elevated)] p-4 pr-12"
+                >
+                  <div className="flex flex-wrap items-start gap-2">
+                    <h3 className="min-w-0 flex-1 text-sm font-semibold">{recordName}</h3>
+                    <Badge variant="outline" className={statusClasses[status.kind]}>
+                      {status.label}
                     </Badge>
                   </div>
-
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Car className="h-3.5 w-3.5 text-slate-400" />
-                    {maintenance.vehicles && (
-                      <span>
-                        {maintenance.vehicles.make} {maintenance.vehicles.model} {maintenance.vehicles.year}
-                        {maintenance.vehicles.license_plate && <span className="text-slate-300"> •</span>}
-                        {maintenance.vehicles.license_plate && <span> {maintenance.vehicles.license_plate}</span>}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-1.5 text-xs text-slate-500">
-                    {scheduledDate && formatDate(scheduledDate)}
-                    {maintenance.scheduled_mileage && (
-                      <span> &middot; {maintenance.scheduled_mileage.toLocaleString("es-ES")} km</span>
-                    )}
-                  </div>
-                </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditingService(maintenance)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Editar
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )
-          })}
-
-          {upcomingMaintenance.length > 5 && (
-            <div className="pt-3 text-center">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/vehicles">Ver {upcomingMaintenance.length - 5} más</Link>
+                  {maintenance.vehicles ? (
+                    <p className="mt-2 flex items-center gap-1.5 text-xs text-[var(--shell-muted)]">
+                      <Car className="h-3.5 w-3.5" aria-hidden="true" />
+                      {maintenance.vehicles.make} {maintenance.vehicles.model} {maintenance.vehicles.year}
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-xs text-[var(--shell-muted)]">
+                    {maintenance.scheduled_date ? formatDate(maintenance.scheduled_date) : "Sin fecha programada"}
+                    {maintenance.scheduled_mileage !== undefined && maintenance.scheduled_mileage !== null
+                      ? ` · ${maintenance.scheduled_mileage.toLocaleString("es-ES")} km`
+                      : ""}
+                  </p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-3 right-2 h-10 w-10"
+                        aria-label={`Acciones de ${recordName}`}
+                      >
+                        <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setEditingService(maintenance)}>
+                        <Edit className="h-4 w-4" aria-hidden="true" />
+                        Editar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </article>
+              )
+            })}
+            {hiddenCount > 0 ? (
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => setExpanded((value) => !value)}
+                aria-expanded={expanded}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp aria-hidden="true" />
+                    Mostrar menos
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown aria-hidden="true" />
+                    Mostrar {hiddenCount} más
+                  </>
+                )}
               </Button>
-            </div>
-          )}
-        </div>
+            ) : null}
+          </div>
+        )}
       </CardContent>
-
-      {editingService && (
+      {editingService ? (
         <EditScheduledServiceDialog
           service={editingService}
-          open={!!editingService}
-          onOpenChange={(open) => !open && setEditingService(null)}
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditingService(null)
+          }}
         />
-      )}
+      ) : null}
     </Card>
   )
 }

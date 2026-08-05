@@ -1,0 +1,197 @@
+"use client"
+
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useEffect, useState, type ReactNode } from "react"
+import { Car, ChevronLeft, ChevronRight, Gauge, LogOut, Menu, User } from "lucide-react"
+import { LogoutControl } from "@/components/auth/logout-control"
+import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { useAuthProjection } from "@/contexts"
+import { AUTH_STATE_STATUS } from "@/lib/auth/contracts"
+import { cn } from "@/lib/utils"
+
+const RAIL_STORAGE_KEY = "keepel.dashboard.rail-expanded"
+const navigation = [
+  { href: "/", label: "Dashboard", icon: Gauge },
+  { href: "/vehicles", label: "Vehículos", icon: Car },
+]
+
+function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobile?: boolean }) {
+  const pathname = usePathname()
+  return (
+    <nav aria-label="Navegación principal" className="space-y-2">
+      {navigation.map(({ href, label, icon: Icon }) => {
+        const active = href === "/" ? pathname === href : pathname.startsWith(href)
+        const link = (
+          <Link
+            href={href}
+            aria-current={active ? "page" : undefined}
+            aria-label={label}
+            title={!expanded ? label : undefined}
+            className={cn(
+              "focus-visible:ring-[var(--shell-focus)] flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-[background-color,color] duration-150 focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none",
+              active
+                ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]"
+                : "text-[var(--shell-muted)] hover:bg-[var(--shell-elevated)] hover:text-[var(--shell-foreground)]",
+              !expanded ? "justify-center" : !mobile && "justify-center lg:justify-start"
+            )}
+          >
+            <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+            {expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>{label}</span> : null}
+          </Link>
+        )
+        return mobile ? (
+          <SheetClose asChild key={href}>
+            {link}
+          </SheetClose>
+        ) : (
+          <div key={href}>{link}</div>
+        )
+      })}
+    </nav>
+  )
+}
+
+function AccountControls({ expanded, mobile = false }: { expanded: boolean; mobile?: boolean }) {
+  const authState = useAuthProjection()
+  if (authState.status !== AUTH_STATE_STATUS.AUTHENTICATED) return null
+  const { user } = authState
+
+  return (
+    <div className="space-y-2 border-t border-[var(--shell-border)] pt-4">
+      <div
+        className={cn("flex min-h-11 items-center gap-3 px-3", !expanded && "justify-center")}
+        title={!expanded ? user.displayName : undefined}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--shell-elevated)]">
+          <User className="h-4 w-4" aria-hidden="true" />
+        </span>
+        {expanded ? (
+          <span className={cn("min-w-0 text-sm", !mobile && "hidden lg:block")}>
+            <span className="block truncate font-medium">Hola, {user.displayName}</span>
+            {user.email ? <span className="block truncate text-xs text-[var(--shell-muted)]">{user.email}</span> : null}
+          </span>
+        ) : (
+          <span className="sr-only">Hola, {user.displayName}</span>
+        )}
+      </div>
+      <LogoutControl className="w-full">
+        {({ isPending }) => (
+          <Button
+            type="submit"
+            variant="ghost"
+            disabled={isPending}
+            aria-label="Cerrar sesión"
+            title={expanded ? undefined : "Cerrar sesión"}
+            className={cn("min-h-11 w-full gap-3 text-[var(--shell-muted)]", !expanded && "px-0")}
+          >
+            <LogOut className="h-5 w-5" aria-hidden="true" />
+            {expanded ? (
+              <span className={mobile ? undefined : "hidden lg:inline"}>
+                {isPending ? "Cerrando sesión…" : "Cerrar sesión"}
+              </span>
+            ) : null}
+          </Button>
+        )}
+      </LogoutControl>
+    </div>
+  )
+}
+
+export function AuthenticatedDashboardShell({ children }: { children: ReactNode }) {
+  const [expanded, setExpanded] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => {
+    setExpanded(window.localStorage.getItem(RAIL_STORAGE_KEY) === "true")
+  }, [])
+
+  function toggleRail() {
+    setExpanded((current) => {
+      const next = !current
+      window.localStorage.setItem(RAIL_STORAGE_KEY, String(next))
+      return next
+    })
+  }
+
+  return (
+    <div className="dashboard-shell min-h-screen bg-[var(--shell-canvas)] text-[var(--shell-foreground)]">
+      <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-[var(--shell-border)] bg-[color:var(--shell-surface)]/95 backdrop-blur-sm">
+        <div className="flex h-full items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-[var(--shell-focus)] focus-visible:outline-none"
+          >
+            <Image src="/logo_keepel_grueso.svg" alt="" width={36} height={28} priority />
+            <span className="text-xl font-semibold tracking-tight">Keepel</span>
+          </Link>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden" aria-label="Abrir navegación">
+                <Menu className="h-5 w-5" aria-hidden="true" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="dashboard-shell flex w-[min(20rem,88vw)] flex-col border-[var(--shell-border)] bg-[var(--shell-surface)]"
+            >
+              <SheetHeader className="text-left">
+                <SheetTitle>Navegación de Keepel</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Accede al dashboard, a tus vehículos y a los controles de sesión.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 flex flex-1 flex-col justify-between">
+                <NavigationLinks expanded mobile />
+                <AccountControls expanded mobile />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
+
+      <aside
+        className={cn(
+          "fixed top-16 bottom-0 left-0 z-30 hidden flex-col border-r border-[var(--shell-border)] bg-[var(--shell-surface)] p-3 pb-20 transition-[width] duration-200 motion-reduce:transition-none md:flex",
+          expanded ? "w-20 lg:w-64" : "w-20"
+        )}
+      >
+        <div className="flex-1">
+          <NavigationLinks expanded={expanded} />
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={toggleRail}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Contraer navegación" : "Expandir navegación"}
+            className="mt-4 hidden min-h-11 w-full justify-center lg:flex"
+          >
+            {expanded ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+            <span className="sr-only">{expanded ? "Contraer navegación" : "Expandir navegación"}</span>
+          </Button>
+        </div>
+        <AccountControls expanded={expanded} />
+      </aside>
+
+      <main
+        id="contenido-principal"
+        className={cn(
+          "min-w-0 pt-16 transition-[margin-left] duration-200 motion-reduce:transition-none md:ml-20",
+          expanded && "lg:ml-64"
+        )}
+      >
+        {children}
+      </main>
+    </div>
+  )
+}

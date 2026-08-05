@@ -5,11 +5,15 @@ export const CONTROLLED_SERVICES_URL = "http://127.0.0.1:54321"
 
 export type ControlledOAuthMode = "success" | "cancel" | "provider_error" | "exchange_error"
 export type ControlledRateLimitMode = "success" | "error"
+export type ControlledDashboardScenario = "empty" | "one-vehicle" | "populated"
 
 export async function resetControlledServices(
   request: APIRequestContext,
   oauthMode: ControlledOAuthMode = "success",
-  rateLimitMode: ControlledRateLimitMode = "success"
+  rateLimitMode: ControlledRateLimitMode = "success",
+  dashboardScenario: ControlledDashboardScenario = "empty"
 ) {
-  await request.post(`${CONTROLLED_SERVICES_URL}/__test__/reset`, { data: { oauthMode, rateLimitMode } })
+  await request.post(`${CONTROLLED_SERVICES_URL}/__test__/reset`, {
+    data: { oauthMode, rateLimitMode, dashboardScenario },
+  })
 }

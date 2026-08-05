@@ -1,112 +1,50 @@
 "use client"
 
-/* eslint-disable react/no-array-index-key, unicorn/consistent-function-scoping -- Static skeleton placeholders have no ids; formatter stays near usage for readability. */
+import { CalendarDays, Car, CircleDollarSign, Wrench } from "lucide-react"
+import type { MaintenanceRecord, ScheduledService, Vehicle } from "@/contexts"
+import { isWithinNextThirtyDays } from "@/lib/dashboard/pending-maintenance"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Car, Wrench, DollarSign, Calendar } from "lucide-react"
-import type { ScheduledService } from "@/contexts"
-
-interface Vehicle {
-  id: string
-  make: string
-  model: string
-  year: number
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount)
 }
 
-interface DashboardStatsProps {
+export function DashboardStats({
+  vehicles,
+  maintenanceRecords,
+  scheduledServices,
+}: {
   vehicles: Vehicle[]
-  maintenanceRecords: { cost?: number }[]
+  maintenanceRecords: MaintenanceRecord[]
   scheduledServices: ScheduledService[]
-  isLoading?: boolean
-}
-
-export function DashboardStats({ vehicles, maintenanceRecords, scheduledServices, isLoading }: DashboardStatsProps) {
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-5 w-5 rounded-full" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="mt-1.5 h-3 w-32" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-  const totalVehicles = vehicles.length
-  const totalMaintenanceRecords = maintenanceRecords.length
-
-  const totalCost = maintenanceRecords.reduce((sum, record) => {
-    return sum + (record.cost || 0)
-  }, 0)
-
-  const upcomingServices = scheduledServices.filter((service) => {
-    if (!service.scheduled_date) return false
-    const scheduledDate = new Date(service.scheduled_date)
-    const today = new Date()
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
-    return scheduledDate >= today && scheduledDate <= thirtyDaysFromNow
-  }).length
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount)
-  }
-
-  const stats = [
+}) {
+  const totalCost = maintenanceRecords.reduce((total, record) => total + (record.cost || 0), 0)
+  const metrics = [
+    { label: "Vehículos", value: vehicles.length, icon: Car },
+    { label: "Realizados", value: maintenanceRecords.length, icon: Wrench },
+    { label: "Gasto total", value: formatCurrency(totalCost), icon: CircleDollarSign },
     {
-      title: "Total Vehículos",
-      value: totalVehicles.toString(),
-      icon: Car,
-      description: "Vehículos registrados",
-      color: "text-green-700",
-    },
-    {
-      title: "Mantenimientos",
-      value: totalMaintenanceRecords.toString(),
-      icon: Wrench,
-      description: "Servicios realizados",
-      color: "text-blue-600",
-    },
-    {
-      title: "Gasto Total",
-      value: formatCurrency(totalCost),
-      icon: DollarSign,
-      description: "En mantenimientos",
-      color: "text-green-700",
-    },
-    {
-      title: "Próximos Servicios",
-      value: upcomingServices.toString(),
-      icon: Calendar,
-      description: "En los próximos 30 días",
-      color: upcomingServices > 0 ? "text-amber-600" : "text-muted-foreground",
+      label: "Próximos 30 días",
+      value: scheduledServices.filter(({ scheduled_date }) => isWithinNextThirtyDays(scheduled_date)).length,
+      icon: CalendarDays,
     },
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card key={stat.title} className="transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-muted-foreground text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className={`h-5 w-5 ${stat.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-semibold tracking-tight">{stat.value}</div>
-            <p className="text-muted-foreground mt-1.5 text-xs">{stat.description}</p>
-          </CardContent>
-        </Card>
+    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {metrics.map(({ label, value, icon: Icon }) => (
+        <div
+          key={label}
+          className="min-w-0 rounded-xl border border-[var(--shell-border)] bg-[var(--shell-elevated)] p-3"
+        >
+          <dt className="flex items-center gap-1.5 text-xs text-[var(--shell-muted)]">
+            <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{label}</span>
+          </dt>
+          <dd className="mt-2 truncate text-lg font-semibold" title={String(value)}>
+            {value}
+          </dd>
+        </div>
       ))}
-    </div>
+    </dl>
   )
 }

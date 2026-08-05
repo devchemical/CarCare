@@ -119,6 +119,18 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+.dashboard-shell {
+  --shell-canvas: #f3f6f4;
+  --shell-surface: #ffffff;
+  --shell-elevated: #edf3ef;
+  --shell-border: #dce6df;
+  --shell-foreground: #17231b;
+  --shell-muted: #607067;
+  --shell-focus: #15803d;
+  --shell-active: #dcefe2;
+  --shell-active-foreground: #166534;
+}
+
 /* ── Modern CSS Reset 2026 ────────────────────────────────────────────── */
 @layer base {
   /* 1. Box model & inheritance (Tailwind preflight covers box-sizing, we enhance) */
