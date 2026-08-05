@@ -40,8 +40,7 @@ test("an expired session returns the user to login with a safe return path", asy
   await expect(page.getByText("Hola, Ada Driver", { exact: true })).toBeVisible()
   await context.clearCookies()
 
-  await page.getByRole("button", { name: "Abrir menú de usuario" }).click()
-  await page.getByRole("menuitem", { name: "Cerrar Sesión" }).click()
+  await page.getByRole("button", { name: "Cerrar sesión" }).click()
 
   await expect(page).toHaveURL(/\/auth\/login\?redirect=%2Fvehicles$/)
   await expect(page.getByText("Hola, Ada Driver", { exact: true })).toHaveCount(0)

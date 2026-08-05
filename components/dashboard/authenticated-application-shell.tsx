@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState, type ReactNode } from "react"
-import { Car, ChevronLeft, ChevronRight, Gauge, LogOut, Menu, User } from "lucide-react"
+import { Car, ChevronLeft, ChevronRight, Cookie, Gauge, LogOut, Menu, Shield, User } from "lucide-react"
 import { LogoutControl } from "@/components/auth/logout-control"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +17,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useAuthProjection } from "@/contexts"
+import { usePrivacyConsent } from "@/components/privacy/consent-provider"
+import { ContextErrorBoundary } from "@/components/ui/context-error-boundary"
 import { AUTH_STATE_STATUS } from "@/lib/auth/contracts"
 import { cn } from "@/lib/utils"
 
@@ -62,10 +64,33 @@ function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobi
   )
 }
 
-function AccountControls({ expanded, mobile = false }: { expanded: boolean; mobile?: boolean }) {
+function AccountControls({
+  expanded,
+  mobile = false,
+  closeMobileNavigation,
+}: {
+  expanded: boolean
+  mobile?: boolean
+  closeMobileNavigation?: () => void
+}) {
   const authState = useAuthProjection()
+  const { openPreferences } = usePrivacyConsent()
   if (authState.status !== AUTH_STATE_STATUS.AUTHENTICATED) return null
   const { user } = authState
+  const privacyLink = (
+    <Link
+      href="/privacidad"
+      aria-label="Privacidad"
+      title={!mobile && !expanded ? "Privacidad" : undefined}
+      className={cn(
+        "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[var(--shell-muted)] hover:bg-[var(--shell-elevated)] hover:text-[var(--shell-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--shell-focus)] focus-visible:outline-none",
+        !mobile && !expanded && "justify-center"
+      )}
+    >
+      <Shield className="h-5 w-5" aria-hidden="true" />
+      {mobile || expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>Privacidad</span> : null}
+    </Link>
+  )
 
   return (
     <div className="space-y-2 border-t border-[var(--shell-border)] pt-4">
@@ -85,6 +110,23 @@ function AccountControls({ expanded, mobile = false }: { expanded: boolean; mobi
           <span className="sr-only">Hola, {user.displayName}</span>
         )}
       </div>
+      <nav aria-label="Cuenta y privacidad" className="space-y-1">
+        {mobile ? <SheetClose asChild>{privacyLink}</SheetClose> : privacyLink}
+        <Button
+          type="button"
+          variant="ghost"
+          aria-label="Configurar cookies"
+          title={expanded ? undefined : "Configurar cookies"}
+          onClick={() => {
+            closeMobileNavigation?.()
+            openPreferences()
+          }}
+          className={cn("min-h-11 w-full gap-3 text-[var(--shell-muted)]", !expanded && "px-0")}
+        >
+          <Cookie className="h-5 w-5" aria-hidden="true" />
+          {expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>Configurar cookies</span> : null}
+        </Button>
+      </nav>
       <LogoutControl className="w-full">
         {({ isPending }) => (
           <Button
@@ -108,7 +150,7 @@ function AccountControls({ expanded, mobile = false }: { expanded: boolean; mobi
   )
 }
 
-export function AuthenticatedDashboardShell({ children }: { children: ReactNode }) {
+export function AuthenticatedApplicationShell({ children }: { children: ReactNode }) {
   const [expanded, setExpanded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -153,7 +195,7 @@ export function AuthenticatedDashboardShell({ children }: { children: ReactNode 
               </SheetHeader>
               <div className="mt-6 flex flex-1 flex-col justify-between">
                 <NavigationLinks expanded mobile />
-                <AccountControls expanded mobile />
+                <AccountControls expanded mobile closeMobileNavigation={() => setMobileOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
@@ -193,5 +235,41 @@ export function AuthenticatedDashboardShell({ children }: { children: ReactNode 
         {children}
       </main>
     </div>
+  )
+}
+
+function isAuthenticatedApplicationPath(pathname: string) {
+  return pathname === "/" || pathname === "/vehicles" || pathname.startsWith("/vehicles/")
+}
+
+export function AuthenticatedApplicationBoundary({ children }: { children: ReactNode }) {
+  const pathname = usePathname()
+  const authState = useAuthProjection()
+
+  if (authState.status !== AUTH_STATE_STATUS.AUTHENTICATED || !isAuthenticatedApplicationPath(pathname)) {
+    return children
+  }
+
+  return (
+    <AuthenticatedApplicationShell>
+      <ContextErrorBoundary
+        key={pathname}
+        fallback={
+          <section className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12" role="alert">
+            <div className="max-w-md text-center">
+              <h1 className="text-xl font-semibold">No se pudo cargar esta vista</h1>
+              <p className="mt-2 text-sm text-[var(--shell-muted)]">
+                La navegación sigue disponible. Recarga la página para volver a intentarlo.
+              </p>
+              <Button type="button" className="mt-4" onClick={() => window.location.reload()}>
+                Recargar página
+              </Button>
+            </div>
+          </section>
+        }
+      >
+        {children}
+      </ContextErrorBoundary>
+    </AuthenticatedApplicationShell>
   )
 }

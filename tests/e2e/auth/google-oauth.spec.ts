@@ -8,7 +8,8 @@ test("Google OAuth returns through the PKCE callback to authenticated UI", async
   await page.getByRole("link", { name: "Continuar con Google" }).click()
 
   await expect(page).toHaveURL(/\/vehicles$/)
-  await expect(page.getByRole("banner").getByText("Hola, Ada Driver", { exact: true })).toBeVisible()
+  await expect(page.getByText("Hola, Ada Driver", { exact: true })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible()
   expect(page.url()).not.toContain("code=")
   expect(page.url()).not.toContain("access_token")
 })
@@ -21,6 +22,7 @@ test("Google OAuth cancellation maps to a stable public error", async ({ page, r
 
   await expect(page).toHaveURL(/\/auth\/error\?error=oauth_cancelled$/)
   await expect(page.getByText("Código de error: oauth_cancelled", { exact: true })).toBeVisible()
+  await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
   await expect(page.getByText(/controlled provider description/i)).toHaveCount(0)
 })
 
@@ -32,6 +34,7 @@ test("Google OAuth exchange failures hide provider details", async ({ page, requ
 
   await expect(page).toHaveURL(/\/auth\/error\?error=provider_error$/)
   await expect(page.getByText("Código de error: provider_error", { exact: true })).toBeVisible()
+  await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
   expect(page.url()).not.toContain("controlled-provider-secret")
   await expect(page.getByText(/controlled-provider-secret/i)).toHaveCount(0)
 })

@@ -35,6 +35,7 @@ let sessionSequence = 0
 let oauthMode: ControlledOAuthMode = "success"
 let rateLimitMode: ControlledRateLimitMode = "success"
 let dashboardScenario: ControlledDashboardScenario = "empty"
+let privateViewDelayMs = 0
 
 const dashboardVehicles = [
   {
@@ -264,6 +265,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       oauthMode?: unknown
       rateLimitMode?: unknown
       dashboardScenario?: unknown
+      privateViewDelayMs?: unknown
     } | null
     sessions.clear()
     analyticsEvents.length = 0
@@ -277,6 +279,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       body?.dashboardScenario === "one-vehicle" || body?.dashboardScenario === "populated"
         ? body.dashboardScenario
         : "empty"
+    privateViewDelayMs =
+      typeof body?.privateViewDelayMs === "number" &&
+      Number.isInteger(body.privateViewDelayMs) &&
+      body.privateViewDelayMs >= 0 &&
+      body.privateViewDelayMs <= 2_000
+        ? body.privateViewDelayMs
+        : 0
     sendJson(response, 200, { ok: true })
     return
   }
@@ -391,9 +400,15 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
+    if (privateViewDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, privateViewDelayMs))
+    }
     const table = url.pathname.slice("/rest/v1/".length)
     const rows = controlledDashboardRows(table)
-    sendJson(response, 200, rows, { "content-range": `0-${Math.max(rows.length - 1, 0)}/${rows.length}` })
+    const wantsSingleObject = request.headers.accept?.includes("application/vnd.pgrst.object+json")
+    sendJson(response, 200, wantsSingleObject ? (rows[0] ?? null) : rows, {
+      "content-range": `0-${Math.max(rows.length - 1, 0)}/${rows.length}`,
+    })
     return
   }
 

@@ -11,9 +11,10 @@ export async function resetControlledServices(
   request: APIRequestContext,
   oauthMode: ControlledOAuthMode = "success",
   rateLimitMode: ControlledRateLimitMode = "success",
-  dashboardScenario: ControlledDashboardScenario = "empty"
+  dashboardScenario: ControlledDashboardScenario = "empty",
+  privateViewDelayMs = 0
 ) {
   await request.post(`${CONTROLLED_SERVICES_URL}/__test__/reset`, {
-    data: { oauthMode, rateLimitMode, dashboardScenario },
+    data: { oauthMode, rateLimitMode, dashboardScenario, privateViewDelayMs },
   })
 }
