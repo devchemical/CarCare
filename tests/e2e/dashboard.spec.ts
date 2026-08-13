@@ -97,10 +97,61 @@ test("only explicitly registered authenticated product routes use the applicatio
   await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
 
   await loginWithPassword(page)
+  await page.getByRole("button", { name: "Expandir navegación" }).click()
   await page.getByRole("link", { name: "Privacidad", exact: true }).click()
+
   await expect(page).toHaveURL(/\/privacidad$/)
-  await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
+  await expect(page.getByRole("navigation", { name: "Navegación principal" })).toBeVisible()
+  await expect(page.getByRole("main")).toHaveCount(1)
+  await expect(page.getByRole("contentinfo")).toHaveCount(0)
   await expect(page.getByRole("heading", { name: "Política de Privacidad y Cookies" })).toBeVisible()
+  await expect(page.getByRole("link", { name: "Privacidad", exact: true })).toHaveAttribute("aria-current", "page")
+  await expect(page.getByRole("button", { name: "Contraer navegación" })).toHaveAttribute("aria-expanded", "true")
+
+  await page.reload()
+  await expect(page.getByRole("button", { name: "Contraer navegación" })).toHaveAttribute("aria-expanded", "true")
+  await expect(page.getByRole("link", { name: "Privacidad", exact: true })).toHaveAttribute("aria-current", "page")
+
+  await page.setViewportSize({ width: 320, height: 700 })
+  await expect(page.getByRole("button", { name: "Abrir navegación" })).toBeVisible()
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth))
+    .toBe(false)
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  await page.getByRole("link", { name: "Dashboard", exact: true }).click()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole("link", { name: "Dashboard", exact: true })).toHaveAttribute("aria-current", "page")
+  await expect(page.getByRole("link", { name: "Privacidad", exact: true })).not.toHaveAttribute("aria-current", "page")
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+})
+
+test("external session loss keeps the public Privacy policy visible", async ({ page, request, context }) => {
+  await resetControlledServices(request)
+  await loginWithPassword(page)
+  const privacyPage = await context.newPage()
+  await privacyPage.goto("/privacidad")
+
+  await expect(privacyPage.getByRole("navigation", { name: "Navegación principal" })).toBeVisible()
+
+  await page.getByRole("button", { name: "Cerrar sesión" }).click()
+  await expect(page).toHaveURL(/\/auth\/login$/)
+
+  await expect(privacyPage).toHaveURL(/\/privacidad$/)
+  await expect(privacyPage.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
+  await expect(privacyPage.getByRole("contentinfo")).toBeVisible()
+  await expect(privacyPage.getByRole("heading", { name: "Política de Privacidad y Cookies" })).toBeVisible()
+})
+
+test("explicit logout from Privacy keeps the established login destination", async ({ page, request }) => {
+  await resetControlledServices(request)
+  await loginWithPassword(page, "/privacidad")
+
+  await page.getByRole("button", { name: "Cerrar sesión" }).click()
+
+  await expect(page).toHaveURL(/\/auth\/login$/)
+  await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
 })
 
 test("rail preference persists and the 320px dashboard has no horizontal overflow", async ({ page, request }) => {
@@ -152,9 +203,13 @@ test("mobile navigation closes on Vehicles and keeps private loading inside the 
   await expect(drawer.getByRole("button", { name: "Configurar cookies" })).toBeVisible()
   await drawer.getByRole("button", { name: "Configurar cookies" }).click()
   await expect(drawer).toHaveCount(0)
-  await expect(page.getByRole("heading", { name: "Preferencias de privacidad" })).toBeVisible()
-  await page.getByRole("button", { name: "Usar solo necesarias" }).click()
-  await expect(page.getByRole("heading", { name: "Preferencias de privacidad" })).toBeHidden()
+  const preferences = page.getByRole("dialog", { name: "Preferencias de privacidad" })
+  await expect(preferences).toHaveCount(1)
+  await expect(preferences).toBeVisible()
+  expect(await page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true)
+  await preferences.getByRole("button", { name: "Usar solo necesarias" }).click()
+  await expect(preferences).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Abrir navegación" })).toBeFocused()
   await page.getByRole("button", { name: "Abrir navegación" }).click()
 
   const reopenedDrawer = page.getByRole("dialog", { name: "Navegación de Keepel" })

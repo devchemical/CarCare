@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react"
 import { savePrivacyConsent } from "@/app/actions/privacy"
 import { PrivacyConsentBanner } from "./privacy-consent-banner"
 import { PrivacyPreferencesDialog } from "./privacy-preferences-dialog"
@@ -8,7 +8,7 @@ import type { PrivacyConsentChoice, PrivacyConsentState } from "@/lib/privacy/co
 
 interface PrivacyConsentContextValue {
   consent: PrivacyConsentState
-  openPreferences(): void
+  openPreferences(returnFocusTo?: HTMLElement | null): void
 }
 
 const PrivacyConsentContext = createContext<PrivacyConsentContextValue | null>(null)
@@ -23,6 +23,7 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const preferencesTriggerRef = useRef<HTMLElement | null>(null)
 
   const saveChoice = useCallback(async (choice: PrivacyConsentChoice) => {
     setIsPending(true)
@@ -38,6 +39,7 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
 
       setConsent(result.consent)
       setIsPreferencesOpen(false)
+      window.requestAnimationFrame(() => preferencesTriggerRef.current?.focus())
     } catch {
       setError("No hemos podido guardar tu elección. Inténtalo de nuevo.")
     } finally {
@@ -45,7 +47,13 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
     }
   }, [])
 
-  const openPreferences = useCallback(() => {
+  const closePreferences = useCallback(() => {
+    setIsPreferencesOpen(false)
+    window.requestAnimationFrame(() => preferencesTriggerRef.current?.focus())
+  }, [])
+
+  const openPreferences = useCallback((returnFocusTo?: HTMLElement | null) => {
+    preferencesTriggerRef.current = returnFocusTo ?? (document.activeElement as HTMLElement | null)
     setError(null)
     setIsPreferencesOpen(true)
   }, [])
@@ -69,8 +77,14 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
         isPending={isPending}
         preference={consent.preference}
         onAccept={() => void saveChoice("accepted")}
-        onClose={() => setIsPreferencesOpen(false)}
-        onOpenChange={setIsPreferencesOpen}
+        onClose={closePreferences}
+        onOpenChange={(open) => {
+          if (open) {
+            setIsPreferencesOpen(true)
+          } else {
+            closePreferences()
+          }
+        }}
         onReject={() => void saveChoice("rejected")}
       />
     </PrivacyConsentContext.Provider>

@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Car, ChevronLeft, ChevronRight, Cookie, Gauge, LogOut, Menu, Shield, User } from "lucide-react"
 import { LogoutControl } from "@/components/auth/logout-control"
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,19 @@ const navigation = [
   { href: "/vehicles", label: "Vehículos", icon: Car },
 ]
 
+const rowClassName =
+  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm transition-[background-color,color] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--shell-focus)] focus-visible:outline-none motion-reduce:transition-none"
+const inactiveRowClassName =
+  "text-[var(--shell-muted)] hover:bg-[var(--shell-elevated)] hover:text-[var(--shell-foreground)]"
+
+function RowIcon({ children }: { children: ReactNode }) {
+  return <span className="flex w-5 shrink-0 items-center justify-center">{children}</span>
+}
+
+function getRowAlignment(expanded: boolean, mobile: boolean) {
+  return !expanded ? "justify-center" : !mobile && "justify-center lg:justify-start"
+}
+
 function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobile?: boolean }) {
   const pathname = usePathname()
   return (
@@ -41,15 +54,16 @@ function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobi
             aria-label={label}
             title={!expanded ? label : undefined}
             className={cn(
-              "focus-visible:ring-[var(--shell-focus)] flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-[background-color,color] duration-150 focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none",
-              active
-                ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]"
-                : "text-[var(--shell-muted)] hover:bg-[var(--shell-elevated)] hover:text-[var(--shell-foreground)]",
-              !expanded ? "justify-center" : !mobile && "justify-center lg:justify-start"
+              rowClassName,
+              "font-medium",
+              active ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]" : inactiveRowClassName,
+              getRowAlignment(expanded, mobile)
             )}
           >
-            <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-            {expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>{label}</span> : null}
+            <RowIcon>
+              <Icon className="h-5 w-5" aria-hidden="true" />
+            </RowIcon>
+            {mobile || expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>{label}</span> : null}
           </Link>
         )
         return mobile ? (
@@ -68,40 +82,50 @@ function AccountControls({
   expanded,
   mobile = false,
   closeMobileNavigation,
+  privacyPreferencesReturnFocus,
 }: {
   expanded: boolean
   mobile?: boolean
   closeMobileNavigation?: () => void
+  privacyPreferencesReturnFocus?: { current: HTMLElement | null }
 }) {
   const authState = useAuthProjection()
+  const pathname = usePathname()
   const { openPreferences } = usePrivacyConsent()
   if (authState.status !== AUTH_STATE_STATUS.AUTHENTICATED) return null
   const { user } = authState
+  const privacyActive = pathname === "/privacidad"
   const privacyLink = (
     <Link
       href="/privacidad"
+      aria-current={privacyActive ? "page" : undefined}
       aria-label="Privacidad"
       title={!mobile && !expanded ? "Privacidad" : undefined}
       className={cn(
-        "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[var(--shell-muted)] hover:bg-[var(--shell-elevated)] hover:text-[var(--shell-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--shell-focus)] focus-visible:outline-none",
-        !mobile && !expanded && "justify-center"
+        rowClassName,
+        privacyActive ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]" : inactiveRowClassName,
+        getRowAlignment(expanded, mobile)
       )}
     >
-      <Shield className="h-5 w-5" aria-hidden="true" />
+      <RowIcon>
+        <Shield className="h-5 w-5" aria-hidden="true" />
+      </RowIcon>
       {mobile || expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>Privacidad</span> : null}
     </Link>
   )
 
   return (
-    <div className="space-y-2 border-t border-[var(--shell-border)] pt-4">
+    <div className="flex flex-col gap-2 border-t border-[var(--shell-border)] pt-4">
       <div
-        className={cn("flex min-h-11 items-center gap-3 px-3", !expanded && "justify-center")}
-        title={!expanded ? user.displayName : undefined}
+        className={cn("flex min-h-11 items-center gap-3 px-3", getRowAlignment(expanded, mobile))}
+        title={!mobile && !expanded ? user.displayName : undefined}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--shell-elevated)]">
-          <User className="h-4 w-4" aria-hidden="true" />
-        </span>
-        {expanded ? (
+        <RowIcon>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--shell-elevated)]">
+            <User className="h-4 w-4" aria-hidden="true" />
+          </span>
+        </RowIcon>
+        {mobile || expanded ? (
           <span className={cn("min-w-0 text-sm", !mobile && "hidden lg:block")}>
             <span className="block truncate font-medium">Hola, {user.displayName}</span>
             {user.email ? <span className="block truncate text-xs text-[var(--shell-muted)]">{user.email}</span> : null}
@@ -110,21 +134,30 @@ function AccountControls({
           <span className="sr-only">Hola, {user.displayName}</span>
         )}
       </div>
-      <nav aria-label="Cuenta y privacidad" className="space-y-1">
+      <nav aria-label="Cuenta y privacidad" className="flex flex-col gap-1">
         {mobile ? <SheetClose asChild>{privacyLink}</SheetClose> : privacyLink}
         <Button
           type="button"
           variant="ghost"
           aria-label="Configurar cookies"
-          title={expanded ? undefined : "Configurar cookies"}
+          title={!mobile && !expanded ? "Configurar cookies" : undefined}
           onClick={() => {
-            closeMobileNavigation?.()
-            openPreferences()
+            if (!closeMobileNavigation) {
+              openPreferences()
+              return
+            }
+
+            closeMobileNavigation()
+            window.requestAnimationFrame(() => openPreferences(privacyPreferencesReturnFocus?.current))
           }}
-          className={cn("min-h-11 w-full gap-3 text-[var(--shell-muted)]", !expanded && "px-0")}
+          className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded, mobile))}
         >
-          <Cookie className="h-5 w-5" aria-hidden="true" />
-          {expanded ? <span className={mobile ? undefined : "hidden lg:inline"}>Configurar cookies</span> : null}
+          <RowIcon>
+            <Cookie className="h-5 w-5" aria-hidden="true" />
+          </RowIcon>
+          {mobile || expanded ? (
+            <span className={mobile ? undefined : "hidden lg:inline"}>Configurar cookies</span>
+          ) : null}
         </Button>
       </nav>
       <LogoutControl className="w-full">
@@ -134,11 +167,13 @@ function AccountControls({
             variant="ghost"
             disabled={isPending}
             aria-label="Cerrar sesión"
-            title={expanded ? undefined : "Cerrar sesión"}
-            className={cn("min-h-11 w-full gap-3 text-[var(--shell-muted)]", !expanded && "px-0")}
+            title={!mobile && !expanded ? "Cerrar sesión" : undefined}
+            className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded, mobile))}
           >
-            <LogOut className="h-5 w-5" aria-hidden="true" />
-            {expanded ? (
+            <RowIcon>
+              <LogOut className="h-5 w-5" aria-hidden="true" />
+            </RowIcon>
+            {mobile || expanded ? (
               <span className={mobile ? undefined : "hidden lg:inline"}>
                 {isPending ? "Cerrando sesión…" : "Cerrar sesión"}
               </span>
@@ -151,12 +186,18 @@ function AccountControls({
 }
 
 export function AuthenticatedApplicationShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname()
+  const mobileNavigationTriggerRef = useRef<HTMLButtonElement>(null)
   const [expanded, setExpanded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     setExpanded(window.localStorage.getItem(RAIL_STORAGE_KEY) === "true")
   }, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   function toggleRail() {
     setExpanded((current) => {
@@ -179,7 +220,13 @@ export function AuthenticatedApplicationShell({ children }: { children: ReactNod
           </Link>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden" aria-label="Abrir navegación">
+              <Button
+                ref={mobileNavigationTriggerRef}
+                variant="outline"
+                size="icon"
+                className="md:hidden"
+                aria-label="Abrir navegación"
+              >
                 <Menu className="h-5 w-5" aria-hidden="true" />
               </Button>
             </SheetTrigger>
@@ -195,7 +242,12 @@ export function AuthenticatedApplicationShell({ children }: { children: ReactNod
               </SheetHeader>
               <div className="mt-6 flex flex-1 flex-col justify-between">
                 <NavigationLinks expanded mobile />
-                <AccountControls expanded mobile closeMobileNavigation={() => setMobileOpen(false)} />
+                <AccountControls
+                  expanded
+                  mobile
+                  closeMobileNavigation={() => setMobileOpen(false)}
+                  privacyPreferencesReturnFocus={mobileNavigationTriggerRef}
+                />
               </div>
             </SheetContent>
           </Sheet>
@@ -209,18 +261,24 @@ export function AuthenticatedApplicationShell({ children }: { children: ReactNod
         )}
       >
         <div className="flex-1">
-          <NavigationLinks expanded={expanded} />
           <Button
             type="button"
             variant="ghost"
             onClick={toggleRail}
             aria-expanded={expanded}
             aria-label={expanded ? "Contraer navegación" : "Expandir navegación"}
-            className="mt-4 hidden min-h-11 w-full justify-center lg:flex"
+            className={cn(rowClassName, inactiveRowClassName, "mt-4 hidden justify-center lg:flex")}
           >
-            {expanded ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+            <RowIcon>
+              {expanded ? (
+                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <ChevronRight className="h-5 w-5" aria-hidden="true" />
+              )}
+            </RowIcon>
             <span className="sr-only">{expanded ? "Contraer navegación" : "Expandir navegación"}</span>
           </Button>
+          <NavigationLinks expanded={expanded} />
         </div>
         <AccountControls expanded={expanded} />
       </aside>
@@ -239,7 +297,7 @@ export function AuthenticatedApplicationShell({ children }: { children: ReactNod
 }
 
 function isAuthenticatedApplicationPath(pathname: string) {
-  return pathname === "/" || pathname === "/vehicles" || pathname.startsWith("/vehicles/")
+  return pathname === "/" || pathname === "/privacidad" || pathname === "/vehicles" || pathname.startsWith("/vehicles/")
 }
 
 export function AuthenticatedApplicationBoundary({ children }: { children: ReactNode }) {
