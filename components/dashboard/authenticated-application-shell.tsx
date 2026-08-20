@@ -37,8 +37,8 @@ function RowIcon({ children }: { children: ReactNode }) {
   return <span className="flex w-5 shrink-0 items-center justify-center">{children}</span>
 }
 
-function getRowAlignment(expanded: boolean, mobile: boolean) {
-  return !expanded ? "justify-center" : !mobile && "justify-center lg:justify-start"
+function getRowAlignment(expanded: boolean) {
+  return !expanded ? "justify-center" : "justify-start"
 }
 
 function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobile?: boolean }) {
@@ -57,7 +57,7 @@ function NavigationLinks({ expanded, mobile = false }: { expanded: boolean; mobi
               rowClassName,
               "font-medium",
               active ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]" : inactiveRowClassName,
-              getRowAlignment(expanded, mobile)
+              getRowAlignment(expanded)
             )}
           >
             <RowIcon>
@@ -104,7 +104,7 @@ function AccountControls({
       className={cn(
         rowClassName,
         privacyActive ? "bg-[var(--shell-active)] text-[var(--shell-active-foreground)]" : inactiveRowClassName,
-        getRowAlignment(expanded, mobile)
+        getRowAlignment(expanded)
       )}
     >
       <RowIcon>
@@ -117,7 +117,7 @@ function AccountControls({
   return (
     <div className="flex flex-col gap-2 border-t border-[var(--shell-border)] pt-4">
       <div
-        className={cn("flex min-h-11 items-center gap-3 px-3", getRowAlignment(expanded, mobile))}
+        className={cn("flex min-h-11 items-center gap-3 px-3", getRowAlignment(expanded))}
         title={!mobile && !expanded ? user.displayName : undefined}
       >
         <RowIcon>
@@ -150,7 +150,7 @@ function AccountControls({
             closeMobileNavigation()
             window.requestAnimationFrame(() => openPreferences(privacyPreferencesReturnFocus?.current))
           }}
-          className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded, mobile))}
+          className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded))}
         >
           <RowIcon>
             <Cookie className="h-5 w-5" aria-hidden="true" />
@@ -168,7 +168,7 @@ function AccountControls({
             disabled={isPending}
             aria-label="Cerrar sesión"
             title={!mobile && !expanded ? "Cerrar sesión" : undefined}
-            className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded, mobile))}
+            className={cn(rowClassName, inactiveRowClassName, getRowAlignment(expanded))}
           >
             <RowIcon>
               <LogOut className="h-5 w-5" aria-hidden="true" />
