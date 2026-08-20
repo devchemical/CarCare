@@ -59,6 +59,8 @@ test.describe("privacy and cookies", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Política de Privacidad y Cookies" })).toHaveCount(1)
     await expect(page.getByText("Alejandro Bayón Burgos")).toBeVisible()
     await expect(page.getByRole("link", { name: "privacidad@keepel.dev" }).first()).toBeVisible()
+    await expect(page.getByRole("navigation", { name: "Navegación principal" })).toHaveCount(0)
+    await expect(page.getByRole("contentinfo")).toBeVisible()
     await expect(page.getByRole("link", { name: "Privacidad y cookies", exact: true })).toBeVisible()
     await expect(page.getByRole("button", { name: "Configurar cookies" })).toBeVisible()
   })

@@ -4,6 +4,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import {
   APP_URL,
   CONTROLLED_SERVICES_URL,
+  type ControlledDashboardScenario,
   type ControlledOAuthMode,
   type ControlledRateLimitMode,
 } from "./controlled-services-config"
@@ -33,6 +34,112 @@ const analyticsEvents: unknown[] = []
 let sessionSequence = 0
 let oauthMode: ControlledOAuthMode = "success"
 let rateLimitMode: ControlledRateLimitMode = "success"
+let dashboardScenario: ControlledDashboardScenario = "empty"
+let privateViewDelayMs = 0
+
+const dashboardVehicles = [
+  {
+    id: "vehicle-1",
+    user_id: "00000000-0000-4000-8000-000000000051",
+    make: "Toyota",
+    model: "Corolla",
+    year: 2021,
+    license_plate: "1234 KPL",
+    mileage: 48200,
+    created_at: "2026-04-01T00:00:00.000Z",
+    updated_at: "2026-04-01T00:00:00.000Z",
+  },
+  {
+    id: "vehicle-2",
+    user_id: "00000000-0000-4000-8000-000000000051",
+    make: "Seat",
+    model: "León",
+    year: 2020,
+    license_plate: "5678 KPL",
+    mileage: 63500,
+    created_at: "2026-03-01T00:00:00.000Z",
+    updated_at: "2026-03-01T00:00:00.000Z",
+  },
+  {
+    id: "vehicle-3",
+    user_id: "00000000-0000-4000-8000-000000000051",
+    make: "Renault",
+    model: "Clio",
+    year: 2019,
+    license_plate: "9012 KPL",
+    mileage: 72100,
+    created_at: "2026-02-01T00:00:00.000Z",
+    updated_at: "2026-02-01T00:00:00.000Z",
+  },
+  {
+    id: "vehicle-4",
+    user_id: "00000000-0000-4000-8000-000000000051",
+    make: "Ford",
+    model: "Focus",
+    year: 2018,
+    license_plate: "3456 KPL",
+    mileage: 88400,
+    created_at: "2026-01-01T00:00:00.000Z",
+    updated_at: "2026-01-01T00:00:00.000Z",
+  },
+]
+
+const dashboardMaintenance = Array.from({ length: 6 }, (_, index) => {
+  const vehicle = dashboardVehicles[index % 2]
+  return {
+    id: `maintenance-${index + 1}`,
+    vehicle_id: vehicle.id,
+    user_id: vehicle.user_id,
+    type: index % 2 === 0 ? "oil_change" : "brake_service",
+    cost: 75 + index * 10,
+    service_date: `2026-07-${String(31 - index).padStart(2, "0")}`,
+    mileage: vehicle.mileage - 1000,
+    created_at: "2026-07-01T00:00:00.000Z",
+    updated_at: "2026-07-01T00:00:00.000Z",
+    vehicles: { make: vehicle.make, model: vehicle.model, year: vehicle.year },
+  }
+})
+
+const dashboardScheduled = [
+  {
+    id: "scheduled-overdue",
+    vehicle_id: "vehicle-1",
+    type: "oil_change",
+    scheduled_date: "2026-08-01",
+    scheduled_mileage: 50000,
+  },
+  {
+    id: "scheduled-today",
+    vehicle_id: "vehicle-2",
+    type: "brake_service",
+    scheduled_date: "2026-08-04",
+    scheduled_mileage: 65000,
+  },
+  { id: "scheduled-upcoming", vehicle_id: "vehicle-1", type: "battery", scheduled_date: "2026-08-20" },
+  { id: "scheduled-later", vehicle_id: "vehicle-2", type: "transmission", scheduled_date: "2026-10-01" },
+  { id: "scheduled-undated", vehicle_id: "vehicle-1", type: "tire_rotation", scheduled_mileage: 52000 },
+].map((service) => {
+  const vehicle = dashboardVehicles.find(({ id }) => id === service.vehicle_id)
+  if (!vehicle) throw new Error(`Missing controlled vehicle ${service.vehicle_id}`)
+  return {
+    ...service,
+    user_id: vehicle.user_id,
+    status: "pending",
+    created_at: "2026-07-01T00:00:00.000Z",
+    updated_at: "2026-07-01T00:00:00.000Z",
+    vehicles: { make: vehicle.make, model: vehicle.model, year: vehicle.year, license_plate: vehicle.license_plate },
+  }
+})
+
+function controlledDashboardRows(table: string) {
+  if (dashboardScenario === "empty") return []
+  if (table === "vehicles")
+    return dashboardScenario === "one-vehicle" ? dashboardVehicles.slice(0, 1) : dashboardVehicles
+  if (dashboardScenario === "one-vehicle") return []
+  if (table === "maintenance_records") return dashboardMaintenance
+  if (table === "scheduled_services") return dashboardScheduled
+  return []
+}
 
 function corsHeaders() {
   return {
@@ -154,7 +261,12 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "POST" && url.pathname === "/__test__/reset") {
-    const body = (await readJson(request)) as { oauthMode?: unknown; rateLimitMode?: unknown } | null
+    const body = (await readJson(request)) as {
+      oauthMode?: unknown
+      rateLimitMode?: unknown
+      dashboardScenario?: unknown
+      privateViewDelayMs?: unknown
+    } | null
     sessions.clear()
     analyticsEvents.length = 0
     sessionSequence = 0
@@ -163,6 +275,17 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
         ? body.oauthMode
         : "success"
     rateLimitMode = body?.rateLimitMode === "error" ? "error" : "success"
+    dashboardScenario =
+      body?.dashboardScenario === "one-vehicle" || body?.dashboardScenario === "populated"
+        ? body.dashboardScenario
+        : "empty"
+    privateViewDelayMs =
+      typeof body?.privateViewDelayMs === "number" &&
+      Number.isInteger(body.privateViewDelayMs) &&
+      body.privateViewDelayMs >= 0 &&
+      body.privateViewDelayMs <= 2_000
+        ? body.privateViewDelayMs
+        : 0
     sendJson(response, 200, { ok: true })
     return
   }
@@ -277,7 +400,15 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (request.method === "GET" && url.pathname.startsWith("/rest/v1/")) {
-    sendJson(response, 200, [], { "content-range": "0-0/0" })
+    if (privateViewDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, privateViewDelayMs))
+    }
+    const table = url.pathname.slice("/rest/v1/".length)
+    const rows = controlledDashboardRows(table)
+    const wantsSingleObject = request.headers.accept?.includes("application/vnd.pgrst.object+json")
+    sendJson(response, 200, wantsSingleObject ? (rows[0] ?? null) : rows, {
+      "content-range": `0-${Math.max(rows.length - 1, 0)}/${rows.length}`,
+    })
     return
   }
 

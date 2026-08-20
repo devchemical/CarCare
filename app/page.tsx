@@ -10,18 +10,20 @@ export default function HomePage() {
   const authState = useAuthProjection()
   const { vehicles, maintenanceRecords, scheduledServices, isLoading: dataLoading } = useData()
 
+  if (authState.status === AUTH_STATE_STATUS.AUTHENTICATED) {
+    return (
+      <Dashboard
+        vehicles={vehicles}
+        maintenanceRecords={maintenanceRecords}
+        upcomingMaintenance={scheduledServices}
+        isLoading={dataLoading}
+      />
+    )
+  }
+
   return (
     <Layout showHeader={true}>
-      {authState.status === AUTH_STATE_STATUS.AUTHENTICATED ? (
-        <Dashboard
-          vehicles={vehicles}
-          maintenanceRecords={maintenanceRecords}
-          upcomingMaintenance={scheduledServices}
-          isLoading={dataLoading}
-        />
-      ) : (
-        <LandingPage />
-      )}
+      <LandingPage />
     </Layout>
   )
 }
